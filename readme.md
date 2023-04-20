@@ -4,7 +4,7 @@ A reactive primitive for Java inspired by SolidJS.
 
 ## Details
 
-Signals are a wrapper around another objects that provides it with automatic dependency tracking. Effects and computed values are procedures that re-execute when the signals it depends on change.
+Signals are a wrapper around another object that provides it with automatic dependency tracking. Effects and computed values are procedures that re-execute when the signals they depend on change.
 
 ### Brief Example
 
@@ -40,4 +40,4 @@ Another important note about signals is that they are designed to exist and oper
 
 ### Checking That A Value Changed
 
-`createSignal` and `createComputed` have an optional second parameter which functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::Never.
+`createSignal` and `createComputed` have an optional second parameter which is a functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::Never.
