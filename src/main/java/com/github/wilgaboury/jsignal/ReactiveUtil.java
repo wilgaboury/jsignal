@@ -3,6 +3,7 @@ package com.github.wilgaboury.jsignal;
 import javax.swing.*;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveContext.DEFAULT_CONTEXT;
@@ -62,6 +63,16 @@ public class ReactiveUtil
     public static <T> T untrack(Supplier<T> signal)
     {
         return DEFAULT_CONTEXT.untrack(signal);
+    }
+
+    public static <T> Runnable on(Supplier<T> dep, Runnable effect)
+    {
+        return on(dep, (cur, prev) -> effect.run());
+    }
+
+    public static <T> Runnable on(Supplier<T> dep, Consumer<T> effect)
+    {
+        return on(dep, (cur, prev) -> effect.accept(prev));
     }
 
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect)
