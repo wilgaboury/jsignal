@@ -10,11 +10,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A reactive context and all the signals that belong to it can are not thread safe and generally should only be used
- * in a UI thread.
+ * All signals that communicate and track dependencies with each other share one of these objects. The context's job is
+ * to create the "environment" that listeners run in. Meaning to provide the current listener to signals being accessed
+ * and to properly batch the notification of dependencies.
  */
-public class ReactiveContext
-{
+public class ReactiveContext {
     private static final Logger logger = Logger.getLogger(ReactiveContext.class.getName());
 
     public static final ReactiveContext DEFAULT_CONTEXT = new ReactiveContext();
@@ -24,155 +24,148 @@ public class ReactiveContext
     private int _batchCount;
     private Set<SignalListener> _batch;
 
-    public ReactiveContext()
-    {
+    public ReactiveContext() {
         _listenerStack = new ArrayList<>();
         _batchCount = 0;
         _batch = new HashSet<>();
     }
 
     /**
-     * @param effect a callback that will get run when any values inside update
-     * @return Effect handle. Signals use weak references to listeners so any code relying on this effect must keep
+     * @param effect a callback that will get run when any signals accessed during it's execution change
+     * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run. If using
-     * multiple effects see {@link Effects}
+     * multiple effects see {@link Effects}.
      */
-    public SignalListener createEffect(Runnable effect)
-    {
+    public SignalListener createEffect(Runnable effect) {
         SignalListener listener = new SignalListener(effect);
         runListener(listener);
         return listener;
     }
 
     /**
-     * create reactively computed value
+     * Creates a reactively computed value.
      */
-    public <T> Computed<T> createComputed(Supplier<T> compute, Equals<T> equals)
-    {
+    public <T> Computed<T> createComputed(Supplier<T> compute, Equals<T> equals) {
         Signal<T> computedSignal = new Signal<>(null, equals, this);
-        SignalListener effectHandle = createEffect(() -> computedSignal.accept(compute.get()));
+        SignalListener effectHandle = createEffect(() -> computedSignal.accept(getSilent(compute)));
         return new Computed<>(computedSignal, effectHandle);
     }
 
     /**
-     * if any signals are set inside this runnable wait until the it finishes to notify dependencies
+     * If any signals are set during the execution of this runnable, dependencies will not be notified until the very end.
      */
-    public void batch(Runnable runnable)
-    {
+    public void batch(Runnable runnable) {
         startBatch();
-        runnable.run();
+        runSilent(runnable);
         endBatch();
     }
 
     /**
-     * stops tracking from being done on any signals accessed inside this runnable
+     * Any signals accessed during the execution of this runnable will not be tracked.
      */
-    public void untrack(Runnable runnable)
-    {
+    public void untrack(Runnable runnable) {
         pushEmpty();
-        runnable.run();
+        runSilent(runnable);
         pop();
     }
 
     /**
-     * stops tracking from being done on any signals access inside supplier
+     * Any signals accessed during the execution of this supplier will not be tracked.
      */
-    public <T> T untrack(Supplier<T> supplier)
-    {
+    public <T> T untrack(Supplier<T> supplier) {
         pushEmpty();
-        T value = supplier.get();
+        T value = getSilent(supplier);
         pop();
         return value;
     }
 
     /**
-     * Explicitly track a dependency and get it's previous value
+     * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
+     * benefit is it makes possible the ability to get the previous value when reacting to a change.
      */
-    public <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect)
-    {
+    public <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
         Ref<T> prev = new Ref<>(null);
         return () ->
         {
             T tmpPrev = prev.get();
-            prev.set(dep.get());
+            prev.set(getSilent(dep));
             effect.accept(prev.get(), tmpPrev);
         };
     }
 
-    void runListener(SignalListener listener)
-    {
+    void runListener(SignalListener listener) {
         startBatch();
         push(listener);
-        try
-        {
-            listener.getEffect().run();
-        }
-        catch (Exception e)
-        {
-            logger.log(Level.SEVERE, "Error inside effect", e);
-        }
+        runSilent(listener.getEffect());
         pop();
         endBatch();
     }
 
-    void runListeners(Collection<SignalListener> listeners)
-    {
-        for (SignalListener listener : listeners)
-        {
+    void runListeners(Collection<SignalListener> listeners) {
+        for (SignalListener listener : listeners) {
             runListener(listener);
         }
 
     }
 
-    boolean isInBatch()
-    {
+    boolean isInBatch() {
         return _batchCount > 0;
     }
 
-    void addToBatch(Collection<SignalListener> listeners)
-    {
+    void addToBatch(Collection<SignalListener> listeners) {
         _batch.addAll(listeners);
     }
 
-    SignalListener peek()
-    {
+    SignalListener peek() {
         return _listenerStack.isEmpty() ? null : _listenerStack.get(_listenerStack.size() - 1);
     }
 
-    private void pushEmpty()
-    {
+    private void pushEmpty() {
         _listenerStack.add(null);
     }
 
-    private void push(SignalListener item)
-    {
+    private void push(SignalListener item) {
         _listenerStack.add(item);
     }
 
-    private SignalListener pop()
-    {
+    private SignalListener pop() {
         return _listenerStack.remove(_listenerStack.size() - 1);
     }
 
-    private void startBatch()
-    {
+    private void startBatch() {
         _batchCount++;
     }
 
-    boolean shouldRunBatch()
-    {
+    private boolean shouldRunBatch() {
         return _batchCount == 0 && !_batch.isEmpty();
     }
 
-    private void endBatch()
-    {
+    private void endBatch() {
         _batchCount--;
 
-        if (shouldRunBatch())
-        {
+        if (shouldRunBatch()) {
             Set<SignalListener> batch = _batch;
             _batch = new HashSet<>();
             runListeners(batch);
+        }
+    }
+
+    private void runSilent(Runnable runnable)
+    {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Exception thrown inside effect", e);
+        }
+    }
+
+    private <T> T getSilent(Supplier<T> supplier)
+    {
+        try {
+            return supplier.get();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Exception thrown inside effect", e);
+            return null;
         }
     }
 }
