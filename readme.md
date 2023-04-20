@@ -36,8 +36,8 @@ One thing demonstrated by this example is that effects can be stopped manually, 
 
 ### Single Threaded
 
-Another important thing about these primitives is that they are designed to exist and operate soley inside of a single UI thread. Just like when normally working with UI state in Swing or JavaFX, if you want to set a Signal from another thread, wrap it in an `invokeLater` or an equivilent UI thread dispatch mechanism.
+Another important note about signals is that they are designed to exist and operate soley inside of a single UI thread. Just like when normally working with UI state in Swing or JavaFX, if you want to set a Signal from another thread, wrap it in an `invokeLater` or an equivilent UI thread dispatch mechanism.
 
 ### Checking That A Value Changed
 
-`createSignal` and `createComputed` have an optional second parameter which is a method called using the previous and current value to test weather dependincies should be notified of an update. The default is Objects::deepEquals. If you want dependencies to always update regardless of equality use Equals::Never.
+`createSignal` and `createComputed` have an optional second parameter which functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::Never.
