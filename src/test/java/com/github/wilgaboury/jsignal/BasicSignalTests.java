@@ -113,6 +113,6 @@ public class BasicSignalTests {
         });
 
         Assertions.assertEquals(2, sig1Count.get());
-        Assertions.assertEquals(2, sig1Count.get());
+        Assertions.assertEquals(2, sig2Count.get());
     }
 }
