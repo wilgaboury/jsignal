@@ -5,11 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-public class BasicSignalTests
-{
+public class BasicSignalTests {
     @Test
-    public void testReadmeExample()
-    {
+    public void testReadmeExample() {
         Signal<Integer> value = createSignal(5);
 
         Ref<Integer> effectValue = new Ref<>(null);
@@ -59,8 +57,7 @@ public class BasicSignalTests
     }
 
     @Test
-    public void testNestedEffect()
-    {
+    public void testNestedEffect() {
         Effects effects = new Effects();
 
         Signal<Integer> sig1 = createSignal(0);
@@ -94,8 +91,7 @@ public class BasicSignalTests
     }
 
     @Test
-    public void testBatch()
-    {
+    public void testBatch() {
         Signal<Integer> sig1 = createSignal(0);
         Signal<Integer> sig2 = createSignal(0);
 
