@@ -17,7 +17,9 @@ value.accept(7); // prints 7
 effectHandle.stop();
 value.accept(8); // prints nothing
 
-Computed<Integer> squared = createComputed(() -> value.get() * value.get());
+// create a computed value
+Signal<Integer> squared = createSignal(0);
+SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
 effectHandle = createEffect(() -> System.out.println(squared.get()));
 value.accept(8); // prints 64
 value.accept(9); // prints 81
@@ -26,6 +28,7 @@ effectHandle = null;
 Runtime.getRuntime().gc();
 value.accept(10); // prints nothing
 
+// explicitly define dependency to get current and previous value on change
 effectHandle = createEffect(on(squared, (cur, prev) -> System.out.prinln(cur + ", " + prev)));
 // prints 100, null
 

@@ -27,14 +27,6 @@ public class ReactiveUtil {
         return DEFAULT_CONTEXT.createEffect(effect);
     }
 
-    public static <T> Computed<T> createComputed(Supplier<T> compute) {
-        return createComputed(compute, Objects::deepEquals);
-    }
-
-    public static <T> Computed<T> createComputed(Supplier<T> compute, Equals<T> equals) {
-        return DEFAULT_CONTEXT.createComputed(compute, equals);
-    }
-
     public static void batch(Runnable runnable) {
         DEFAULT_CONTEXT.batch(runnable);
     }
@@ -63,12 +55,5 @@ public class ReactiveUtil {
 
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
         return DEFAULT_CONTEXT.on(dep, effect);
-    }
-
-    public static <T> void swingRunLater(Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread())
-            runnable.run();
-        else
-            SwingUtilities.invokeLater(runnable);
     }
 }

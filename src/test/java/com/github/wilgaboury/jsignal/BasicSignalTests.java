@@ -25,7 +25,8 @@ public class BasicSignalTests {
         value.accept(8);
         Assertions.assertEquals(7, effectValue.get());
 
-        Computed<Integer> squared = createComputed(() -> value.get() * value.get());
+        Signal<Integer> squared = createSignal(0);
+        SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
         effectHandle = createEffect(() -> effectValue.set(squared.get()));
         value.accept(8);
         Assertions.assertEquals(64, effectValue.get());

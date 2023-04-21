@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -47,9 +48,27 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
             notifyListeners();
     }
 
+    public SignalListener createAccept(Supplier<T> compute) {
+        return _ctx.createEffect(() -> {
+            track();
+            this.accept(compute.get());
+        });
+    }
+
+    public SignalListener createAccept(Function<T, T> compute) {
+        return _ctx.createEffect(() -> this.accept(compute.apply(get())));
+    }
+
     public void mutate(Mutate<T> mutate) {
         if (mutate.mutate(_value))
             notifyListeners();
+    }
+
+    public SignalListener createMutate(Mutate<T> mutate) {
+        return _ctx.createEffect(() -> {
+            track();
+            this.mutate(mutate);
+        });
     }
 
     private void notifyListeners() {

@@ -43,15 +43,6 @@ public class ReactiveContext {
     }
 
     /**
-     * Creates a reactively computed value.
-     */
-    public <T> Computed<T> createComputed(Supplier<T> compute, Equals<T> equals) {
-        Signal<T> computedSignal = new Signal<>(null, equals, this);
-        SignalListener effectHandle = createEffect(() -> computedSignal.accept(getSilent(compute)));
-        return new Computed<>(computedSignal, effectHandle);
-    }
-
-    /**
      * If any signals are set during the execution of this runnable, dependencies will not be notified until the very end.
      */
     public void batch(Runnable runnable) {
@@ -128,8 +119,8 @@ public class ReactiveContext {
         _listenerStack.add(item);
     }
 
-    private SignalListener pop() {
-        return _listenerStack.remove(_listenerStack.size() - 1);
+    private void pop() {
+        _listenerStack.remove(_listenerStack.size() - 1);
     }
 
     private void startBatch() {
