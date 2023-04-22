@@ -45,4 +45,4 @@ Another important note about signals is that they are designed to exist and oper
 
 ### Checking That A Value Changed
 
-`createSignal` and `createComputed` have an optional second parameter which is a functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::never.
+`createSignal` has an optional second parameter which is a functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::never.
