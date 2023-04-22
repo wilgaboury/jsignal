@@ -37,7 +37,7 @@ effectHandle = createEffect(on(squared, (cur, prev) -> System.out.prinln(cur + "
 value.accept(11); // prints 121, 100
 ```
 
-One thing demonstrated by this example is that effects can be stopped manually, but they will also be automatically cleaned up by the garbage collector if the `SignalListener` or `Computed` no longer have any strong references to them. When adding reactive state to a Swing component, for instance, it's nice to not have to worry about writing cleanup logic for when it is removed from the UI.
+One thing demonstrated by this example is that effects can be stopped manually, but they will also be automatically cleaned up by the garbage collector if there is no longer a strong reference to the `SignalListener`. When adding reactive state to a Swing component, for instance, it's nice to not have to worry about writing cleanup logic for when it is removed from the UI.
 
 ### Single Threaded
 
