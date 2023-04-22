@@ -2,9 +2,11 @@
 
 A reactive primitive for Java inspired by SolidJS.
 
-## Details
+## Signals and Effects
 
-Signals are a wrapper around another object that provides it with automatic dependency tracking. Effects and computed values are procedures that re-execute when the signals they depend on change.
+Fundamentally, a Signal is a wrapper around another object that provides it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change.
+
+This is designed to create a direct and automatic mapping from state to UI, with state being represented as data in Signals and the mappings being Effects that update your UI when said state changes. This helps to facilitate better design by ensuring an application's buissness logic only deals with state and never has to touch the UI.
 
 ### Brief Example
 
@@ -17,7 +19,7 @@ value.accept(7); // prints 7
 effectHandle.stop();
 value.accept(8); // prints nothing
 
-// create a computed value
+// create an automatically computed value
 Signal<Integer> squared = createSignal(0);
 SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
 effectHandle = createEffect(() -> System.out.println(squared.get()));
@@ -43,4 +45,4 @@ Another important note about signals is that they are designed to exist and oper
 
 ### Checking That A Value Changed
 
-`createSignal` and `createComputed` have an optional second parameter which is a functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::Never.
+`createSignal` and `createComputed` have an optional second parameter which is a functional interface taking two value parameters (the previous and current) and returns weather the values are equal. The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::never.
