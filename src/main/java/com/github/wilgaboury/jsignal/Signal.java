@@ -1,10 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -72,35 +69,33 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     private void notifyListeners() {
-        Set<SignalListener> listeners = cleanupAndGetValidListeners();
-        if (listeners == null) return;
+        cleanupListeners();
 
         if (_ctx.isInBatch())
-            _ctx.addToBatch(listeners);
+            addListenersTo(_ctx.getBatchedListeners());
         else
-            _ctx.runListeners(listeners);
+            runListeners();
     }
 
-    private Set<SignalListener> cleanupAndGetValidListeners() {
-        Set<Integer> remove = null;
-        Set<SignalListener> listeners = null;
-
-        for (Map.Entry<Integer, WeakReference<SignalListener>> refEntry : _listeners.entrySet()) {
-            SignalListener listener = refEntry.getValue().get();
-            if (listener == null || listener.isStopped()) {
-                if (remove == null)
-                    remove = new HashSet<>();
-                remove.add(refEntry.getKey());
-            } else {
-                if (listeners == null)
-                    listeners = new HashSet<>();
-                listeners.add(listener);
-            }
+    private void cleanupListeners() {
+        Iterator<Map.Entry<Integer, WeakReference<SignalListener>>> entryItr = _listeners.entrySet().iterator();
+        while (entryItr.hasNext()) {
+            Map.Entry<Integer, WeakReference<SignalListener>> entry = entryItr.next();
+            SignalListener listener = entry.getValue().get();
+            if (listener == null || listener.isStopped()) entryItr.remove();
         }
-        if (remove != null)
-            _listeners.keySet().removeAll(remove);
+    }
 
-        return listeners;
+    private void addListenersTo(Set<SignalListener> listeners) {
+        for (WeakReference<SignalListener> listener : _listeners.values()) {
+           listeners.add(listener.get());
+        }
+    }
+
+    private void runListeners() {
+        for (WeakReference<SignalListener> listener : _listeners.values()) {
+            _ctx.runListener(listener.get());
+        }
     }
 
     @FunctionalInterface

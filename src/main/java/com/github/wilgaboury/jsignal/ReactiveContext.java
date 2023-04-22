@@ -96,15 +96,14 @@ public class ReactiveContext {
         for (SignalListener listener : listeners) {
             runListener(listener);
         }
-
     }
 
     boolean isInBatch() {
         return _batchCount > 0;
     }
 
-    void addToBatch(Collection<SignalListener> listeners) {
-        _batch.addAll(listeners);
+    Set<SignalListener> getBatchedListeners() {
+        return _batch;
     }
 
     SignalListener peek() {
