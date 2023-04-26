@@ -42,7 +42,6 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     public void accept(T value) {
         T oldValue = _value;
         _value = value;
-
         if (!_equals.apply(oldValue, value))
             notifyListeners();
     }
@@ -75,8 +74,11 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
         Iterator<WeakReference<SignalListener>> itr = _listeners.values().iterator();
         while (itr.hasNext()) {
             SignalListener listener = itr.next().get();
-            if (listener == null || listener.isStopped()) itr.remove();
-            else listenerConsumer.accept(listener);
+
+            if (listener == null || listener.isStopped())
+                itr.remove();
+            else
+                listenerConsumer.accept(listener);
         }
     }
 
