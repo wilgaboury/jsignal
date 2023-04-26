@@ -24,7 +24,7 @@ Signal<Integer> squared = createSignal(0);
 SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
 effectHandle = createEffect(() -> System.out.println(squared.get())); // prints 64
 value.accept(9); // prints 81
-value.accept(10); // prints 81
+value.accept(10); // prints 100
 
 effectHandle = null;
 Runtime.getRuntime().gc();
