@@ -28,8 +28,8 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
 
     public void track() {
         SignalListener peek = _ctx.peek();
-        if (peek != null && !_listeners.containsKey(peek.getId()))
-            _listeners.put(peek.getId(), new WeakReference<>(peek));
+        if (peek != null)
+            _listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
     }
 
     @Override
@@ -72,12 +72,10 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     private void forEachListener(Consumer<SignalListener> listenerConsumer) {
-        Iterator<Map.Entry<Integer, WeakReference<SignalListener>>> entryItr = _listeners.entrySet().iterator();
-        while (entryItr.hasNext()) {
-            Map.Entry<Integer, WeakReference<SignalListener>> entry = entryItr.next();
-            SignalListener listener = entry.getValue().get();
-
-            if (listener == null || listener.isStopped()) entryItr.remove();
+        Iterator<WeakReference<SignalListener>> itr = _listeners.values().iterator();
+        while (itr.hasNext()) {
+            SignalListener listener = itr.next().get();
+            if (listener == null || listener.isStopped()) itr.remove();
             else listenerConsumer.accept(listener);
         }
     }
