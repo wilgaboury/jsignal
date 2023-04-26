@@ -48,14 +48,11 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     public SignalListener createAccept(Supplier<T> compute) {
-        return _ctx.createEffect(() -> {
-            track();
-            this.accept(compute.get());
-        });
+        return _ctx.createEffect(() -> this.accept(compute.get()));
     }
 
     public SignalListener createAccept(Function<T, T> compute) {
-        return _ctx.createEffect(() -> this.accept(compute.apply(get())));
+        return _ctx.createEffect(() -> this.accept(compute.apply(_value)));
     }
 
     public void mutate(Mutate<T> mutate) {
@@ -64,10 +61,7 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     public SignalListener createMutate(Mutate<T> mutate) {
-        return _ctx.createEffect(() -> {
-            track();
-            this.mutate(mutate);
-        });
+        return _ctx.createEffect(() -> this.mutate(mutate));
     }
 
     private void notifyListeners() {

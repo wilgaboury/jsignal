@@ -1,12 +1,10 @@
 package com.github.wilgaboury.jsignal;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -47,8 +45,11 @@ public class ReactiveContext {
      */
     public void batch(Runnable runnable) {
         startBatch();
-        runSilent(runnable);
-        endBatch();
+        try {
+            runnable.run();
+        } finally {
+            endBatch();
+        }
     }
 
     /**
@@ -56,8 +57,12 @@ public class ReactiveContext {
      */
     public void untrack(Runnable runnable) {
         pushEmpty();
-        runSilent(runnable);
-        pop();
+        try {
+            runnable.run();
+        } finally {
+            pop();
+        }
+
     }
 
     /**
@@ -65,9 +70,11 @@ public class ReactiveContext {
      */
     public <T> T untrack(Supplier<T> supplier) {
         pushEmpty();
-        T value = getSilent(supplier);
-        pop();
-        return value;
+        try {
+            return supplier.get();
+        } finally {
+            pop();
+        }
     }
 
     /**
@@ -75,26 +82,24 @@ public class ReactiveContext {
      * benefit is it makes possible the ability to get the previous value when reacting to a change.
      */
     public <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        Ref<T> prev = new Ref<>(null);
+        Ref<T> prevRef = new Ref<>(null);
         return () ->
         {
-            T tmpPrev = prev.get();
-            prev.set(getSilent(dep));
-            effect.accept(prev.get(), tmpPrev);
+            T cur = dep.get();
+            T prev = prevRef.get();
+            prevRef.set(cur);
+            effect.accept(cur, prev);
         };
     }
 
     void runListener(SignalListener listener) {
         startBatch();
         push(listener);
-        runSilent(listener.getEffect());
-        pop();
-        endBatch();
-    }
-
-    void runListeners(Collection<SignalListener> listeners) {
-        for (SignalListener listener : listeners) {
-            runListener(listener);
+        try {
+            listener.getEffect().run();
+        } finally {
+            pop();
+            endBatch();
         }
     }
 
@@ -126,36 +131,13 @@ public class ReactiveContext {
         _batchCount++;
     }
 
-    private boolean shouldRunBatch() {
-        return _batchCount == 0 && !_batch.isEmpty();
-    }
-
     private void endBatch() {
         _batchCount--;
 
-        if (shouldRunBatch()) {
+        if (_batchCount == 0 && !_batch.isEmpty()) {
             Set<SignalListener> batch = _batch;
             _batch = new LinkedHashSet<>();
-            runListeners(batch);
-        }
-    }
-
-    private void runSilent(Runnable runnable)
-    {
-        try {
-            runnable.run();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown inside effect", e);
-        }
-    }
-
-    private <T> T getSilent(Supplier<T> supplier)
-    {
-        try {
-            return supplier.get();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception thrown inside effect", e);
-            return null;
+            batch.forEach(this::runListener);
         }
     }
 }
