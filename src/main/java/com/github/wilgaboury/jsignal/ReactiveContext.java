@@ -102,8 +102,8 @@ public class ReactiveContext {
         return _batchCount > 0;
     }
 
-    Set<SignalListener> getBatchedListeners() {
-        return _batch;
+    void addBatchedListener(SignalListener listener) {
+        _batch.add(listener);
     }
 
     SignalListener peek() {

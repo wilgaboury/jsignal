@@ -69,32 +69,20 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     private void notifyListeners() {
-        cleanupListeners();
-
         if (_ctx.isInBatch())
-            addListenersTo(_ctx.getBatchedListeners());
+            forEachListener(_ctx::addBatchedListener);
         else
-            runListeners();
+            forEachListener(_ctx::runListener);
     }
 
-    private void cleanupListeners() {
+    private void forEachListener(Consumer<SignalListener> listenerConsumer) {
         Iterator<Map.Entry<Integer, WeakReference<SignalListener>>> entryItr = _listeners.entrySet().iterator();
         while (entryItr.hasNext()) {
             Map.Entry<Integer, WeakReference<SignalListener>> entry = entryItr.next();
             SignalListener listener = entry.getValue().get();
+
             if (listener == null || listener.isStopped()) entryItr.remove();
-        }
-    }
-
-    private void addListenersTo(Set<SignalListener> listeners) {
-        for (WeakReference<SignalListener> listener : _listeners.values()) {
-           listeners.add(listener.get());
-        }
-    }
-
-    private void runListeners() {
-        for (WeakReference<SignalListener> listener : _listeners.values()) {
-            _ctx.runListener(listener.get());
+            else listenerConsumer.accept(listener);
         }
     }
 
