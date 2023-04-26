@@ -1,7 +1,9 @@
 package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,7 +20,7 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     private final ReactiveContext _ctx;
 
     public Signal(T value, Equals<T> equals, ReactiveContext ctx) {
-        _listeners = new HashMap<>();
+        _listeners = new LinkedHashMap<>();
         _value = value;
         _equals = equals;
         _ctx = ctx;

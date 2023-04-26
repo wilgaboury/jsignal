@@ -2,7 +2,7 @@ package com.github.wilgaboury.jsignal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ public class ReactiveContext {
     public ReactiveContext() {
         _listenerStack = new ArrayList<>();
         _batchCount = 0;
-        _batch = new HashSet<>();
+        _batch = new LinkedHashSet<>();
     }
 
     /**
@@ -135,7 +135,7 @@ public class ReactiveContext {
 
         if (shouldRunBatch()) {
             Set<SignalListener> batch = _batch;
-            _batch = new HashSet<>();
+            _batch = new LinkedHashSet<>();
             runListeners(batch);
         }
     }
