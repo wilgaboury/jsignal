@@ -5,7 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 /**
  * All signals that communicate and track dependencies with each other share one of these objects. The context's job is
@@ -13,8 +12,6 @@ import java.util.logging.Logger;
  * and to properly batch the notification of dependencies.
  */
 public class ReactiveContext {
-    private static final Logger logger = Logger.getLogger(ReactiveContext.class.getName());
-
     public static final ReactiveContext DEFAULT_CONTEXT = new ReactiveContext();
 
     private final ArrayList<SignalListener> _listenerStack;
