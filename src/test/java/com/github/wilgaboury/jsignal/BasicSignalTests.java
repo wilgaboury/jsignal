@@ -28,17 +28,19 @@ public class BasicSignalTests {
         Signal<Integer> squared = createSignal(0);
         SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
         effectHandle = createEffect(() -> effectValue.set(squared.get()));
-        value.accept(8);
         Assertions.assertEquals(64, effectValue.get());
 
         value.accept(9);
         Assertions.assertEquals(81, effectValue.get());
 
+        value.accept(10);
+        Assertions.assertEquals(100, effectValue.get());
+
         effectHandle = null;
         Runtime.getRuntime().gc();
 
-        value.accept(10);
-        Assertions.assertEquals(81, effectValue.get());
+        value.accept(11);
+        Assertions.assertEquals(100, effectValue.get());
 
         Ref<Integer> prevEffectValue = new Ref<>(0);
 
@@ -48,13 +50,13 @@ public class BasicSignalTests {
             prevEffectValue.set(prev);
         }));
 
-        Assertions.assertEquals(100, effectValue.get());
+        Assertions.assertEquals(121, effectValue.get());
         Assertions.assertNull(prevEffectValue.get());
 
-        value.accept(11);
+        value.accept(12);
 
-        Assertions.assertEquals(121, effectValue.get());
-        Assertions.assertEquals(100, prevEffectValue.get());
+        Assertions.assertEquals(144, effectValue.get());
+        Assertions.assertEquals(121, prevEffectValue.get());
     }
 
     @Test
