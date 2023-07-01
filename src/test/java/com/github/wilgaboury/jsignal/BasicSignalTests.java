@@ -118,5 +118,24 @@ public class BasicSignalTests {
 
         Assertions.assertEquals(2, sig1Count.get());
         Assertions.assertEquals(2, sig2Count.get());
+
+        Signal<Integer> sig3 = createSignal(1);
+        Signal<Integer> sig4 = createSignal(2);
+
+        createEffect(
+                on(sig3, (cur1, prev1) ->
+                on(sig4, (cur2, prev2) -> {
+                    System.out.println("hello");
+                    System.out.println("hello");
+
+                    createInnerEffect(() -> {
+                        createInnerEffect(() -> {
+                            createInnerEffect(() -> {
+                                System.out.println("hi");
+                            });
+                        });
+                    });
+                    onCleanup(() -> {});
+                })));
     }
 }

@@ -8,8 +8,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.wilgaboury.jsignal.ReactiveEnv.DEFAULT_REACTIVE_ENV;
 import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
+import static com.github.wilgaboury.jsignal.ReactiveEnv.DEFAULT_REACTIVE_ENV;
 
 /**
  * All the methods in this class need to be called from the UI thread.
