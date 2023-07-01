@@ -5,6 +5,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.ReactiveEnv.DEFAULT_REACTIVE_ENV;
 import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
@@ -13,6 +15,8 @@ import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAG
  * All the methods in this class need to be called from the UI thread.
  */
 public class ReactiveUtil {
+    private static final Logger logger = Logger.getLogger(ReactiveUtil.class.getName());
+
     private ReactiveUtil() {
     }
 
@@ -26,6 +30,12 @@ public class ReactiveUtil {
 
     public static EffectHandle createEffect(Runnable effect) {
         return DEFAULT_REACTIVE_ENV.createEffect(effect);
+    }
+
+    public static void createInnerEffect(Runnable effect) {
+        if (createEffect(effect) != null) {
+            logger.log(Level.SEVERE, "inner effect was not created inside another effect");
+        }
     }
 
     public static void onCleanup(Runnable cleanup) {
@@ -59,6 +69,18 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
+        return DEFAULT_REACTIVE_ENV.on(dep, effect);
+    }
+
+    public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
+        return on(dep, (cur, prev) -> effect.run());
+    }
+
+    public static <T> Runnable onDefer(Supplier<T> dep, Consumer<T> effect) {
+        return on(dep, (cur, prev) -> effect.accept(cur));
+    }
+
+    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
         return DEFAULT_REACTIVE_ENV.on(dep, effect);
     }
 

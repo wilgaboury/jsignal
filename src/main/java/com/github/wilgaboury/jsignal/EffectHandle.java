@@ -27,7 +27,16 @@ public class EffectHandle {
         return id;
     }
 
-    public Runnable getEffect() {
+    public void dispose() {
+        cleanable.clean();
+        disposed = true;
+    }
+
+    public boolean isDisposed() {
+        return disposed;
+    }
+
+    Runnable getEffect() {
         return effect;
     }
 
@@ -37,15 +46,6 @@ public class EffectHandle {
 
     void addCleanup(Runnable runnable) {
         cleanup.add(runnable);
-    }
-
-    public void dispose() {
-        cleanable.clean();
-        disposed = true;
-    }
-
-    public boolean isDisposed() {
-        return disposed;
     }
 
     @Override

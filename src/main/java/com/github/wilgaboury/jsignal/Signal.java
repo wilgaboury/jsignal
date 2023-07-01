@@ -10,23 +10,23 @@ import java.util.function.Supplier;
 
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
- * tracked and reacted to.
+ * automatically tracked.
  */
 public class Signal<T> implements Supplier<T>, Consumer<T> {
     private final Map<Integer, WeakReference<EffectHandle>> listeners;
     private T value;
     private final Equals<T> equals;
-    private final ReactiveEnv ctx;
+    private final ReactiveEnv env;
 
-    public Signal(T value, Equals<T> equals, ReactiveEnv ctx) {
+    public Signal(T value, Equals<T> equals, ReactiveEnv env) {
         listeners = new LinkedHashMap<>();
         this.value = value;
         this.equals = equals;
-        this.ctx = ctx;
+        this.env = env;
     }
 
     public void track() {
-        EffectHandle peek = ctx.peek();
+        EffectHandle peek = env.peek();
         if (peek != null)
             listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
     }
@@ -46,11 +46,11 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     public EffectHandle createAccept(Supplier<T> compute) {
-        return ctx.createEffect(() -> this.accept(compute.get()));
+        return env.createEffect(() -> this.accept(compute.get()));
     }
 
     public EffectHandle createAccept(Function<T, T> compute) {
-        return ctx.createEffect(() -> this.accept(compute.apply(value)));
+        return env.createEffect(() -> this.accept(compute.apply(value)));
     }
 
     public void mutate(Mutate<T> mutate) {
@@ -58,15 +58,24 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
             notifyListeners();
     }
 
+    public void mutate(Consumer<T> mutate) {
+        mutate.accept(value);
+        notifyListeners();
+    }
+
     public EffectHandle createMutate(Mutate<T> mutate) {
-        return ctx.createEffect(() -> this.mutate(mutate));
+        return env.createEffect(() -> this.mutate(mutate));
+    }
+
+    public EffectHandle createMutate(Consumer<T> mutate) {
+        return env.createEffect(() -> this.mutate(mutate));
     }
 
     private void notifyListeners() {
-        if (ctx.isInBatch())
-            forEachListener(ctx::addBatchedListener);
+        if (env.isInBatch())
+            forEachListener(env::addBatchedListener);
         else
-            forEachListener(ctx::runListener);
+            forEachListener(env::runListener);
     }
 
     private void forEachListener(Consumer<EffectHandle> listenerConsumer) {

@@ -37,7 +37,7 @@ public class ReactiveEnv {
         EffectHandle peek = peek();
         runListener(listener);
         if (peek != null) {
-            peek.addCleanup(listener::dispose);
+            peek.addCleanup(listener::dispose); // creates strong reference
             return null;
         } else {
             return listener;
@@ -102,6 +102,23 @@ public class ReactiveEnv {
             T prev = prevRef.get();
             prevRef.set(cur);
             effect.accept(cur, prev);
+        };
+    }
+
+    public <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
+        Ref<T> prevRef = new Ref<>(null);
+        Ref<Boolean> run = new Ref<>(false);
+        return () ->
+        {
+            T cur = dep.get();
+            T prev = prevRef.get();
+            prevRef.set(cur);
+
+            if (run.get()) {
+                effect.accept(cur, prev);
+            } else {
+                run.set(true);
+            }
         };
     }
 
