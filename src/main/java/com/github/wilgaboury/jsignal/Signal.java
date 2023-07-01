@@ -13,69 +13,68 @@ import java.util.function.Supplier;
  * tracked and reacted to.
  */
 public class Signal<T> implements Supplier<T>, Consumer<T> {
-    private final Map<Integer, WeakReference<SignalListener>> _listeners;
+    private final Map<Integer, WeakReference<EffectHandle>> listeners;
+    private T value;
+    private final Equals<T> equals;
+    private final ReactiveEnv ctx;
 
-    private T _value;
-    private final Equals<T> _equals;
-    private final ReactiveContext _ctx;
-
-    public Signal(T value, Equals<T> equals, ReactiveContext ctx) {
-        _listeners = new LinkedHashMap<>();
-        _value = value;
-        _equals = equals;
-        _ctx = ctx;
+    public Signal(T value, Equals<T> equals, ReactiveEnv ctx) {
+        listeners = new LinkedHashMap<>();
+        this.value = value;
+        this.equals = equals;
+        this.ctx = ctx;
     }
 
     public void track() {
-        SignalListener peek = _ctx.peek();
+        EffectHandle peek = ctx.peek();
         if (peek != null)
-            _listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
+            listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
     }
 
     @Override
     public T get() {
         track();
-        return _value;
+        return value;
     }
 
     @Override
     public void accept(T value) {
-        T oldValue = _value;
-        _value = value;
-        if (!_equals.apply(oldValue, value))
+        T oldValue = this.value;
+        this.value = value;
+        if (!equals.apply(oldValue, value))
             notifyListeners();
     }
 
-    public SignalListener createAccept(Supplier<T> compute) {
-        return _ctx.createEffect(() -> this.accept(compute.get()));
+    public EffectHandle createAccept(Supplier<T> compute) {
+        return ctx.createEffect(() -> this.accept(compute.get()));
     }
 
-    public SignalListener createAccept(Function<T, T> compute) {
-        return _ctx.createEffect(() -> this.accept(compute.apply(_value)));
+    public EffectHandle createAccept(Function<T, T> compute) {
+        return ctx.createEffect(() -> this.accept(compute.apply(value)));
     }
 
     public void mutate(Mutate<T> mutate) {
-        if (mutate.mutate(_value))
+        if (mutate.mutate(value))
             notifyListeners();
     }
 
-    public SignalListener createMutate(Mutate<T> mutate) {
-        return _ctx.createEffect(() -> this.mutate(mutate));
+    public EffectHandle createMutate(Mutate<T> mutate) {
+        return ctx.createEffect(() -> this.mutate(mutate));
     }
 
     private void notifyListeners() {
-        if (_ctx.isInBatch())
-            forEachListener(_ctx::addBatchedListener);
+        if (ctx.isInBatch())
+            forEachListener(ctx::addBatchedListener);
         else
-            forEachListener(_ctx::runListener);
+            forEachListener(ctx::runListener);
     }
 
-    private void forEachListener(Consumer<SignalListener> listenerConsumer) {
-        Iterator<WeakReference<SignalListener>> itr = _listeners.values().iterator();
+    private void forEachListener(Consumer<EffectHandle> listenerConsumer) {
+        Iterator<WeakReference<EffectHandle>> itr = listeners.values().iterator();
         while (itr.hasNext()) {
-            SignalListener listener = itr.next().get();
+            EffectHandle listener = itr.next().get();
 
-            if (listener == null || listener.isStopped())
+            if (listener == null || listener.isDisposed())
                 itr.remove();
             else
                 listenerConsumer.accept(listener);

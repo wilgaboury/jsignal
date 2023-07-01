@@ -12,7 +12,7 @@ public class BasicSignalTests {
 
         Ref<Integer> effectValue = new Ref<>(null);
 
-        SignalListener effectHandle = createEffect(() -> effectValue.set(value.get()));
+        EffectHandle effectHandle = createEffect(() -> effectValue.set(value.get()));
         Assertions.assertEquals(5, effectValue.get());
 
         value.accept(6);
@@ -21,12 +21,12 @@ public class BasicSignalTests {
         value.accept(7);
         Assertions.assertEquals(7, effectValue.get());
 
-        effectHandle.stop();
+        effectHandle.dispose();
         value.accept(8);
         Assertions.assertEquals(7, effectValue.get());
 
         Signal<Integer> squared = createSignal(0);
-        SignalListener acceptHandle = squared.createAccept(() -> value.get() * value.get());
+        EffectHandle acceptHandle = squared.createAccept(() -> value.get() * value.get());
         effectHandle = createEffect(() -> effectValue.set(squared.get()));
         Assertions.assertEquals(64, effectValue.get());
 
@@ -61,18 +61,17 @@ public class BasicSignalTests {
 
     @Test
     public void testNestedEffect() {
-        Effects effects = new Effects();
-
         Signal<Integer> sig1 = createSignal(0);
 
+        Ref<Integer> effectCount = new Ref<>(0);
         Ref<Integer> innerEffectCount = new Ref<>(0);
 
-        effects.create(() ->
+        EffectHandle effectHandle = createEffect(() ->
         {
             sig1.track();
 
             Signal<Integer> sig2 = createSignal(0);
-            effects.create(() ->
+            createEffect(() ->
             {
                 sig2.track();
                 innerEffectCount.set(innerEffectCount.get() + 1);
@@ -81,12 +80,13 @@ public class BasicSignalTests {
             sig2.accept(1);
             sig2.accept(2);
 
+            effectCount.set(effectCount.get() + 1);
         });
 
         sig1.accept(1);
         sig1.accept(2);
 
-        effects.stop();
+        effectHandle.dispose();
 
         sig1.accept(3);
 
@@ -101,10 +101,11 @@ public class BasicSignalTests {
         Ref<Integer> sig1Count = new Ref<>(0);
         Ref<Integer> sig2Count = new Ref<>(0);
 
-        Effects effects = new Effects();
-
-        effects.create(on(sig1, () -> sig1Count.set(sig1Count.get() + 1)));
-        effects.create(on(sig2, () -> sig2Count.set(sig2Count.get() + 1)));
+        EffectHandle effectHandle = createEffect(() -> {
+            createEffect(on(sig1, () -> sig1Count.set(sig1Count.get() + 1)));
+            createEffect(on(sig2, () -> sig2Count.set(sig2Count.get() + 1)));
+            onCleanup(() -> System.out.println("cleaning up"));
+        });
 
         batch(() ->
         {
