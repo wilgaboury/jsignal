@@ -15,10 +15,10 @@ public class AsyncSignal<T> implements Supplier<T>, Consumer<T> {
 
     private final Equals<T> equals;
     private final Clone<T> clone;
-    private final AsyncReactiveEnv envs;
+    private final ReactiveEnv envs;
 
-    public AsyncSignal(T value, Equals<T> equals, Clone<T> clone, AsyncReactiveEnv envs) {
-        listeners = new ConcurrentHashMap<>();
+    public AsyncSignal(T value, Equals<T> equals, Clone<T> clone, ReactiveEnv envs) {
+        this.listeners = new ConcurrentHashMap<>();
         this.lock = new ReentrantReadWriteLock();
         this.value = value;
         this.equals = equals;

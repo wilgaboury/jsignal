@@ -7,7 +7,7 @@ import java.util.Objects;
 public class AsyncSignalTests {
     @Test
     public void basicTest() {
-        var env = new AsyncReactiveEnv();
+        var env = new ReactiveEnv();
         var signal = new AsyncSignal<Integer>(0, Objects::equals, Integer::valueOf, env);
     }
 }

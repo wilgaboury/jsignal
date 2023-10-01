@@ -16,16 +16,24 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     private final Map<Integer, WeakReference<EffectHandle>> listeners;
     private T value;
     private final Equals<T> equals;
-    private final ReactiveEnv env;
+    private final ReactiveEnvInner env;
+    private final long threadId;
 
-    public Signal(T value, Equals<T> equals, ReactiveEnv env) {
-        listeners = new LinkedHashMap<>();
+    public Signal(T value, Equals<T> equals, ReactiveEnvInner env) {
+        this.listeners = new LinkedHashMap<>();
         this.value = value;
         this.equals = equals;
         this.env = env;
+        this.threadId = Thread.currentThread().getId();
+    }
+
+    private void assertThread() {
+        assert this.threadId == Thread.currentThread().getId();
     }
 
     public void track() {
+        assertThread();
+
         EffectHandle peek = env.peek();
         if (peek != null)
             listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
@@ -33,12 +41,16 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
 
     @Override
     public T get() {
+        assertThread();
+
         track();
         return value;
     }
 
     @Override
     public void accept(T value) {
+        assertThread();
+
         T oldValue = this.value;
         this.value = value;
         if (!equals.apply(oldValue, value))
@@ -46,28 +58,40 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
     }
 
     public EffectHandle createAccept(Supplier<T> compute) {
+        assertThread();
+
         return env.createEffect(() -> this.accept(compute.get()));
     }
 
     public EffectHandle createAccept(Function<T, T> compute) {
+        assertThread();
+
         return env.createEffect(() -> this.accept(compute.apply(value)));
     }
 
     public void mutate(Mutate<T> mutate) {
+        assertThread();
+
         if (mutate.mutate(value))
             notifyListeners();
     }
 
     public void mutate(Consumer<T> mutate) {
+        assertThread();
+
         mutate.accept(value);
         notifyListeners();
     }
 
     public EffectHandle createMutate(Mutate<T> mutate) {
+        assertThread();
+
         return env.createEffect(() -> this.mutate(mutate));
     }
 
     public EffectHandle createMutate(Consumer<T> mutate) {
+        assertThread();
+
         return env.createEffect(() -> this.mutate(mutate));
     }
 

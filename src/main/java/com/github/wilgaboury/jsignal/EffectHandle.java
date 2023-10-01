@@ -1,8 +1,8 @@
 package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.Cleaner;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class EffectHandle {
@@ -13,13 +13,13 @@ public class EffectHandle {
     private final Runnable effect;
     private final Cleanup cleanup;
     private final Cleaner.Cleanable cleanable;
-    private boolean disposed;
+    private final AtomicBoolean disposed;
 
     public EffectHandle(Runnable effect) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
         this.cleanup = new Cleanup();
-        this.disposed = false;
+        this.disposed = new AtomicBoolean(false);
         this.cleanable = cleaner.register(this, cleanup);
     }
 
@@ -28,12 +28,12 @@ public class EffectHandle {
     }
 
     public void dispose() {
-        cleanable.clean();
-        disposed = true;
+        if (disposed.compareAndExchange(false, true))
+            cleanable.clean();
     }
 
     public boolean isDisposed() {
-        return disposed;
+        return disposed.get();
     }
 
     Runnable getEffect() {
@@ -45,7 +45,8 @@ public class EffectHandle {
     }
 
     void addCleanup(Runnable runnable) {
-        cleanup.add(runnable);
+        if (!disposed.get())
+            cleanup.add(runnable);
     }
 
     @Override
@@ -66,10 +67,10 @@ public class EffectHandle {
     }
 
     private static class Cleanup implements Runnable {
-        private final List<Runnable> cleanup;
+        private final ConcurrentLinkedQueue<Runnable> cleanup;
 
         public Cleanup() {
-            this.cleanup = new ArrayList<>();
+            this.cleanup = new ConcurrentLinkedQueue<>();
         }
 
         public void add(Runnable runnable) {
@@ -78,8 +79,9 @@ public class EffectHandle {
 
         @Override
         public void run() {
-            cleanup.forEach(Runnable::run);
-            cleanup.clear();
+            while (!cleanup.isEmpty()) {
+                cleanup.poll().run();
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
-import static com.github.wilgaboury.jsignal.ReactiveEnv.DEFAULT_REACTIVE_ENV;
 
 /**
  * All the methods in this class need to be called from the UI thread.
@@ -25,11 +25,19 @@ public class ReactiveUtil {
     }
 
     public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
-        return new Signal<>(value, equals, DEFAULT_REACTIVE_ENV);
+        return new Signal<>(value, equals, ReactiveEnv.getInstance().get());
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone) {
+        return createAsyncSignal(value, clone, Objects::deepEquals);
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone, Equals<T> equals) {
+        return new AsyncSignal<>(value, equals, clone, ReactiveEnv.getInstance());
     }
 
     public static EffectHandle createEffect(Runnable effect) {
-        return DEFAULT_REACTIVE_ENV.createEffect(effect);
+        return ReactiveEnv.getInstance().get().createEffect(effect);
     }
 
     public static void createInnerEffect(Runnable effect) {
@@ -39,11 +47,11 @@ public class ReactiveUtil {
     }
 
     public static void onCleanup(Runnable cleanup) {
-        DEFAULT_REACTIVE_ENV.onCleanup(cleanup);
+        ReactiveEnv.getInstance().get().onCleanup(cleanup);
     }
 
     public static void batch(Runnable runnable) {
-        DEFAULT_REACTIVE_ENV.batch(runnable);
+        ReactiveEnv.getInstance().get().batch(runnable);
     }
 
     public static void track(Iterable<Signal<?>> deps) {
@@ -53,11 +61,11 @@ public class ReactiveUtil {
     }
 
     public static void untrack(Runnable runnable) {
-        DEFAULT_REACTIVE_ENV.untrack(runnable);
+        ReactiveEnv.getInstance().get().untrack(runnable);
     }
 
     public static <T> T untrack(Supplier<T> signal) {
-        return DEFAULT_REACTIVE_ENV.untrack(signal);
+        return ReactiveEnv.getInstance().get().untrack(signal);
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
@@ -69,7 +77,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return DEFAULT_REACTIVE_ENV.on(dep, effect);
+        return ReactiveEnv.getInstance().get().on(dep, effect);
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
@@ -81,7 +89,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return DEFAULT_REACTIVE_ENV.on(dep, effect);
+        return ReactiveEnv.getInstance().get().on(dep, effect);
     }
 
     public <T> void createContext(Class<T> clazz, Object obj, Signal<T> signal) {
