@@ -128,13 +128,14 @@ public class BasicSignalTests {
                     System.out.println("hello");
                     System.out.println("hello");
 
-                    createInnerEffect(() -> {
-                        createInnerEffect(() -> {
-                            createInnerEffect(() -> {
+                    createEffect(() -> {
+                        createEffect(() -> {
+                            createEffect(() -> {
                                 System.out.println("hi");
                             });
                         });
                     });
+
                     onCleanup(() -> {});
                 })));
     }

@@ -2,6 +2,7 @@ package com.github.wilgaboury.jsignal;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -25,7 +26,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
-        return new Signal<>(value, equals, ReactiveEnv.getInstance().get());
+        return new Signal<>(value, equals);
     }
 
     public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone) {
@@ -33,17 +34,15 @@ public class ReactiveUtil {
     }
 
     public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone, Equals<T> equals) {
-        return new AsyncSignal<>(value, equals, clone, ReactiveEnv.getInstance());
+        return new AsyncSignal<>(value, equals, clone);
     }
 
     public static EffectHandle createEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect);
+        return ReactiveEnv.getInstance().get().createEffect(effect, Runnable::run);
     }
 
-    public static void createInnerEffect(Runnable effect) {
-        if (createEffect(effect) != null) {
-            logger.log(Level.SEVERE, "inner effect was not created inside another effect");
-        }
+    public static EffectHandle createAsyncEffect(Runnable effect) {
+        return ReactiveEnv.getInstance().get().createEffect(effect, ForkJoinPool.commonPool());
     }
 
     public static void onCleanup(Runnable cleanup) {
@@ -76,8 +75,19 @@ public class ReactiveUtil {
         return on(dep, (cur, prev) -> effect.accept(cur));
     }
 
+    /**
+     * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
+     * benefit is it makes it easy to get the previous value when reacting to a change.
+     */
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return ReactiveEnv.getInstance().get().on(dep, effect);
+        Ref<T> prevRef = new Ref<>(null);
+        return () ->
+        {
+            T cur = dep.get();
+            T prev = prevRef.get();
+            prevRef.set(cur);
+            effect.accept(cur, prev);
+        };
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
@@ -88,8 +98,21 @@ public class ReactiveUtil {
         return on(dep, (cur, prev) -> effect.accept(cur));
     }
 
-    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return ReactiveEnv.getInstance().get().on(dep, effect);
+    public <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
+        Ref<T> prevRef = new Ref<>(null);
+        Ref<Boolean> run = new Ref<>(false);
+        return () ->
+        {
+            T cur = dep.get();
+            T prev = prevRef.get();
+            prevRef.set(cur);
+
+            if (run.get()) {
+                effect.accept(cur, prev);
+            } else {
+                run.set(true);
+            }
+        };
     }
 
     public <T> void createContext(Class<T> clazz, Object obj, Signal<T> signal) {

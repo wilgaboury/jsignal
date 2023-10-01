@@ -3,6 +3,8 @@ package com.github.wilgaboury.jsignal;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -32,10 +34,12 @@ public class ReactiveEnvInner {
      * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
      */
-    public EffectHandle createEffect(Runnable effect) {
-        EffectHandle listener = new EffectHandle(effect);
+    public EffectHandle createEffect(Runnable effect, Executor executor) {
+        EffectHandle listener = new EffectHandle(effect, executor);
         EffectHandle peek = peek();
-        runListener(listener);
+
+        listener.run();
+
         if (peek != null) {
             peek.addCleanup(listener::dispose); // creates strong reference
             return null;
@@ -90,44 +94,12 @@ public class ReactiveEnvInner {
         }
     }
 
-    /**
-     * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
-     * benefit is it makes it easy to get the previous value when reacting to a change.
-     */
-    public <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        Ref<T> prevRef = new Ref<>(null);
-        return () ->
-        {
-            T cur = dep.get();
-            T prev = prevRef.get();
-            prevRef.set(cur);
-            effect.accept(cur, prev);
-        };
-    }
-
-    public <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        Ref<T> prevRef = new Ref<>(null);
-        Ref<Boolean> run = new Ref<>(false);
-        return () ->
-        {
-            T cur = dep.get();
-            T prev = prevRef.get();
-            prevRef.set(cur);
-
-            if (run.get()) {
-                effect.accept(cur, prev);
-            } else {
-                run.set(true);
-            }
-        };
-    }
-
-    void runListener(EffectHandle listener) {
+    void runListener(EffectHandle listener, Runnable effect) {
         startBatch();
         push(listener);
         listener.cleanup();
         try {
-            listener.getEffect().run();
+            effect.run();
         } finally {
             pop();
             endBatch();
@@ -168,7 +140,7 @@ public class ReactiveEnvInner {
         if (batchCount == 0 && !batch.isEmpty()) {
             Set<EffectHandle> batch = this.batch;
             this.batch = new LinkedHashSet<>();
-            batch.forEach(this::runListener);
+            batch.forEach(EffectHandle::run);
         }
     }
 }

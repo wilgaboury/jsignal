@@ -3,7 +3,6 @@ package com.github.wilgaboury.jsignal;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -13,30 +12,26 @@ import java.util.function.Supplier;
  * automatically tracked.
  */
 public class Signal<T> implements Supplier<T>, Consumer<T> {
-    private final Map<Integer, WeakReference<EffectHandle>> listeners;
+    private final Listeners listeners;
     private T value;
     private final Equals<T> equals;
-    private final ReactiveEnvInner env;
     private final long threadId;
 
-    public Signal(T value, Equals<T> equals, ReactiveEnvInner env) {
-        this.listeners = new LinkedHashMap<>();
+    public Signal(T value, Equals<T> equals) {
+        this.listeners = new Listeners(new LinkedHashMap<>());
         this.value = value;
         this.equals = equals;
-        this.env = env;
         this.threadId = Thread.currentThread().getId();
     }
 
     private void assertThread() {
-        assert this.threadId == Thread.currentThread().getId();
+        assert this.threadId == Thread.currentThread().getId() : "using signal in wrong thread";
     }
 
     public void track() {
         assertThread();
 
-        EffectHandle peek = env.peek();
-        if (peek != null)
-            listeners.putIfAbsent(peek.getId(), new WeakReference<>(peek));
+        listeners.addListener(ReactiveEnv.getInstance().get().peek());
     }
 
     @Override
@@ -54,56 +49,58 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
         T oldValue = this.value;
         this.value = value;
         if (!equals.apply(oldValue, value))
-            notifyListeners();
+            listeners.notifyListeners();
     }
 
     public EffectHandle createAccept(Supplier<T> compute) {
         assertThread();
 
-        return env.createEffect(() -> this.accept(compute.get()));
+        return ReactiveUtil.createEffect(() -> this.accept(compute.get()));
     }
 
     public EffectHandle createAccept(Function<T, T> compute) {
         assertThread();
 
-        return env.createEffect(() -> this.accept(compute.apply(value)));
+        return ReactiveUtil.createEffect(() -> this.accept(compute.apply(value)));
     }
 
     public void mutate(Mutate<T> mutate) {
         assertThread();
 
         if (mutate.mutate(value))
-            notifyListeners();
+            listeners.notifyListeners();
     }
 
     public void mutate(Consumer<T> mutate) {
         assertThread();
 
         mutate.accept(value);
-        notifyListeners();
+        listeners.notifyListeners();
     }
 
     public EffectHandle createMutate(Mutate<T> mutate) {
         assertThread();
 
-        return env.createEffect(() -> this.mutate(mutate));
+        return ReactiveUtil.createEffect(() -> this.mutate(mutate));
     }
 
     public EffectHandle createMutate(Consumer<T> mutate) {
         assertThread();
 
-        return env.createEffect(() -> this.mutate(mutate));
+        return ReactiveUtil.createEffect(() -> this.mutate(mutate));
     }
 
-    private void notifyListeners() {
+
+
+    static void notifyListeners(Iterator<WeakReference<EffectHandle>> itr) {
+        var env = ReactiveEnv.getInstance().get();
         if (env.isInBatch())
-            forEachListener(env::addBatchedListener);
+            forEachListener(itr, env::addBatchedListener);
         else
-            forEachListener(env::runListener);
+            forEachListener(itr, EffectHandle::run);
     }
 
-    private void forEachListener(Consumer<EffectHandle> listenerConsumer) {
-        Iterator<WeakReference<EffectHandle>> itr = listeners.values().iterator();
+    static void forEachListener(Iterator<WeakReference<EffectHandle>> itr, Consumer<EffectHandle> listenerConsumer) {
         while (itr.hasNext()) {
             EffectHandle listener = itr.next().get();
 

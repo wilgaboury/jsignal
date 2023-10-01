@@ -2,25 +2,32 @@ package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.Cleaner;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class EffectHandle {
+public class EffectHandle implements Runnable {
     private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
     private final int id;
     private final Runnable effect;
+    private final Executor executor;
     private final Cleanup cleanup;
     private final Cleaner.Cleanable cleanable;
     private final AtomicBoolean disposed;
+    private final Lock execLock;
 
-    public EffectHandle(Runnable effect) {
+    EffectHandle(Runnable effect, Executor executor) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
+        this.executor = executor;
         this.cleanup = new Cleanup();
-        this.disposed = new AtomicBoolean(false);
         this.cleanable = cleaner.register(this, cleanup);
+        this.disposed = new AtomicBoolean(false);
+        this.execLock = new ReentrantLock();
     }
 
     public int getId() {
@@ -36,8 +43,16 @@ public class EffectHandle {
         return disposed.get();
     }
 
-    Runnable getEffect() {
-        return effect;
+    @Override
+    public void run() {
+        executor.execute(() -> ReactiveEnv.getInstance().get().runListener(this, () -> {
+            execLock.lock();
+            try {
+                effect.run();
+            } finally {
+                execLock.unlock();
+            }
+        }));
     }
 
     void cleanup() {
