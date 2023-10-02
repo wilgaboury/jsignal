@@ -73,6 +73,18 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
+    public static <T> Supplier<T> createComputed(Supplier<T> supplier) {
+        return createComputed(createSignal(null), supplier);
+    }
+
+    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier) {
+        return createComputed(createAsyncSignal(null), supplier);
+    }
+
+    public static <T> Supplier<T> createAtomicComputed(Supplier<T> supplier) {
+        return createComputed(createAtomicSignal(null), supplier);
+    }
+
     public static <T> Supplier<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
         return new Supplier<T>() {
             @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
