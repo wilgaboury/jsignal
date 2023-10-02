@@ -17,8 +17,6 @@ public class AtomicSignal<T> extends Signal<T> {
 
     @Override
     public T get() {
-        assertThread();
-
         track();
         lock.readLock().lock();
         try {

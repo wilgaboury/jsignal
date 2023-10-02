@@ -46,8 +46,6 @@ public class Signal<T> implements SignalLike<T> {
 
     @Override
     public T get() {
-        assertThread();
-
         track();
         return clone.clone(value);
     }
