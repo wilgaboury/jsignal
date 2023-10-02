@@ -7,6 +7,7 @@ import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -21,7 +22,7 @@ public class Signal<T> implements SignalLike<T> {
     protected final Long threadId;
 
     public Signal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
-        this.effects = new Effects(new LinkedHashMap<>());
+        this.effects = new Effects(isSync ? new LinkedHashMap<>() : new ConcurrentHashMap<>());
         this.value = value;
         this.equals = equals;
         this.clone = clone;
