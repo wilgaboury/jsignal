@@ -11,8 +11,8 @@ import java.util.function.Function;
 public class AtomicSignal<T> extends Signal<T> {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public AtomicSignal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
-        super(value, equals, clone, isSync);
+    public AtomicSignal(T value, Equals<T> equals, Clone<T> clone) {
+        super(value, equals, clone, false);
     }
 
     @Override

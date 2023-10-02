@@ -57,6 +57,22 @@ public class ReactiveUtil {
         return new Signal<>(value, equals, clone, false);
     }
 
+    public static <T> AtomicSignal<T> createAtomicSignal(T value) {
+        return createAtomicSignal(value, Objects::deepEquals, Clone::identity);
+    }
+
+    public static <T> AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals) {
+        return createAtomicSignal(value, equals, Clone::identity);
+    }
+
+    public static <T> AtomicSignal<T> createAtomicSignal(T value, Clone<T> clone) {
+        return createAtomicSignal(value, Objects::deepEquals, clone);
+    }
+
+    public static <T> AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new AtomicSignal<>(value, equals, clone);
+    }
+
     public static <T> Supplier<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
         return new Supplier<T>() {
             @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
