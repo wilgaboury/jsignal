@@ -68,6 +68,9 @@ public class EffectHandle implements Runnable {
     void addCleanup(Runnable runnable) {
         if (!disposed.get())
             cleanup.add(runnable);
+
+        if (disposed.get())
+            cleanup.run();
     }
 
     @Override
