@@ -35,7 +35,7 @@ public class ReactiveEnvInner {
      */
     public EffectHandle createEffect(Runnable effect, boolean isSync) {
         EffectHandle handle = new EffectHandle(effect, isSync);
-        runEffect(handle);
+        handle.run();
         peekEffect().ifPresent(h -> h.addCleanup(handle::dispose)); // creates strong reference
         return handle;
     }

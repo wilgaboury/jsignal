@@ -7,17 +7,18 @@ import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
-    private final Effects effects;
-    private T value;
-    private final Equals<T> equals;
-    private final Clone<T> clone;
-    private final Long threadId;
+    protected final Effects effects;
+    protected T value;
+    protected final Equals<T> equals;
+    protected final Clone<T> clone;
+    protected final Long threadId;
 
     public Signal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
         this.effects = new Effects(new LinkedHashMap<>());
@@ -27,7 +28,7 @@ public class Signal<T> implements SignalLike<T> {
         this.threadId = isSync ? Thread.currentThread().getId() : null;
     }
 
-    private void assertThread() {
+    protected void assertThread() {
         assert threadId == null || this.threadId == Thread.currentThread().getId()
                 : "using signal in wrong thread";
     }
@@ -37,7 +38,8 @@ public class Signal<T> implements SignalLike<T> {
         assertThread();
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         env.peekEffect().ifPresent(handle -> {
-            assert threadId == null || Objects.equals(threadId, handle.getThreadId()) : "thread ids do not match";
+            assert threadId == null || Objects.equals(threadId, handle.getThreadId())
+                    : "signal thread does not match effect thread";
             effects.add(handle, env.peekExecutor());
         });
     }
@@ -51,11 +53,11 @@ public class Signal<T> implements SignalLike<T> {
     }
 
     @Override
-    public void accept(T value) {
+    public void accept(Function<T, T> transform) {
         assertThread();
 
-        T oldValue = this.value;
-        this.value = value;
+        T oldValue = value;
+        value = transform.apply(value);
         if (!equals.apply(oldValue, value))
             effects.run();
     }

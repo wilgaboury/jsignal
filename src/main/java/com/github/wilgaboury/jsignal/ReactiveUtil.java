@@ -6,6 +6,8 @@ import com.github.wilgaboury.jsignal.interfaces.Equals;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -114,11 +116,11 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
-        return on(dep, (cur, prev) -> effect.run());
+        return on(dep, (value) -> effect.run());
     }
 
     public static <T> Runnable on(Supplier<T> dep, Consumer<T> effect) {
-        return on(dep, (cur, prev) -> effect.accept(cur));
+        return () -> effect.accept(dep.get());
     }
 
     /**
@@ -126,7 +128,7 @@ public class ReactiveUtil {
      * benefit is it makes it easy to get the previous value when reacting to a change.
      */
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        Ref<T> prevRef = new Ref<>(null);
+        AtomicReference<T> prevRef = new AtomicReference<>(null);
         return () ->
         {
             T cur = dep.get();
@@ -137,16 +139,16 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
-        return on(dep, (cur, prev) -> effect.run());
+        return onDefer(dep, (cur, prev) -> effect.run());
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Consumer<T> effect) {
-        return on(dep, (cur, prev) -> effect.accept(cur));
+        return onDefer(dep, (cur, prev) -> effect.accept(cur));
     }
 
-    public <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        Ref<T> prevRef = new Ref<>(null);
-        Ref<Boolean> run = new Ref<>(false);
+    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
+        AtomicReference<T> prevRef = new AtomicReference<>(null);
+        AtomicBoolean run = new AtomicBoolean(false);
         return () ->
         {
             T cur = dep.get();

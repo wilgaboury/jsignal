@@ -6,6 +6,7 @@ import com.github.wilgaboury.jsignal.interfaces.Mutate;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 
 public class AtomicSignal<T> extends Signal<T> {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
@@ -16,31 +17,48 @@ public class AtomicSignal<T> extends Signal<T> {
 
     @Override
     public T get() {
+        assertThread();
+
+        track();
         lock.readLock().lock();
         try {
-            return super.get();
+            return clone.clone(value);
         } finally {
             lock.readLock().unlock();
         }
     }
 
     @Override
-    public void accept(T value) {
-        lock.readLock().lock();
+    public void accept(Function<T, T> transform) {
+        assertThread();
+
+        T oldValue;
+
+        lock.writeLock().lock();
         try {
-            super.accept(value);
+            oldValue = value;
+            value = transform.apply(value);
         } finally {
-            lock.readLock().unlock();
+            lock.writeLock().unlock();
         }
+
+        if (!equals.apply(oldValue, value))
+            effects.run();
     }
 
     @Override
     public void mutate(Mutate<T> mutate) {
+        assertThread();
+
+        boolean changed;
         lock.writeLock().lock();
         try {
-            super.mutate(mutate);
+            changed = mutate.mutate(value);
         } finally {
             lock.writeLock().unlock();
         }
+
+        if (changed)
+            effects.run();
     }
 }

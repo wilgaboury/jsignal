@@ -19,16 +19,6 @@ public class EffectRef implements Runnable {
 
     @Override
     public void run() {
-        getHandle().ifPresent(handle ->
-                executor.execute(() ->  {
-                    ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-                    if (handle.getThreadId() != null) {
-                        env.runEffect(handle);
-                    } else {
-                        synchronized (handle) {
-                            env.runEffect(handle);
-                        }
-                    }
-                }));
+        getHandle().ifPresent(executor::execute);
     }
 }

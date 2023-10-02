@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class EffectHandle {
+public class EffectHandle implements Runnable {
     private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
@@ -36,6 +36,19 @@ public class EffectHandle {
 
     public boolean isDisposed() {
         return disposed.get();
+    }
+
+    @Override
+    public void run() {
+        ReactiveEnvInner env = ReactiveEnv.getInstance().get();
+        if (threadId != null) {
+            assert threadId == Thread.currentThread().getId();
+            env.runEffect(this);
+        } else {
+            synchronized (this) {
+                env.runEffect(this);
+            }
+        }
     }
 
     Runnable getEffect() {
