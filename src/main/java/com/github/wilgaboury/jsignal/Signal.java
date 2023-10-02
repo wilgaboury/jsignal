@@ -1,37 +1,45 @@
 package com.github.wilgaboury.jsignal;
 
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
+import com.github.wilgaboury.jsignal.interfaces.Clone;
+import com.github.wilgaboury.jsignal.interfaces.Equals;
+import com.github.wilgaboury.jsignal.interfaces.Mutate;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+
 import java.util.LinkedHashMap;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Objects;
 
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
-public class Signal<T> implements Supplier<T>, Consumer<T> {
-    private final Listeners listeners;
+public class Signal<T> implements SignalLike<T> {
+    private final Effects effects;
     private T value;
     private final Equals<T> equals;
-    private final long threadId;
+    private final Clone<T> clone;
+    private final Long threadId;
 
-    public Signal(T value, Equals<T> equals) {
-        this.listeners = new Listeners(new LinkedHashMap<>());
+    public Signal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
+        this.effects = new Effects(new LinkedHashMap<>());
         this.value = value;
         this.equals = equals;
-        this.threadId = Thread.currentThread().getId();
+        this.clone = clone;
+        this.threadId = isSync ? Thread.currentThread().getId() : null;
     }
 
     private void assertThread() {
-        assert this.threadId == Thread.currentThread().getId() : "using signal in wrong thread";
+        assert threadId == null || this.threadId == Thread.currentThread().getId()
+                : "using signal in wrong thread";
     }
 
+    @Override
     public void track() {
         assertThread();
-
-        listeners.addListener(ReactiveEnv.getInstance().get().peek());
+        ReactiveEnvInner env = ReactiveEnv.getInstance().get();
+        env.peekEffect().ifPresent(handle -> {
+            assert Objects.equals(threadId, handle.getThreadId()) : "thread ids do not match";
+            effects.add(handle, env.peekExecutor());
+        });
     }
 
     @Override
@@ -39,7 +47,7 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
         assertThread();
 
         track();
-        return value;
+        return clone.clone(value);
     }
 
     @Override
@@ -49,63 +57,14 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
         T oldValue = this.value;
         this.value = value;
         if (!equals.apply(oldValue, value))
-            listeners.notifyListeners();
+            effects.run();
     }
 
-    public EffectHandle createAccept(Supplier<T> compute) {
-        assertThread();
-
-        return ReactiveUtil.createEffect(() -> this.accept(compute.get()));
-    }
-
-    public EffectHandle createAccept(Function<T, T> compute) {
-        assertThread();
-
-        return ReactiveUtil.createEffect(() -> this.accept(compute.apply(value)));
-    }
-
+    @Override
     public void mutate(Mutate<T> mutate) {
         assertThread();
 
         if (mutate.mutate(value))
-            listeners.notifyListeners();
-    }
-
-    public void mutate(Consumer<T> mutate) {
-        assertThread();
-
-        mutate.accept(value);
-        listeners.notifyListeners();
-    }
-
-    public EffectHandle createMutate(Mutate<T> mutate) {
-        assertThread();
-
-        return ReactiveUtil.createEffect(() -> this.mutate(mutate));
-    }
-
-    public EffectHandle createMutate(Consumer<T> mutate) {
-        assertThread();
-
-        return ReactiveUtil.createEffect(() -> this.mutate(mutate));
-    }
-
-    static void notifyListeners(Iterator<WeakReference<EffectHandle>> itr) {
-        var env = ReactiveEnv.getInstance().get();
-        if (env.isInBatch())
-            forEachListener(itr, env::addBatchedListener);
-        else
-            forEachListener(itr, EffectHandle::run);
-    }
-
-    static void forEachListener(Iterator<WeakReference<EffectHandle>> itr, Consumer<EffectHandle> listenerConsumer) {
-        while (itr.hasNext()) {
-            EffectHandle listener = itr.next().get();
-
-            if (listener == null || listener.isDisposed())
-                itr.remove();
-            else
-                listenerConsumer.accept(listener);
-        }
+            effects.run();
     }
 }

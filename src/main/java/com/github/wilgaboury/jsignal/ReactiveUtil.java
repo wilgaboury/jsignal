@@ -1,5 +1,8 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.Clone;
+import com.github.wilgaboury.jsignal.interfaces.Equals;
+
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
@@ -7,7 +10,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
@@ -22,77 +24,71 @@ public class ReactiveUtil {
     }
 
     public static <T> Signal<T> createSignal(T value) {
-        return createSignal(value, Objects::deepEquals);
+        return createSignal(value, Objects::deepEquals, Clone::identity);
     }
 
     public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
-        return new Signal<>(value, equals);
+        return createSignal(value, equals, Clone::identity);
     }
 
-    public static <T> Supplier<T> createComputed(Supplier<T> supplier) {
-        return createComputed(supplier, Objects::deepEquals);
+    public static <T> Signal<T> createSignal(T value, Clone<T> clone) {
+        return createSignal(value, Objects::deepEquals, clone);
     }
 
-    public static <T> Supplier<T> createComputed(Supplier<T> supplier, Equals<T> equals) {
-        Signal<T> signal = createSignal(null, equals);
-        return new Supplier<T>() {
-            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
-            private final EffectHandle handle = signal.createAccept(supplier);
-
-            @Override
-            public T get() {
-                return signal.get();
-            }
-        };
+    public static <T> Signal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new Signal<>(value, equals, clone, true);
     }
 
-    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier) {
-        return createAsyncComputed(supplier, Objects::deepEquals, Clone::identity);
-    }
-
-    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Equals<T> equals) {
-        return createAsyncComputed(supplier, equals, Clone::identity);
-    }
-
-    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Clone<T> clone) {
-        return createAsyncComputed(supplier, Objects::deepEquals, clone);
-    }
-
-    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Equals<T> equals, Clone<T> clone) {
-        AsyncSignal<T> signal = createAsyncSignal(null, equals, clone);
-        return new Supplier<T>() {
-            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
-            private final EffectHandle handle = signal.createAccept(supplier);
-
-            @Override
-            public T get() {
-                return signal.get();
-            }
-        };
-    }
-
-    public static <T> AsyncSignal<T> createAsyncSignal(T value) {
+    public static <T> Signal<T> createAsyncSignal(T value) {
         return createAsyncSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> AsyncSignal<T> createAsyncSignal(T value, Equals<T> equals) {
+    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals) {
         return createAsyncSignal(value, equals, Clone::identity);
     }
 
-    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone) {
+    public static <T> Signal<T> createAsyncSignal(T value, Clone<T> clone) {
         return createAsyncSignal(value, Objects::deepEquals, clone);
     }
 
-    public static <T> AsyncSignal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
-        return new AsyncSignal<>(value, equals, clone);
+    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new Signal<>(value, equals, clone, false);
+    }
+
+    public static <T> Supplier<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
+        return new Supplier<T>() {
+            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
+            private final EffectHandle handle = createEffect(() -> signal.accept(supplier.get()));
+
+            @Override
+            public T get() {
+                return signal.get();
+            }
+        };
     }
 
     public static EffectHandle createEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, Runnable::run, false);
+        return ReactiveEnv.getInstance().get().createEffect(effect, true);
     }
 
     public static EffectHandle createAsyncEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, ForkJoinPool.commonPool(), true);
+        return ReactiveEnv.getInstance().get().createEffect(effect, false);
+    }
+
+    public static void executor(Executor executor, Runnable inner) {
+        ReactiveEnv.getInstance().get().executor(executor, inner);
+    }
+
+    public static <T> T executor(Executor executor, Supplier<T> inner) {
+        return ReactiveEnv.getInstance().get().executor(executor, inner);
+    }
+
+    public static void asyncExecutor(Runnable inner) {
+        executor(ForkJoinPool.commonPool(), inner);
+    }
+
+    public static <T> T asyncExecutor(Supplier<T> inner) {
+        return executor(ForkJoinPool.commonPool(), inner);
     }
 
     public static void onCleanup(Runnable cleanup) {

@@ -1,4 +1,4 @@
-package com.github.wilgaboury.jsignal;
+package com.github.wilgaboury.jsignal.interfaces;
 
 @FunctionalInterface
 public interface Clone<T> {

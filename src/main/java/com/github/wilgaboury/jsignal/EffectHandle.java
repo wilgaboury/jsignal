@@ -2,32 +2,27 @@ package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.Cleaner;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
-public class EffectHandle implements Runnable {
+public class EffectHandle {
     private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
     private final int id;
     private final Runnable effect;
-    private final Executor executor;
     private final Cleanup cleanup;
     private final Cleaner.Cleanable cleanable;
     private final AtomicBoolean disposed;
-    private final Lock execLock;
+    private final Long threadId;
 
-    EffectHandle(Runnable effect, Executor executor, boolean isAsync) {
+    EffectHandle(Runnable effect, boolean isSync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
-        this.executor = executor;
         this.cleanup = new Cleanup();
         this.cleanable = cleaner.register(this, cleanup);
         this.disposed = new AtomicBoolean(false);
-        this.execLock = isAsync ? new ReentrantLock() : null;
+        this.threadId = isSync ? Thread.currentThread().getId() : null;
     }
 
     public int getId() {
@@ -43,20 +38,12 @@ public class EffectHandle implements Runnable {
         return disposed.get();
     }
 
-    @Override
-    public void run() {
-        executor.execute(() -> ReactiveEnv.getInstance().get().runListener(this, () -> {
-            if (execLock == null) {
-                effect.run();
-            } else {
-                execLock.lock();
-                try {
-                    effect.run();
-                } finally {
-                    execLock.unlock();
-                }
-            }
-        }));
+    Runnable getEffect() {
+        return effect;
+    }
+
+    Long getThreadId() {
+        return threadId;
     }
 
     void cleanup() {

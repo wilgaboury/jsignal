@@ -1,5 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.Clone;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;

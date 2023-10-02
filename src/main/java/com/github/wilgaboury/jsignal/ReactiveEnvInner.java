@@ -1,11 +1,9 @@
 package com.github.wilgaboury.jsignal;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,13 +16,14 @@ import java.util.logging.Logger;
 public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
-    private final ArrayList<EffectHandle> listenerStack;
-
+    private EffectHandle handle;
+    private Executor executor;
     private int batchCount;
-    private Set<EffectHandle> batch;
+    private Set<EffectRef> batch;
 
     public ReactiveEnvInner() {
-        listenerStack = new ArrayList<>();
+        handle = null;
+        executor = Runnable::run;
         batchCount = 0;
         batch = new LinkedHashSet<>();
     }
@@ -34,38 +33,51 @@ public class ReactiveEnvInner {
      * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
      */
-    public EffectHandle createEffect(Runnable effect, Executor executor, boolean isAsync) {
-        EffectHandle listener = new EffectHandle(effect, executor, isAsync);
-        EffectHandle peek = peek();
-
-        listener.run();
-
-        if (peek != null) {
-            peek.addCleanup(listener::dispose); // creates strong reference
-            return null;
-        } else {
-            return listener;
-        }
+    public EffectHandle createEffect(Runnable effect, boolean isSync) {
+        EffectHandle handle = new EffectHandle(effect, isSync);
+        runEffect(handle);
+        peekEffect().ifPresent(h -> h.addCleanup(handle::dispose)); // creates strong reference
+        return handle;
     }
 
     public void onCleanup(Runnable cleanup) {
-        EffectHandle peek = peek();
-        if (peek != null) {
-            peek.addCleanup(cleanup);
+        Optional<EffectHandle> maybeHandle = peekEffect();
+        if (maybeHandle.isPresent()) {
+            maybeHandle.get().addCleanup(cleanup);
         } else {
-            logger.log(Level.WARNING, "calling ReactiveContext.onCleanup outside of a reactive context");
+            logger.log(Level.WARNING, "calling onCleanup outside of a reactive context");
         }
     }
+
+    public void executor(Executor executor, Runnable inner) {
+        executor(executor, toSupplier(inner));
+    }
+
+    public <T> T executor(Executor executor, Supplier<T> inner) {
+        Executor prev = this.executor;
+        this.executor = executor;
+        try {
+            return inner.get();
+        } finally {
+            this.executor = prev;
+        }
+    }
+
 
     /**
      * If any signals are set during the execution of this runnable, dependencies will not be notified until the very end.
      */
     public void batch(Runnable runnable) {
-        startBatch();
+        batchCount++;
         try {
             runnable.run();
         } finally {
-            endBatch();
+            batchCount--;
+            if (batchCount == 0 && !batch.isEmpty()) {
+                Set<EffectRef> batch = this.batch;
+                this.batch = new LinkedHashSet<>();
+                batch.forEach(EffectRef::run);
+            }
         }
     }
 
@@ -73,74 +85,50 @@ public class ReactiveEnvInner {
      * Any signals accessed during the execution of this runnable will not be tracked.
      */
     public void untrack(Runnable runnable) {
-        pushEmpty();
-        try {
-            runnable.run();
-        } finally {
-            pop();
-        }
-
+        effect(null, toSupplier(runnable));
     }
 
     /**
      * Any signals accessed during the execution of this supplier will not be tracked.
      */
     public <T> T untrack(Supplier<T> supplier) {
-        pushEmpty();
-        try {
-            return supplier.get();
-        } finally {
-            pop();
-        }
+        return effect(null, supplier);
     }
 
-    void runListener(EffectHandle listener, Runnable effect) {
-        startBatch();
-        push(listener);
-        listener.cleanup();
-        try {
-            effect.run();
-        } finally {
-            pop();
-            endBatch();
-        }
+    void runEffect(EffectHandle handle) {
+        batch(() -> effect(handle, toSupplier(() -> handle.getEffect().run())));
     }
 
     boolean isInBatch() {
         return batchCount > 0;
     }
 
-    void addBatchedListener(EffectHandle listener) {
-        batch.add(listener);
+    void addBatchedListener(EffectRef effect) {
+        batch.add(effect);
     }
 
-    EffectHandle peek() {
-        return listenerStack.isEmpty() ? null : listenerStack.get(listenerStack.size() - 1);
+    Optional<EffectHandle> peekEffect() {
+        return Optional.ofNullable(handle);
     }
 
-    private void pushEmpty() {
-        listenerStack.add(null);
+    Executor peekExecutor() {
+        return executor;
     }
 
-    private void push(EffectHandle item) {
-        listenerStack.add(item);
-    }
-
-    private void pop() {
-        listenerStack.remove(listenerStack.size() - 1);
-    }
-
-    private void startBatch() {
-        batchCount++;
-    }
-
-    private void endBatch() {
-        batchCount--;
-
-        if (batchCount == 0 && !batch.isEmpty()) {
-            Set<EffectHandle> batch = this.batch;
-            this.batch = new LinkedHashSet<>();
-            batch.forEach(EffectHandle::run);
+    private <T> T effect(EffectHandle handle, Supplier<T> inner) {
+        EffectHandle prev = this.handle;
+        this.handle = handle;
+        try {
+            return inner.get();
+        } finally {
+            this.handle = prev;
         }
+    }
+
+    private static Supplier<Void> toSupplier(Runnable runnable) {
+        return () -> {
+            runnable.run();
+            return null;
+        };
     }
 }
