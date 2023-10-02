@@ -29,20 +29,70 @@ public class ReactiveUtil {
         return new Signal<>(value, equals);
     }
 
-    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone) {
-        return createAsyncSignal(value, clone, Objects::deepEquals);
+    public static <T> Supplier<T> createComputed(Supplier<T> supplier) {
+        return createComputed(supplier, Objects::deepEquals);
     }
 
-    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone, Equals<T> equals) {
+    public static <T> Supplier<T> createComputed(Supplier<T> supplier, Equals<T> equals) {
+        Signal<T> signal = createSignal(null, equals);
+        return new Supplier<T>() {
+            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
+            private final EffectHandle handle = signal.createAccept(supplier);
+
+            @Override
+            public T get() {
+                return signal.get();
+            }
+        };
+    }
+
+    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier) {
+        return createAsyncComputed(supplier, Objects::deepEquals, Clone::identity);
+    }
+
+    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Equals<T> equals) {
+        return createAsyncComputed(supplier, equals, Clone::identity);
+    }
+
+    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Clone<T> clone) {
+        return createAsyncComputed(supplier, Objects::deepEquals, clone);
+    }
+
+    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier, Equals<T> equals, Clone<T> clone) {
+        AsyncSignal<T> signal = createAsyncSignal(null, equals, clone);
+        return new Supplier<T>() {
+            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
+            private final EffectHandle handle = signal.createAccept(supplier);
+
+            @Override
+            public T get() {
+                return signal.get();
+            }
+        };
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value) {
+        return createAsyncSignal(value, Objects::deepEquals, Clone::identity);
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value, Equals<T> equals) {
+        return createAsyncSignal(value, equals, Clone::identity);
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value, Clone<T> clone) {
+        return createAsyncSignal(value, Objects::deepEquals, clone);
+    }
+
+    public static <T> AsyncSignal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
         return new AsyncSignal<>(value, equals, clone);
     }
 
     public static EffectHandle createEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, Runnable::run);
+        return ReactiveEnv.getInstance().get().createEffect(effect, Runnable::run, false);
     }
 
     public static EffectHandle createAsyncEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, ForkJoinPool.commonPool());
+        return ReactiveEnv.getInstance().get().createEffect(effect, ForkJoinPool.commonPool(), true);
     }
 
     public static void onCleanup(Runnable cleanup) {

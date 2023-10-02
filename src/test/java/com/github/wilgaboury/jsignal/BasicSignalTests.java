@@ -3,6 +3,8 @@ package com.github.wilgaboury.jsignal;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Supplier;
+
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class BasicSignalTests {
@@ -12,7 +14,7 @@ public class BasicSignalTests {
 
         Ref<Integer> effectValue = new Ref<>(null);
 
-        EffectHandle effectHandle = createEffect(() -> effectValue.set(value.get()));
+        EffectHandle handle = createEffect(() -> effectValue.set(value.get()));
         Assertions.assertEquals(5, effectValue.get());
 
         value.accept(6);
@@ -21,13 +23,12 @@ public class BasicSignalTests {
         value.accept(7);
         Assertions.assertEquals(7, effectValue.get());
 
-        effectHandle.dispose();
+        handle.dispose();
         value.accept(8);
         Assertions.assertEquals(7, effectValue.get());
 
-        Signal<Integer> squared = createSignal(0);
-        EffectHandle acceptHandle = squared.createAccept(() -> value.get() * value.get());
-        effectHandle = createEffect(() -> effectValue.set(squared.get()));
+        Supplier<Integer> squared = createComputed(() -> value.get() * value.get());
+        handle = createEffect(() -> effectValue.set(squared.get()));
         Assertions.assertEquals(64, effectValue.get());
 
         value.accept(9);
@@ -36,7 +37,7 @@ public class BasicSignalTests {
         value.accept(10);
         Assertions.assertEquals(100, effectValue.get());
 
-        effectHandle = null;
+        handle = null;
         Runtime.getRuntime().gc();
 
         value.accept(11);
@@ -44,7 +45,7 @@ public class BasicSignalTests {
 
         Ref<Integer> prevEffectValue = new Ref<>(0);
 
-        effectHandle = createEffect(on(squared, (cur, prev) ->
+        handle = createEffect(on(squared, (cur, prev) ->
         {
             effectValue.set(cur);
             prevEffectValue.set(prev);

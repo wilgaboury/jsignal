@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class AsyncSignal<T> implements Supplier<T>, Consumer<T> {
@@ -53,7 +54,16 @@ public class AsyncSignal<T> implements Supplier<T>, Consumer<T> {
             listeners.notifyListeners();
     }
 
-    public void mutate(Signal.Mutate<T> mutate) {
+    public EffectHandle createAccept(Supplier<T> compute) {
+        return ReactiveUtil.createAsyncEffect(() -> this.accept(compute.get()));
+    }
+
+    public EffectHandle createAccept(Function<T, T> compute) {
+        return ReactiveUtil.createAsyncEffect(() -> this.accept(compute.apply(value)));
+    }
+
+
+    public void mutate(Mutate<T> mutate) {
         boolean mutated;
 
         lock.writeLock().lock();
@@ -75,5 +85,13 @@ public class AsyncSignal<T> implements Supplier<T>, Consumer<T> {
             lock.writeLock().unlock();
         }
         listeners.notifyListeners();
+    }
+
+    public EffectHandle createMutate(Mutate<T> mutate) {
+        return ReactiveUtil.createAsyncEffect(() -> this.mutate(mutate));
+    }
+
+    public EffectHandle createMutate(Consumer<T> mutate) {
+        return ReactiveUtil.createAsyncEffect(() -> this.mutate(mutate));
     }
 }

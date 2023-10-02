@@ -4,10 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+
 public class AsyncSignalTests {
     @Test
     public void basicTest() {
-        var env = new ReactiveEnv();
-        var signal = new AsyncSignal<Integer>(0, Objects::equals, Integer::valueOf, env);
+        var signal = createAsyncSignal(0, Objects::equals, Clone::identity);
     }
 }

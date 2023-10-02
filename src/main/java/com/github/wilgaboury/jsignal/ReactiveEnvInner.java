@@ -34,8 +34,8 @@ public class ReactiveEnvInner {
      * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
      */
-    public EffectHandle createEffect(Runnable effect, Executor executor) {
-        EffectHandle listener = new EffectHandle(effect, executor);
+    public EffectHandle createEffect(Runnable effect, Executor executor, boolean isAsync) {
+        EffectHandle listener = new EffectHandle(effect, executor, isAsync);
         EffectHandle peek = peek();
 
         listener.run();

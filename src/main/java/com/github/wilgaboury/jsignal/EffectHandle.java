@@ -20,14 +20,14 @@ public class EffectHandle implements Runnable {
     private final AtomicBoolean disposed;
     private final Lock execLock;
 
-    EffectHandle(Runnable effect, Executor executor) {
+    EffectHandle(Runnable effect, Executor executor, boolean isAsync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
         this.executor = executor;
         this.cleanup = new Cleanup();
         this.cleanable = cleaner.register(this, cleanup);
         this.disposed = new AtomicBoolean(false);
-        this.execLock = new ReentrantLock();
+        this.execLock = isAsync ? new ReentrantLock() : null;
     }
 
     public int getId() {
@@ -46,11 +46,15 @@ public class EffectHandle implements Runnable {
     @Override
     public void run() {
         executor.execute(() -> ReactiveEnv.getInstance().get().runListener(this, () -> {
-            execLock.lock();
-            try {
+            if (execLock == null) {
                 effect.run();
-            } finally {
-                execLock.unlock();
+            } else {
+                execLock.lock();
+                try {
+                    effect.run();
+                } finally {
+                    execLock.unlock();
+                }
             }
         }));
     }

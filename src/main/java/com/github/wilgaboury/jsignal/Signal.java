@@ -90,8 +90,6 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
         return ReactiveUtil.createEffect(() -> this.mutate(mutate));
     }
 
-
-
     static void notifyListeners(Iterator<WeakReference<EffectHandle>> itr) {
         var env = ReactiveEnv.getInstance().get();
         if (env.isInBatch())
@@ -109,13 +107,5 @@ public class Signal<T> implements Supplier<T>, Consumer<T> {
             else
                 listenerConsumer.accept(listener);
         }
-    }
-
-    @FunctionalInterface
-    public interface Mutate<T> {
-        /**
-         * @return true if value was updated, false otherwise
-         */
-        boolean mutate(T value);
     }
 }
