@@ -37,7 +37,7 @@ public class Signal<T> implements SignalLike<T> {
         assertThread();
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         env.peekEffect().ifPresent(handle -> {
-            assert Objects.equals(threadId, handle.getThreadId()) : "thread ids do not match";
+            assert threadId == null || Objects.equals(threadId, handle.getThreadId()) : "thread ids do not match";
             effects.add(handle, env.peekExecutor());
         });
     }
