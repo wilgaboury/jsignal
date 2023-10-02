@@ -1,6 +1,8 @@
 package com.github.wilgaboury.jsignal;
 
 import java.lang.ref.Cleaner;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +21,7 @@ public class EffectHandle implements Runnable {
     EffectHandle(Runnable effect, boolean isSync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
-        this.cleanup = new Cleanup();
+        this.cleanup = new Cleanup(isSync ? new ArrayDeque<>() : new ConcurrentLinkedQueue<>());
         this.cleanable = cleaner.register(this, cleanup);
         this.disposed = new AtomicBoolean(false);
         this.threadId = isSync ? Thread.currentThread().getId() : null;
@@ -86,20 +88,20 @@ public class EffectHandle implements Runnable {
     }
 
     private static class Cleanup implements Runnable {
-        private final ConcurrentLinkedQueue<Runnable> cleanup;
+        private final Queue<Runnable> queue;
 
-        public Cleanup() {
-            this.cleanup = new ConcurrentLinkedQueue<>();
+        public Cleanup(Queue<Runnable> queue) {
+            this.queue = queue;
         }
 
         public void add(Runnable runnable) {
-            cleanup.add(runnable);
+            queue.add(runnable);
         }
 
         @Override
         public void run() {
-            while (!cleanup.isEmpty()) {
-                cleanup.poll().run();
+            while (!queue.isEmpty()) {
+                queue.poll().run();
             }
         }
     }
