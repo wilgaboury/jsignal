@@ -50,7 +50,7 @@ public class ReactiveEnvInner {
     }
 
     public void executor(Executor executor, Runnable inner) {
-        executor(executor, toSupplier(inner));
+        executor(executor, ReactiveUtil.toSupplier(inner));
     }
 
     public <T> T executor(Executor executor, Supplier<T> inner) {
@@ -85,7 +85,7 @@ public class ReactiveEnvInner {
      * Any signals accessed during the execution of this runnable will not be tracked.
      */
     public void untrack(Runnable runnable) {
-        effect(null, toSupplier(runnable));
+        effect(null, ReactiveUtil.toSupplier(runnable));
     }
 
     /**
@@ -96,7 +96,7 @@ public class ReactiveEnvInner {
     }
 
     void runEffect(EffectHandle handle) {
-        batch(() -> effect(handle, toSupplier(() -> handle.getEffect().run())));
+        batch(() -> effect(handle, ReactiveUtil.toSupplier(() -> handle.getEffect().run())));
     }
 
     boolean isInBatch() {
@@ -123,12 +123,5 @@ public class ReactiveEnvInner {
         } finally {
             this.handle = prev;
         }
-    }
-
-    private static Supplier<Void> toSupplier(Runnable runnable) {
-        return () -> {
-            runnable.run();
-            return null;
-        };
     }
 }

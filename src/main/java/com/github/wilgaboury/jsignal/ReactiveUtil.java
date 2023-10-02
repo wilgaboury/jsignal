@@ -197,4 +197,19 @@ public class ReactiveUtil {
             if (signal != null) return signal;
         }
     }
+
+    public static Supplier<Void> toSupplier(Runnable runnable) {
+        return () -> {
+            runnable.run();
+            return null;
+        };
+    }
+
+    public static <T> Function<T, T> toFunction(Supplier<T> supplier) {
+        return value -> supplier.get();
+    }
+
+    public static <T> Function<T, T> toFunction(T value) {
+        return v -> value;
+    }
 }
