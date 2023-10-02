@@ -40,16 +40,17 @@ One thing demonstrated by this example is that effects can be stopped manually, 
 
 One of the optional inputs when creating signals is an "equals" function. This method will be checked when signals are modified to determine if they should notify listeners (rerun effects). The default method used is Objects::deepEquals. If you want dependencies to always update in response to a signal being set, regardless of equality, use Equals::never.
 
-### Threading
+### Synchronicity
 
-`Signal`s are single threaded while `AsyncSignal`s is their multithread counterpart.
+Signals support both sychronous and asynchronous operation via the `Executor` interface. User's may specify an executor using the `executor` method, by default signals use a sychronous executor (`Runnable::run`). Here is an example:
 
-#### Signal
+```java
+Signal<Integer> value = createAtomicSignal(0);
+EffectHandle handle = createAsyncEffect(executor(ForkJoinPool.commonPool(), () -> {
+    int val = value.get();
+    System.out.println("Printing " + val + " from a different thread");
+}));
+value.accept(i -> i + 1);
+```
 
-`Signal`s should only be used on the thread they are initialized on, and this is enforced through assert statement in each of it's methods.
-
-### AsyncSignal
-
-While normal signals can only be used from a single thread and are generally intended for use in user inferfaces, `AsyncSignal` is intended to allow a reactive paradigm in multithreaded code.
-
-Each async signal value is wrapped in a read-write lock, and each async effect is sychronized to help with logical consistency.
+Async signals may be used from sychronous effects or asynchronous effect, but sychronous signal may only be used from sychronous effects.
