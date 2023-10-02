@@ -1,9 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.interfaces.Clone;
-import com.github.wilgaboury.jsignal.interfaces.Equals;
-import com.github.wilgaboury.jsignal.interfaces.SignalLike;
-import com.github.wilgaboury.jsignal.interfaces.Trackable;
+import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -75,20 +72,24 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
+    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
+        return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
+    }
+
     public static <T> Computed<T> createComputed(Supplier<T> supplier) {
         return createComputed(createSignal(null), supplier);
     }
 
+    public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
+        return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
+    }
+
     public static <T> Computed<T> createAsyncComputed(Supplier<T> supplier) {
-        return createComputed(createAsyncSignal(null), supplier);
+        return createAsyncComputed(createAsyncSignal(null), supplier);
     }
 
     public static <T> Computed<T> createAtomicComputed(Supplier<T> supplier) {
-        return createComputed(createAtomicSignal(null), supplier);
-    }
-
-    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
-        return new Computed<>(signal, createEffect(() -> signal.accept(supplier.get())));
+        return createAsyncComputed(createAtomicSignal(null), supplier);
     }
 
     public static EffectHandle createEffect(Runnable effect) {
@@ -138,7 +139,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
-        return on(dep, (value) -> effect.run());
+        return on(dep, toConsumer(effect));
     }
 
     public static <T> Runnable on(Supplier<T> dep, Consumer<T> effect) {
@@ -149,40 +150,46 @@ public class ReactiveUtil {
      * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
      * benefit is it makes it easy to get the previous value when reacting to a change.
      */
-    public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
+    public static <T> Runnable on(SignalLike<T> dep, BiConsumer<T, T> effect) {
         AtomicReference<T> prevRef = new AtomicReference<>(null);
         return () ->
         {
             T cur = dep.get();
             T prev = prevRef.get();
             prevRef.set(cur);
-            effect.accept(cur, prev);
+
+            if (!dep.getEquals().apply(cur, prev)) {
+                effect.accept(cur, prev);
+            }
         };
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
-        return onDefer(dep, (cur, prev) -> effect.run());
+        return onDefer(dep, toConsumer(effect));
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Consumer<T> effect) {
-        return onDefer(dep, (cur, prev) -> effect.accept(cur));
+        AtomicBoolean run = new AtomicBoolean(false);
+        return on(dep, (cur) ->
+        {
+            if (run.get()) {
+                effect.accept(cur);
+            } else {
+                run.set(true);
+            }
+        });
     }
 
-    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        AtomicReference<T> prevRef = new AtomicReference<>(null);
+    public static <T> Runnable onDefer(SignalLike<T> dep, BiConsumer<T, T> effect) {
         AtomicBoolean run = new AtomicBoolean(false);
-        return () ->
+        return on(dep, (cur, prev) ->
         {
-            T cur = dep.get();
-            T prev = prevRef.get();
-            prevRef.set(cur);
-
             if (run.get()) {
                 effect.accept(cur, prev);
             } else {
                 run.set(true);
             }
-        };
+        });
     }
 
     public <T> void createContext(Class<T> clazz, Object obj, Signal<T> signal) {
@@ -203,6 +210,10 @@ public class ReactiveUtil {
             runnable.run();
             return null;
         };
+    }
+
+    public static <T> Consumer<T> toConsumer(Runnable runnable) {
+        return value -> runnable.run();
     }
 
     public static <T> Function<T, T> toFunction(Supplier<T> supplier) {
