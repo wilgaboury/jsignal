@@ -18,7 +18,7 @@ handle.dispose();
 value.accept(8); // prints nothing
 
 // create an automatically computed value
-Supplier<Integer> squared = createComputed(() -> value.get() * value.get());
+Computed<Integer> squared = createComputed( -> value.get() * value.get());
 handle = createEffect(() -> System.out.println(squared.get())); // prints 64
 value.accept(9); // prints 81
 value.accept(10); // prints 100

@@ -2,6 +2,8 @@ package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.Clone;
 import com.github.wilgaboury.jsignal.interfaces.Equals;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+import com.github.wilgaboury.jsignal.interfaces.Trackable;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -73,28 +75,20 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
-    public static <T> Supplier<T> createComputed(Supplier<T> supplier) {
+    public static <T> Computed<T> createComputed(Supplier<T> supplier) {
         return createComputed(createSignal(null), supplier);
     }
 
-    public static <T> Supplier<T> createAsyncComputed(Supplier<T> supplier) {
+    public static <T> Computed<T> createAsyncComputed(Supplier<T> supplier) {
         return createComputed(createAsyncSignal(null), supplier);
     }
 
-    public static <T> Supplier<T> createAtomicComputed(Supplier<T> supplier) {
+    public static <T> Computed<T> createAtomicComputed(Supplier<T> supplier) {
         return createComputed(createAtomicSignal(null), supplier);
     }
 
-    public static <T> Supplier<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
-        return new Supplier<T>() {
-            @SuppressWarnings("unused") // reference to handle is kept in order to effect alive
-            private final EffectHandle handle = createEffect(() -> signal.accept(supplier.get()));
-
-            @Override
-            public T get() {
-                return signal.get();
-            }
-        };
+    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
+        return new Computed<>(signal, createEffect(() -> signal.accept(supplier.get())));
     }
 
     public static EffectHandle createEffect(Runnable effect) {
@@ -129,8 +123,8 @@ public class ReactiveUtil {
         ReactiveEnv.getInstance().get().batch(runnable);
     }
 
-    public static void track(Iterable<Signal<?>> deps) {
-        for (Signal<?> dep : deps) {
+    public static void track(Iterable<? extends Trackable> deps) {
+        for (Trackable dep : deps) {
             dep.track();
         }
     }
