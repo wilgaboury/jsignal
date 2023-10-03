@@ -95,10 +95,6 @@ public class ReactiveEnvInner {
         return effect(null, supplier);
     }
 
-    void runEffect(Effect handle) {
-        batch(() -> effect(handle, ReactiveUtil.toSupplier(() -> handle.getEffect().run())));
-    }
-
     boolean isInBatch() {
         return batchCount > 0;
     }
@@ -115,7 +111,11 @@ public class ReactiveEnvInner {
         return executor;
     }
 
-    private <T> T effect(Effect handle, Supplier<T> inner) {
+    void effect(Effect handle, Runnable inner) {
+        effect(handle, ReactiveUtil.toSupplier(inner));
+    }
+
+    <T> T effect(Effect handle, Supplier<T> inner) {
         Effect prev = this.handle;
         this.handle = handle;
         try {

@@ -50,12 +50,14 @@ public class Effect implements Runnable {
         if (threadId != null) {
             assert threadId == Thread.currentThread().getId() : "effect ran in wrong thread, try making it async";
             cleanup.run();
-            env.runEffect(this);
+            env.batch(() -> env.effect(this, effect));
         } else {
-            synchronized (this) {
-                cleanup.run();
-                env.runEffect(this);
-            }
+            cleanup.run();
+            env.batch(() -> {
+                synchronized (this) {
+                    env.effect(this, effect);
+                }
+            });
         }
     }
 
