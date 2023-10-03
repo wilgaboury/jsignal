@@ -6,8 +6,12 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EffectHandle implements Runnable {
+    private static final Logger logger = Logger.getLogger(EffectHandle.class.getName());
+
     private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
@@ -45,9 +49,11 @@ public class EffectHandle implements Runnable {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         if (threadId != null) {
             assert threadId == Thread.currentThread().getId() : "effect ran in wrong thread, try making it async";
+            cleanup.run();
             env.runEffect(this);
         } else {
             synchronized (this) {
+                cleanup.run();
                 env.runEffect(this);
             }
         }
@@ -59,10 +65,6 @@ public class EffectHandle implements Runnable {
 
     Long getThreadId() {
         return threadId;
-    }
-
-    void cleanup() {
-        cleanup.run();
     }
 
     void addCleanup(Runnable runnable) {
@@ -104,7 +106,11 @@ public class EffectHandle implements Runnable {
         @Override
         public void run() {
             while (!queue.isEmpty()) {
-                queue.poll().run();
+                try {
+                    queue.poll().run();
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "failed to run cleanup", e);
+                }
             }
         }
     }

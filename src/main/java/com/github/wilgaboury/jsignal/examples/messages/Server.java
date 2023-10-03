@@ -6,6 +6,9 @@ import com.github.wilgaboury.jsignal.state.UserConnection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
@@ -13,6 +16,8 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
  * Reactive port, server automatically restarts whenever port is changed
  */
 public class Server {
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
+
     private final Signal<Integer> port;
     private final EffectHandle serverStartEffect;
 
@@ -28,7 +33,10 @@ public class Server {
     public EffectHandle createServerStartEffect() {
         return createAsyncEffect(() -> {
             ServerSocket socket = createServerSocket();
-            onCleanup(() -> closeServerSocket(socket));
+            onCleanup(() -> {
+                logger.log(Level.INFO, "running socket cleanup");
+                closeServerSocket(socket);
+            });
 
             Thread thread = new Thread(() -> serverLoop(socket));
             thread.start();
@@ -40,6 +48,8 @@ public class Server {
             while (true) {
                 UserConnection.dispatch(serverSocket.accept());
             }
+        } catch (SocketException e) {
+            logger.log(Level.INFO, "socket closed");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
