@@ -1,9 +1,11 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -248,4 +250,35 @@ public class ReactiveUtil {
     public static <T> Function<T, T> toFunction(T value) {
         return v -> value;
     }
+
+    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal) {
+        return new PublisherAdapter<>(signal);
+    }
+
+//    public static <T> Signal<T> createSubscriber(Signal<T> signal, Flow.Publisher<T> publisher) {
+//        Signal<T> result = new SignalDecorator<>(signal) {
+//
+//        };
+//        publisher.subscribe(new Flow.Subscriber<T>() {
+//            @Override
+//            public void onSubscribe(Flow.Subscription subscription) {
+//                subscription.request(Long.MAX_VALUE);
+//            }
+//
+//            @Override
+//            public void onNext(T t) {
+//                signal.accept(t);
+//            }
+//
+//            @Override
+//            public void onError(Throwable throwable) {
+//                // no-op
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//                // no-op
+//            }
+//        });
+//    }
 }
