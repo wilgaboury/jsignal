@@ -1,8 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -19,13 +17,14 @@ public class ReactiveEnvInner {
     private Effect handle;
     private Executor executor;
     private int batchCount;
-    private Set<EffectRef> batch;
+
+    private final Map<Integer, EffectRef> batch;
 
     public ReactiveEnvInner() {
         handle = null;
         executor = Runnable::run;
         batchCount = 0;
-        batch = new LinkedHashSet<>();
+        batch = new LinkedHashMap<>();
     }
 
     /**
@@ -73,10 +72,13 @@ public class ReactiveEnvInner {
             runnable.run();
         } finally {
             batchCount--;
+
             if (batchCount == 0 && !batch.isEmpty()) {
-                Set<EffectRef> batch = this.batch;
-                this.batch = new LinkedHashSet<>();
-                batch.forEach(EffectRef::run);
+                Collection<EffectRef> refs = this.batch.values();
+                List<EffectRef> effects = new ArrayList<>(refs.size());
+                effects.addAll(refs);
+                batch.clear();
+                effects.forEach(EffectRef::run);
             }
         }
     }
@@ -100,7 +102,7 @@ public class ReactiveEnvInner {
     }
 
     void addBatchedListener(EffectRef effect) {
-        batch.add(effect);
+        effect.getHandle().ifPresent(handle -> batch.putIfAbsent(handle.getId(), effect));
     }
 
     Optional<Effect> peekEffect() {
