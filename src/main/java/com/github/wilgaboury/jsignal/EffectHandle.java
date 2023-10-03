@@ -44,7 +44,7 @@ public class EffectHandle implements Runnable {
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         if (threadId != null) {
-            assert threadId == Thread.currentThread().getId();
+            assert threadId == Thread.currentThread().getId() : "effect ran in wrong thread, try making it async";
             env.runEffect(this);
         } else {
             synchronized (this) {

@@ -52,6 +52,10 @@ public class ReactiveUtil {
         return createAsyncSignal(value, Objects::deepEquals, clone);
     }
 
+    /**
+     * This should only be used when the inner type is thread safe, otherwise use
+     * AtomicSignal which will wrap the value in a read-write lock.
+     */
     public static <T> DefaultSignal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
         return new DefaultSignal<>(value, equals, clone, false);
     }

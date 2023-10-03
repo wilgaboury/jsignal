@@ -68,14 +68,4 @@ public class DefaultSignal<T> implements Signal<T> {
         if (mutate.mutate(value))
             effects.run();
     }
-
-    @Override
-    public Equals<T> getEquals() {
-        return equals;
-    }
-
-    @Override
-    public Clone<T> getClone() {
-        return clone;
-    }
 }

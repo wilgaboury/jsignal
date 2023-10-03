@@ -1,7 +1,5 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.interfaces.Clone;
-import com.github.wilgaboury.jsignal.interfaces.Equals;
 import com.github.wilgaboury.jsignal.interfaces.Mutate;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
 
@@ -32,15 +30,5 @@ public class SignalDecorator<T> implements Signal<T> {
     @Override
     public T get() {
         return this.signal.get();
-    }
-
-    @Override
-    public Clone<T> getClone() {
-        return this.signal.getClone();
-    }
-
-    @Override
-    public Equals<T> getEquals() {
-        return this.signal.getEquals();
     }
 }
