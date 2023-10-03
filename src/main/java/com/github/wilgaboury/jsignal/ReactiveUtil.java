@@ -15,9 +15,6 @@ import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
 
-/**
- * All the methods in this class need to be called from the UI thread.
- */
 public class ReactiveUtil {
     private static final Logger logger = Logger.getLogger(ReactiveUtil.class.getName());
 
