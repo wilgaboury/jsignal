@@ -13,7 +13,7 @@ public class Effects implements Runnable {
         this.effects = effects;
     }
 
-    public void add(EffectHandle effect, Executor executor) {
+    public void add(Effect effect, Executor executor) {
         effects.putIfAbsent(effect.getId(), new EffectRef(effect, executor));
     }
 
@@ -30,7 +30,7 @@ public class Effects implements Runnable {
         Iterator<EffectRef> itr = effects.values().iterator();
         while (itr.hasNext()) {
             EffectRef ref = itr.next();
-            Optional<EffectHandle> handle = ref.getHandle();
+            Optional<Effect> handle = ref.getHandle();
 
             if (handle.isEmpty() || handle.get().isDisposed())
                 itr.remove();

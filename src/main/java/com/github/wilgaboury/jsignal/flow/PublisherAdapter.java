@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsignal.flow;
 
-import com.github.wilgaboury.jsignal.EffectHandle;
+import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
 
 import java.util.Collections;
@@ -29,12 +29,12 @@ public class PublisherAdapter<T> implements Flow.Publisher<T> {
 
     public class Subscription implements Flow.Subscription {
         private final Flow.Subscriber<? super T> subscriber;
-        private final EffectHandle effectHandle;
+        private final Effect effect;
         private long requestCount;
 
         public Subscription(Flow.Subscriber<? super T> subscriber) {
             this.subscriber = subscriber;
-            this.effectHandle = createAsyncEffect(withAsyncExecutor(this::publish));
+            this.effect = createAsyncEffect(withAsyncExecutor(this::publish));
             this.requestCount = 0L;
         }
 
@@ -53,7 +53,7 @@ public class PublisherAdapter<T> implements Flow.Publisher<T> {
 
         @Override
         public synchronized void cancel() {
-            effectHandle.dispose();
+            effect.dispose();
             subscriptions.remove(this);
         }
     }

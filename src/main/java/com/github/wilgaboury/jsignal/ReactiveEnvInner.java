@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
-    private EffectHandle handle;
+    private Effect handle;
     private Executor executor;
     private int batchCount;
     private Set<EffectRef> batch;
@@ -33,15 +33,15 @@ public class ReactiveEnvInner {
      * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
      */
-    public EffectHandle createEffect(Runnable effect, boolean isSync) {
-        EffectHandle handle = new EffectHandle(effect, isSync);
+    public Effect createEffect(Runnable effect, boolean isSync) {
+        Effect handle = new Effect(effect, isSync);
         handle.run();
         peekEffect().ifPresent(h -> h.addCleanup(handle::dispose)); // creates strong reference
         return handle;
     }
 
     public void onCleanup(Runnable cleanup) {
-        Optional<EffectHandle> maybeHandle = peekEffect();
+        Optional<Effect> maybeHandle = peekEffect();
         if (maybeHandle.isPresent()) {
             maybeHandle.get().addCleanup(cleanup);
         } else {
@@ -95,7 +95,7 @@ public class ReactiveEnvInner {
         return effect(null, supplier);
     }
 
-    void runEffect(EffectHandle handle) {
+    void runEffect(Effect handle) {
         batch(() -> effect(handle, ReactiveUtil.toSupplier(() -> handle.getEffect().run())));
     }
 
@@ -107,7 +107,7 @@ public class ReactiveEnvInner {
         batch.add(effect);
     }
 
-    Optional<EffectHandle> peekEffect() {
+    Optional<Effect> peekEffect() {
         return Optional.ofNullable(handle);
     }
 
@@ -115,8 +115,8 @@ public class ReactiveEnvInner {
         return executor;
     }
 
-    private <T> T effect(EffectHandle handle, Supplier<T> inner) {
-        EffectHandle prev = this.handle;
+    private <T> T effect(Effect handle, Supplier<T> inner) {
+        Effect prev = this.handle;
         this.handle = handle;
         try {
             return inner.get();

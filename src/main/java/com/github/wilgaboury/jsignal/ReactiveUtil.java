@@ -95,11 +95,11 @@ public class ReactiveUtil {
         return createAsyncComputed(createAtomicSignal(null), supplier);
     }
 
-    public static EffectHandle createEffect(Runnable effect) {
+    public static Effect createEffect(Runnable effect) {
         return ReactiveEnv.getInstance().get().createEffect(effect, true);
     }
 
-    public static EffectHandle createAsyncEffect(Runnable effect) {
+    public static Effect createAsyncEffect(Runnable effect) {
         return ReactiveEnv.getInstance().get().createEffect(effect, false);
     }
 

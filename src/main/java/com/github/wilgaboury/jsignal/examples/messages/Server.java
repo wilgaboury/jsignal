@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsignal.examples.messages;
 
-import com.github.wilgaboury.jsignal.EffectHandle;
+import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
 import com.github.wilgaboury.jsignal.state.UserConnection;
 
@@ -19,7 +19,7 @@ public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
     private final Signal<Integer> port;
-    private final EffectHandle serverStartEffect;
+    private final Effect serverStartEffect;
 
     public Server(int port) {
         this.port = createAtomicSignal(port);
@@ -30,7 +30,7 @@ public class Server {
         this.port.accept(port);
     }
 
-    public EffectHandle createServerStartEffect() {
+    public Effect createServerStartEffect() {
         return createAsyncEffect(() -> {
             ServerSocket socket = createServerSocket();
             onCleanup(() -> {

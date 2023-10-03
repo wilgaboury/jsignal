@@ -5,15 +5,15 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class EffectRef implements Runnable {
-    private final WeakReference<EffectHandle> handle;
+    private final WeakReference<Effect> handle;
     private final Executor executor;
 
-    public EffectRef(EffectHandle handle, Executor executor) {
+    public EffectRef(Effect handle, Executor executor) {
         this.handle = new WeakReference<>(handle);
         this.executor = executor;
     }
 
-    public Optional<EffectHandle> getHandle() {
+    public Optional<Effect> getHandle() {
         return Optional.ofNullable(handle.get());
     }
 

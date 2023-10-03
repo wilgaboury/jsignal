@@ -14,7 +14,7 @@ public class BasicSignalTests {
 
         Ref<Integer> effectValue = new Ref<>(null);
 
-        EffectHandle handle = createEffect(() -> effectValue.set(value.get()));
+        Effect handle = createEffect(() -> effectValue.set(value.get()));
         Assertions.assertEquals(5, effectValue.get());
 
         value.accept(6);
@@ -67,7 +67,7 @@ public class BasicSignalTests {
         Ref<Integer> effectCount = new Ref<>(0);
         Ref<Integer> innerEffectCount = new Ref<>(0);
 
-        EffectHandle effectHandle = createEffect(() ->
+        Effect effect = createEffect(() ->
         {
             sig1.track();
 
@@ -87,7 +87,7 @@ public class BasicSignalTests {
         sig1.accept(1);
         sig1.accept(2);
 
-        effectHandle.dispose();
+        effect.dispose();
 
         sig1.accept(3);
 
@@ -102,7 +102,7 @@ public class BasicSignalTests {
         Ref<Integer> sig1Count = new Ref<>(0);
         Ref<Integer> sig2Count = new Ref<>(0);
 
-        EffectHandle effectHandle = createEffect(() -> {
+        Effect effect = createEffect(() -> {
             createEffect(on(sig1, () -> sig1Count.set(sig1Count.get() + 1)));
             createEffect(on(sig2, () -> sig2Count.set(sig2Count.get() + 1)));
             onCleanup(() -> System.out.println("cleaning up"));

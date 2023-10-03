@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EffectHandle implements Runnable {
-    private static final Logger logger = Logger.getLogger(EffectHandle.class.getName());
+public class Effect implements Runnable {
+    private static final Logger logger = Logger.getLogger(Effect.class.getName());
 
     private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
@@ -22,7 +22,7 @@ public class EffectHandle implements Runnable {
     private final AtomicBoolean disposed;
     private final Long threadId;
 
-    EffectHandle(Runnable effect, boolean isSync) {
+    Effect(Runnable effect, boolean isSync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
         this.cleanup = new Cleanup(isSync ? new ArrayDeque<>() : new ConcurrentLinkedQueue<>());
@@ -80,10 +80,10 @@ public class EffectHandle implements Runnable {
         if (obj == this)
             return true;
 
-        else if (!(obj instanceof EffectHandle))
+        else if (!(obj instanceof Effect))
             return false;
 
-        EffectHandle that = (EffectHandle) obj;
+        Effect that = (Effect) obj;
         return this.id == that.id;
     }
 
