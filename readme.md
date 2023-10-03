@@ -4,7 +4,7 @@ A reactive primitive for Java inspired by SolidJS.
 
 ## Signals and Effects
 
-Fundamentally, a Signal is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is analagous to a typical subscriber/listener, but with siginificantly better developer ergonomics.
+Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is analagous to a typical subscriber/listener, but with siginificantly better developer ergonomics.
 
 ### Brief Example
 
@@ -42,15 +42,26 @@ One of the optional inputs when creating signals is an "equals" function. This m
 
 ### Synchronicity
 
-Signals support both sychronous and asynchronous operation via the `Executor` interface. User's may specify an executor using the `executor` method, by default signals use a sychronous executor (`Runnable::run`). Here is an example:
+Signals support both sychronous and asynchronous operation via the `Executor` interface. User's may specify an executor using the `withExecutor` or `useExecuter` methods, by default signals use a sychronous executor (`Runnable::run`). Here is an example:
 
 ```java
+ExecutorService executor = Executors.newCachedThreadPool();
 Signal<Integer> value = createAtomicSignal(0);
-EffectHandle handle = createAsyncEffect(executor(ForkJoinPool.commonPool(), () -> {
+EffectHandle handle = createAsyncEffect(withExecutor(executor, () -> {
     int val = value.get();
     System.out.println("Printing " + val + " from a different thread");
 }));
 value.accept(i -> i + 1);
 ```
 
-Async signals may be used from sychronous effects or asynchronous effect, but sychronous signal may only be used from sychronous effects.
+Asynchronous signals may be used from sychronous effects or asynchronous effects, but sychronous signal may only be used from sychronous effects. What is important to note about using asynchronous signals from synchronous effects, is that it will most likely cause an error unless the sychronous effects thread possesses some sort of event queue system. A good example would be the Swing UI thread. To use an asynchronous signal from a Swing UI thread effect, one should access the signal inside the effect like so:
+
+```java
+Signal<Integer> value = createAsyncSignal(0);
+EffectHandle handle = createEffect(() -> {
+    var value = useExecutor(Swing::invokeLater, asyncSignal);
+    // do something with value
+});
+```
+
+Asynchronous effects are internally executed in a sychronize block so that a given asynchronous effect never has it's logic executed in parallel. This is done to ease the mental burden on developers when reasoning about what asynchronous reactive code is doing.

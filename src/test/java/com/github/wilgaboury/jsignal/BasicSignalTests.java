@@ -10,7 +10,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class BasicSignalTests {
     @Test
     public void testReadmeExample() {
-        Signal<Integer> value = createSignal(5);
+        DefaultSignal<Integer> value = createSignal(5);
 
         Ref<Integer> effectValue = new Ref<>(null);
 
@@ -62,7 +62,7 @@ public class BasicSignalTests {
 
     @Test
     public void testNestedEffect() {
-        Signal<Integer> sig1 = createSignal(0);
+        DefaultSignal<Integer> sig1 = createSignal(0);
 
         Ref<Integer> effectCount = new Ref<>(0);
         Ref<Integer> innerEffectCount = new Ref<>(0);
@@ -71,7 +71,7 @@ public class BasicSignalTests {
         {
             sig1.track();
 
-            Signal<Integer> sig2 = createSignal(0);
+            DefaultSignal<Integer> sig2 = createSignal(0);
             createEffect(() ->
             {
                 sig2.track();
@@ -96,8 +96,8 @@ public class BasicSignalTests {
 
     @Test
     public void testBatch() {
-        Signal<Integer> sig1 = createSignal(0);
-        Signal<Integer> sig2 = createSignal(0);
+        DefaultSignal<Integer> sig1 = createSignal(0);
+        DefaultSignal<Integer> sig2 = createSignal(0);
 
         Ref<Integer> sig1Count = new Ref<>(0);
         Ref<Integer> sig2Count = new Ref<>(0);
@@ -120,8 +120,8 @@ public class BasicSignalTests {
         Assertions.assertEquals(2, sig1Count.get());
         Assertions.assertEquals(2, sig2Count.get());
 
-        Signal<Integer> sig3 = createSignal(1);
-        Signal<Integer> sig4 = createSignal(2);
+        DefaultSignal<Integer> sig3 = createSignal(1);
+        DefaultSignal<Integer> sig4 = createSignal(2);
 
         createEffect(
                 on(sig3, (cur1, prev1) ->

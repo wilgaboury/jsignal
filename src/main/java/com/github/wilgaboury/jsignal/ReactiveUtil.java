@@ -24,36 +24,36 @@ public class ReactiveUtil {
     private ReactiveUtil() {
     }
 
-    public static <T> Signal<T> createSignal(T value) {
+    public static <T> DefaultSignal<T> createSignal(T value) {
         return createSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
+    public static <T> DefaultSignal<T> createSignal(T value, Equals<T> equals) {
         return createSignal(value, equals, Clone::identity);
     }
 
-    public static <T> Signal<T> createSignal(T value, Clone<T> clone) {
+    public static <T> DefaultSignal<T> createSignal(T value, Clone<T> clone) {
         return createSignal(value, Objects::deepEquals, clone);
     }
 
-    public static <T> Signal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
-        return new Signal<>(value, equals, clone, true);
+    public static <T> DefaultSignal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new DefaultSignal<>(value, equals, clone, true);
     }
 
-    public static <T> Signal<T> createAsyncSignal(T value) {
+    public static <T> DefaultSignal<T> createAsyncSignal(T value) {
         return createAsyncSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals) {
+    public static <T> DefaultSignal<T> createAsyncSignal(T value, Equals<T> equals) {
         return createAsyncSignal(value, equals, Clone::identity);
     }
 
-    public static <T> Signal<T> createAsyncSignal(T value, Clone<T> clone) {
+    public static <T> DefaultSignal<T> createAsyncSignal(T value, Clone<T> clone) {
         return createAsyncSignal(value, Objects::deepEquals, clone);
     }
 
-    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
-        return new Signal<>(value, equals, clone, false);
+    public static <T> DefaultSignal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new DefaultSignal<>(value, equals, clone, false);
     }
 
     public static <T> AtomicSignal<T> createAtomicSignal(T value) {
@@ -72,7 +72,7 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
-    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
+    public static <T> Computed<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
         return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
     }
 
@@ -80,7 +80,7 @@ public class ReactiveUtil {
         return createComputed(createSignal(null), supplier);
     }
 
-    public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
+    public static <T> Computed<T> createAsyncComputed(Signal<T> signal, Supplier<T> supplier) {
         return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
     }
 
@@ -100,20 +100,36 @@ public class ReactiveUtil {
         return ReactiveEnv.getInstance().get().createEffect(effect, false);
     }
 
-    public static void executor(Executor executor, Runnable inner) {
+    public static void useExecutor(Executor executor, Runnable inner) {
         ReactiveEnv.getInstance().get().executor(executor, inner);
     }
 
-    public static <T> T executor(Executor executor, Supplier<T> inner) {
+    public static <T> T useExecutor(Executor executor, Supplier<T> inner) {
         return ReactiveEnv.getInstance().get().executor(executor, inner);
     }
 
-    public static void asyncExecutor(Runnable inner) {
-        executor(ForkJoinPool.commonPool(), inner);
+    public static void useAsyncExecutor(Runnable inner) {
+        useExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static <T> T asyncExecutor(Supplier<T> inner) {
-        return executor(ForkJoinPool.commonPool(), inner);
+    public static <T> T useAsyncExecutor(Supplier<T> inner) {
+        return useExecutor(ForkJoinPool.commonPool(), inner);
+    }
+
+    public static Runnable withExecutor(Executor executor, Runnable inner) {
+        return () -> useExecutor(executor, inner);
+    }
+
+    public static <T> Supplier<T> withExecutor(Executor executor, Supplier<T> inner) {
+        return () -> useExecutor(executor, inner);
+    }
+
+    public static Runnable withAsyncExecutor(Runnable inner) {
+        return withExecutor(ForkJoinPool.commonPool(), inner);
+    }
+
+    public static <T> Supplier<T> withAsyncExecutor(Supplier<T> inner) {
+        return withExecutor(ForkJoinPool.commonPool(), inner);
     }
 
     public static void onCleanup(Runnable cleanup) {
@@ -146,11 +162,15 @@ public class ReactiveUtil {
         return () -> effect.accept(dep.get());
     }
 
+    public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
+        return on(dep, Equals::never, effect);
+    }
+
     /**
      * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
      * benefit is it makes it easy to get the previous value when reacting to a change.
      */
-    public static <T> Runnable on(SignalLike<T> dep, BiConsumer<T, T> effect) {
+    public static <T> Runnable on(Supplier<T> dep, Equals<T> equals, BiConsumer<T, T> effect) {
         AtomicReference<T> prevRef = new AtomicReference<>(null);
         return () ->
         {
@@ -158,7 +178,7 @@ public class ReactiveUtil {
             T prev = prevRef.get();
             prevRef.set(cur);
 
-            if (!dep.getEquals().apply(cur, prev)) {
+            if (!equals.apply(cur, prev)) {
                 effect.accept(cur, prev);
             }
         };
@@ -180,9 +200,13 @@ public class ReactiveUtil {
         });
     }
 
-    public static <T> Runnable onDefer(SignalLike<T> dep, BiConsumer<T, T> effect) {
+    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
+        return onDefer(dep, Equals::never, effect);
+    }
+
+    public static <T> Runnable onDefer(Supplier<T> dep, Equals<T> equals, BiConsumer<T, T> effect) {
         AtomicBoolean run = new AtomicBoolean(false);
-        return on(dep, (cur, prev) ->
+        return on(dep, equals, (cur, prev) ->
         {
             if (run.get()) {
                 effect.accept(cur, prev);
@@ -192,15 +216,15 @@ public class ReactiveUtil {
         });
     }
 
-    public <T> void createContext(Class<T> clazz, Object obj, Signal<T> signal) {
+    public <T> void createContext(Class<T> clazz, Object obj, DefaultSignal<T> signal) {
         DEFAULT_CONTEXT_MANAGER.createContext(clazz, obj, signal);
     }
 
-    public <T, C> Signal<T> getContext(Class<T> clazz, C obj, Function<C, C> getParent) {
+    public <T, C> DefaultSignal<T> getContext(Class<T> clazz, C obj, Function<C, C> getParent) {
         for(;;) {
             obj = getParent.apply(obj);
             if (obj == null) return null;
-            Signal<T> signal = DEFAULT_CONTEXT_MANAGER.getContext(clazz, obj);
+            DefaultSignal<T> signal = DEFAULT_CONTEXT_MANAGER.getContext(clazz, obj);
             if (signal != null) return signal;
         }
     }
