@@ -19,6 +19,8 @@ public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
     private final Signal<Integer> port;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private final Effect serverStartEffect;
 
     public Server(int port) {
@@ -31,7 +33,7 @@ public class Server {
     }
 
     public Effect createServerStartEffect() {
-        return createAsyncEffect(() -> {
+        return createAsyncEffect(withAsyncExecutor(() -> {
             ServerSocket socket = createServerSocket();
             onCleanup(() -> {
                 logger.log(Level.INFO, "running socket cleanup");
@@ -40,7 +42,7 @@ public class Server {
 
             Thread thread = new Thread(() -> serverLoop(socket));
             thread.start();
-        });
+        }));
     }
 
     private void serverLoop(ServerSocket serverSocket) {

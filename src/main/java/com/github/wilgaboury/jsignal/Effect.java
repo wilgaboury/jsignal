@@ -1,5 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.Disposable;
+
 import java.lang.ref.Cleaner;
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -8,7 +10,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Effect implements Runnable {
+public class Effect implements Runnable, Disposable {
     private static final Logger logger = Logger.getLogger(Effect.class.getName());
 
     private static final Cleaner cleaner = Cleaner.create();
@@ -35,6 +37,7 @@ public class Effect implements Runnable {
         return id;
     }
 
+    @Override
     public void dispose() {
         maybeSynchronize(() -> {
             disposed = true;
@@ -49,12 +52,10 @@ public class Effect implements Runnable {
     @Override
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        maybeSynchronize(() -> {
-            env.batch(() -> {
-                cleanup.run();
-                env.effect(this, effect);
-            });
-        });
+        maybeSynchronize(() -> env.batch(() -> {
+            cleanup.run();
+            env.effect(this, effect);
+        }));
     }
 
     void maybeSynchronize(Runnable inner) {
