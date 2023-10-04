@@ -4,6 +4,7 @@ import java.lang.ref.Cleaner;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,41 +35,49 @@ public class Effect implements Runnable {
         return id;
     }
 
-    public synchronized void dispose() {
-        disposed = true;
-        cleanable.clean();
+    public void dispose() {
+        maybeSynchronize(() -> {
+            disposed = true;
+            cleanable.clean();
+        });
     }
 
-    public synchronized boolean isDisposed() {
-        return disposed;
+    public boolean isDisposed() {
+        return maybeSynchronize(() -> disposed);
     }
 
     @Override
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        if (threadId != null) {
-            assert threadId == Thread.currentThread().getId() : "effect ran in wrong thread, try making it async";
+        maybeSynchronize(() -> {
             env.batch(() -> {
                 cleanup.run();
                 env.effect(this, effect);
             });
+        });
+    }
+
+    void maybeSynchronize(Runnable inner) {
+        maybeSynchronize(ReactiveUtil.toSupplier(inner));
+    }
+
+    <T> T maybeSynchronize(Supplier<T> inner) {
+        if (threadId != null) {
+            assert threadId == Thread.currentThread().getId() : "effect accessed from wrong thread, try making it async";
+
+            return inner.get();
         } else {
-            env.batch(() -> {
-                synchronized (this) {
-                    cleanup.run();
-                    env.effect(this, effect);
-                }
-            });
+            synchronized (this) {
+                return inner.get();
+            }
         }
     }
 
-    Long getThreadId() {
-        return threadId;
-    }
-
-    synchronized void addCleanup(Runnable runnable) {
-        if (!disposed)
-            cleanup.add(runnable);
+    void addCleanup(Runnable runnable) {
+        maybeSynchronize(() -> {
+            if (!disposed)
+                cleanup.add(runnable);
+        });
     }
 
     @Override
