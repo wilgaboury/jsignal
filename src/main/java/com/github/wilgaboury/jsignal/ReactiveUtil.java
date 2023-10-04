@@ -255,30 +255,31 @@ public class ReactiveUtil {
         return new PublisherAdapter<>(signal);
     }
 
-//    public static <T> Signal<T> createSubscriber(Signal<T> signal, Flow.Publisher<T> publisher) {
-//        Signal<T> result = new SignalDecorator<>(signal) {
-//
-//        };
-//        publisher.subscribe(new Flow.Subscriber<T>() {
-//            @Override
-//            public void onSubscribe(Flow.Subscription subscription) {
-//                subscription.request(Long.MAX_VALUE);
-//            }
-//
-//            @Override
-//            public void onNext(T t) {
-//                signal.accept(t);
-//            }
-//
-//            @Override
-//            public void onError(Throwable throwable) {
-//                // no-op
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//                // no-op
-//            }
-//        });
-//    }
+    public static <T> Disposable subscribeTo(Signal<T> signal, Flow.Publisher<T> publisher) {
+        AtomicReference<Runnable> cancel = new AtomicReference<>();
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+                cancel.set(subscription::cancel);
+            }
+
+            @Override
+            public void onNext(T t) {
+                signal.accept(t);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // no-op
+            }
+
+            @Override
+            public void onComplete() {
+                // no-op
+            }
+        });
+
+        return () -> cancel.get().run();
+    }
 }
