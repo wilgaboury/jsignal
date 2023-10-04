@@ -38,10 +38,10 @@ public class DefaultSignal<T> implements Signal<T> {
     public void track() {
         assertThread();
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        env.peekEffect().ifPresent(handle -> {
-            assert threadId == null || Objects.equals(threadId, handle.getThreadId())
+        env.peekEffect().ifPresent(effect -> {
+            assert threadId == null || Objects.equals(threadId, effect.getThreadId())
                     : "signal thread does not match effect thread";
-            effects.add(handle, env.peekExecutor());
+            effects.add(effect, env.peekExecutor());
         });
     }
 

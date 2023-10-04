@@ -14,35 +14,35 @@ import java.util.logging.Logger;
 public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
-    private Effect handle;
+    private Effect effect;
     private Executor executor;
     private int batchCount;
 
     private final Map<Integer, EffectRef> batch;
 
     public ReactiveEnvInner() {
-        handle = null;
+        effect = null;
         executor = Runnable::run;
         batchCount = 0;
         batch = new LinkedHashMap<>();
     }
 
     /**
-     * @param effect a callback that will get run when any signals accessed during it's execution change
-     * @return An effect handle. Signals use weak references to listeners so any code relying on this effect must keep
+     * @param inner a callback that will get run when any signals accessed during it's execution change
+     * @return An effect. Signals use weak references to listeners so any code relying on this effect must keep
      * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
      */
-    public Effect createEffect(Runnable effect, boolean isSync) {
-        Effect handle = new Effect(effect, isSync);
-        handle.run();
-        peekEffect().ifPresent(h -> h.addCleanup(handle::dispose)); // creates strong reference
-        return handle;
+    public Effect createEffect(Runnable inner, boolean isSync) {
+        Effect effect = new Effect(inner, isSync);
+        effect.run();
+        peekEffect().ifPresent(h -> h.addCleanup(effect::dispose)); // creates strong reference
+        return effect;
     }
 
     public void onCleanup(Runnable cleanup) {
-        Optional<Effect> maybeHandle = peekEffect();
-        if (maybeHandle.isPresent()) {
-            maybeHandle.get().addCleanup(cleanup);
+        Optional<Effect> maybeEffect = peekEffect();
+        if (maybeEffect.isPresent()) {
+            maybeEffect.get().addCleanup(cleanup);
         } else {
             logger.log(Level.WARNING, "calling onCleanup outside of a reactive context");
         }
@@ -101,29 +101,29 @@ public class ReactiveEnvInner {
         return batchCount > 0;
     }
 
-    void addBatchedListener(EffectRef effect) {
-        effect.getHandle().ifPresent(handle -> batch.putIfAbsent(handle.getId(), effect));
+    void addBatchedListener(EffectRef ref) {
+        ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
     }
 
     Optional<Effect> peekEffect() {
-        return Optional.ofNullable(handle);
+        return Optional.ofNullable(effect);
     }
 
     Executor peekExecutor() {
         return executor;
     }
 
-    void effect(Effect handle, Runnable inner) {
-        effect(handle, ReactiveUtil.toSupplier(inner));
+    void effect(Effect effect, Runnable inner) {
+        effect(effect, ReactiveUtil.toSupplier(inner));
     }
 
-    <T> T effect(Effect handle, Supplier<T> inner) {
-        Effect prev = this.handle;
-        this.handle = handle;
+    <T> T effect(Effect effect, Supplier<T> inner) {
+        Effect prev = this.effect;
+        this.effect = effect;
         try {
             return inner.get();
         } finally {
-            this.handle = prev;
+            this.effect = prev;
         }
     }
 }

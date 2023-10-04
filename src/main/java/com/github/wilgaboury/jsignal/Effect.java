@@ -37,6 +37,10 @@ public class Effect implements Runnable, Disposable {
         return id;
     }
 
+    public Long getThreadId() {
+        return threadId;
+    }
+
     @Override
     public void dispose() {
         maybeSynchronize(() -> {
@@ -58,29 +62,6 @@ public class Effect implements Runnable, Disposable {
         }));
     }
 
-    void maybeSynchronize(Runnable inner) {
-        maybeSynchronize(ReactiveUtil.toSupplier(inner));
-    }
-
-    <T> T maybeSynchronize(Supplier<T> inner) {
-        if (threadId != null) {
-            assert threadId == Thread.currentThread().getId() : "effect accessed from wrong thread, try making it async";
-
-            return inner.get();
-        } else {
-            synchronized (this) {
-                return inner.get();
-            }
-        }
-    }
-
-    void addCleanup(Runnable runnable) {
-        maybeSynchronize(() -> {
-            if (!disposed)
-                cleanup.add(runnable);
-        });
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -96,6 +77,29 @@ public class Effect implements Runnable, Disposable {
     @Override
     public int hashCode() {
         return id;
+    }
+
+    void addCleanup(Runnable runnable) {
+        maybeSynchronize(() -> {
+            if (!disposed)
+                cleanup.add(runnable);
+        });
+    }
+
+    private void maybeSynchronize(Runnable inner) {
+        maybeSynchronize(ReactiveUtil.toSupplier(inner));
+    }
+
+    private <T> T maybeSynchronize(Supplier<T> inner) {
+        if (threadId != null) {
+            assert threadId == Thread.currentThread().getId() : "effect accessed from wrong thread, try making it async";
+
+            return inner.get();
+        } else {
+            synchronized (this) {
+                return inner.get();
+            }
+        }
     }
 
     private static class Cleanup implements Runnable {

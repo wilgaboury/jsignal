@@ -30,9 +30,9 @@ public class Effects implements Runnable {
         Iterator<EffectRef> itr = effects.values().iterator();
         while (itr.hasNext()) {
             EffectRef ref = itr.next();
-            Optional<Effect> handle = ref.getHandle();
+            Optional<Effect> effect = ref.getEffect();
 
-            if (handle.isEmpty() || handle.get().isDisposed())
+            if (effect.isEmpty() || effect.get().isDisposed())
                 itr.remove();
             else
                 listenerConsumer.accept(ref);
