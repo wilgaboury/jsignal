@@ -55,9 +55,6 @@ public class Schedules {
             public synchronized void dispose() {
                 disposed = true;
                 value = null;
-                if (future != null) {
-                    future.cancel(false);
-                }
             }
 
             @Override
@@ -74,6 +71,8 @@ public class Schedules {
                             if (value != null) {
                                 inner.accept(value);
                                 value = null;
+                            } else {
+                                future.cancel(false);
                             }
                         }
                     }, 0, wait, unit);
