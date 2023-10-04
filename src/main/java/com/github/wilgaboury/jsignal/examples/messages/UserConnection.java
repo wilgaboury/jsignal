@@ -1,4 +1,4 @@
-package com.github.wilgaboury.jsignal.state;
+package com.github.wilgaboury.jsignal.examples.messages;
 
 import java.net.Socket;
 

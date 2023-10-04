@@ -2,7 +2,6 @@ package com.github.wilgaboury.jsignal.examples.messages;
 
 import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
-import com.github.wilgaboury.jsignal.state.UserConnection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -19,8 +18,6 @@ public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
     private final Signal<Integer> port;
-
-    @SuppressWarnings("FieldCanBeLocal")
     private final Effect serverStartEffect;
 
     public Server(int port) {

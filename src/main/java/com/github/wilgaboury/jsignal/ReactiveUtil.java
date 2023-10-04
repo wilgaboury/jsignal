@@ -75,12 +75,20 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
+    public static <T> Computed<T> createComputed(Supplier<T> supplier) {
+        return createComputed(createSignal(null), supplier);
+    }
+
     public static <T> Computed<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
         return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
     }
 
-    public static <T> Computed<T> createComputed(Supplier<T> supplier) {
-        return createComputed(createSignal(null), supplier);
+    public static <T> Computed<T> createComputed(Function<T, T> inner) {
+        return createComputed(createSignal(null), inner);
+    }
+
+    public static <T> Computed<T> createComputed(Signal<T> signal, Function<T, T> inner) {
+        return new Computed<>(signal, createEffect(() -> signal.accept(inner)));
     }
 
     public static <T> Computed<T> createAsyncComputed(Signal<T> signal, Supplier<T> supplier) {
@@ -161,34 +169,31 @@ public class ReactiveUtil {
         return on(dep, toConsumer(effect));
     }
 
-    public static <T> Runnable on(Supplier<T> dep, Consumer<T> effect) {
-        return () -> effect.accept(dep.get());
+    public static <T> Runnable on(Supplier<T> dep, Consumer<T> inner) {
+        return () -> inner.accept(dep.get());
     }
 
-    public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return on(dep, Equals::never, effect);
+    public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> inner) {
+        return toRunnable(on(dep, toOnFn(inner)));
     }
 
     /**
      * Sometimes it is useful to explicitly track a dependency instead of using automatic tracking. The primary added
      * benefit is it makes it easy to get the previous value when reacting to a change.
      */
-    public static <T> Runnable on(Supplier<T> dep, Equals<T> equals, BiConsumer<T, T> effect) {
+    public static <T, U> Function<U, U> on(Supplier<T> dep, OnFn<T, U> inner) {
         AtomicReference<T> prevRef = new AtomicReference<>(null);
-        return () ->
+        return value ->
         {
             T cur = dep.get();
             T prev = prevRef.get();
             prevRef.set(cur);
-
-            if (!equals.apply(cur, prev)) {
-                effect.accept(cur, prev);
-            }
+            return inner.accept(cur, prev, value);
         };
     }
 
-    public static <T> Runnable onDefer(Supplier<T> dep, Runnable effect) {
-        return onDefer(dep, toConsumer(effect));
+    public static <T> Runnable onDefer(Supplier<T> dep, Runnable inner) {
+        return onDefer(dep, toConsumer(inner));
     }
 
     public static <T> Runnable onDefer(Supplier<T> dep, Consumer<T> effect) {
@@ -203,20 +208,53 @@ public class ReactiveUtil {
         });
     }
 
-    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> effect) {
-        return onDefer(dep, Equals::never, effect);
+    public static <T> Runnable onDefer(Supplier<T> dep, BiConsumer<T, T> inner) {
+        return toRunnable(onDefer(dep, toOnFn(inner)));
     }
 
-    public static <T> Runnable onDefer(Supplier<T> dep, Equals<T> equals, BiConsumer<T, T> effect) {
+    public static <T, U> Function<U, U> onDefer(Supplier<T> dep, OnFn<T, U> effect) {
         AtomicBoolean run = new AtomicBoolean(false);
-        return on(dep, equals, (cur, prev) ->
+        return on(dep, (cur, prev, value) ->
         {
             if (run.get()) {
-                effect.accept(cur, prev);
+                return effect.accept(cur, prev, value);
             } else {
                 run.set(true);
+                return null;
             }
         });
+    }
+
+    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal) {
+        return new PublisherAdapter<>(signal);
+    }
+
+    public static <T> Disposable subscribeTo(Signal<T> signal, Flow.Publisher<T> publisher) {
+        AtomicReference<Runnable> cancel = new AtomicReference<>();
+        publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+                cancel.set(subscription::cancel);
+            }
+
+            @Override
+            public void onNext(T t) {
+                signal.accept(t);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                // no-op
+            }
+
+            @Override
+            public void onComplete() {
+                // no-op
+            }
+        });
+
+        return () -> cancel.get().run();
     }
 
     public <T> void createContext(Class<T> clazz, Object obj, DefaultSignal<T> signal) {
@@ -251,35 +289,22 @@ public class ReactiveUtil {
         return v -> value;
     }
 
-    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal) {
-        return new PublisherAdapter<>(signal);
+    public static <T> OnFn<T, Void> toOnFn(BiConsumer<T, T> consumer) {
+        return (cur, prev, input) -> {
+            consumer.accept(cur, prev);
+            return null;
+        };
     }
 
-    public static <T> Disposable subscribeTo(Signal<T> signal, Flow.Publisher<T> publisher) {
-        AtomicReference<Runnable> cancel = new AtomicReference<>();
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-                cancel.set(subscription::cancel);
-            }
+    public static Runnable toRunnable(Consumer<Void> consumer) {
+        return () -> consumer.accept(null);
+    }
 
-            @Override
-            public void onNext(T t) {
-                signal.accept(t);
-            }
+    public static Runnable toRunnable(BiConsumer<Void, Void> consumer) {
+        return () -> consumer.accept(null, null);
+    }
 
-            @Override
-            public void onError(Throwable throwable) {
-                // no-op
-            }
-
-            @Override
-            public void onComplete() {
-                // no-op
-            }
-        });
-
-        return () -> cancel.get().run();
+    public static Runnable toRunnable(Function<Void, Void> consumer) {
+        return () -> consumer.apply(null);
     }
 }
