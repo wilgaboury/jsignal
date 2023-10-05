@@ -2,33 +2,22 @@ package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.Disposable;
 
-import java.lang.ref.Cleaner;
-import java.util.ArrayDeque;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Effect implements Runnable, Disposable {
-    private static final Logger logger = Logger.getLogger(Effect.class.getName());
-
-    private static final Cleaner cleaner = Cleaner.create();
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
     private final int id;
     private final Runnable effect;
     private final Cleanup cleanup;
-    private final Cleaner.Cleanable cleanable;
     private final Long threadId;
-
     private boolean disposed;
 
     Effect(Runnable effect, boolean isSync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
         this.cleanup = new Cleanup();
-        this.cleanable = cleaner.register(this, cleanup);
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
     }
@@ -45,7 +34,7 @@ public class Effect implements Runnable, Disposable {
     public void dispose() {
         maybeSynchronize(() -> {
             disposed = true;
-            cleanable.clean();
+            cleanup.run();
         });
     }
 
@@ -56,10 +45,10 @@ public class Effect implements Runnable, Disposable {
     @Override
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        maybeSynchronize(() -> env.batch(() -> {
+        maybeSynchronize(() -> env.batch(() -> env.cleanup(cleanup, () -> {
             cleanup.run();
             env.effect(this, effect);
-        }));
+        })));
     }
 
     @Override
@@ -79,11 +68,8 @@ public class Effect implements Runnable, Disposable {
         return id;
     }
 
-    void addCleanup(Runnable runnable) {
-        maybeSynchronize(() -> {
-            if (!disposed)
-                cleanup.add(runnable);
-        });
+    Cleanup getCleanup() {
+        return cleanup;
     }
 
     private void maybeSynchronize(Runnable inner) {
@@ -98,29 +84,6 @@ public class Effect implements Runnable, Disposable {
         } else {
             synchronized (this) {
                 return inner.get();
-            }
-        }
-    }
-
-    private static class Cleanup implements Runnable {
-        private final Queue<Runnable> queue;
-
-        public Cleanup() {
-            this.queue = new ArrayDeque<>();
-        }
-
-        public void add(Runnable runnable) {
-            queue.add(runnable);
-        }
-
-        @Override
-        public void run() {
-            while (!queue.isEmpty()) {
-                try {
-                    queue.poll().run();
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "failed to run cleanup", e);
-                }
             }
         }
     }

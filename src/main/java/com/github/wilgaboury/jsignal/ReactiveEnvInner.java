@@ -15,15 +15,19 @@ public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
     private Effect effect;
+    private Cleanup cleanup;
     private Executor executor;
+    private boolean bypass;
     private int batchCount;
 
     private final Map<Integer, EffectRef> batch;
 
     public ReactiveEnvInner() {
         effect = null;
+        cleanup = null;
         executor = Runnable::run;
         batchCount = 0;
+        bypass = false;
         batch = new LinkedHashMap<>();
     }
 
@@ -34,17 +38,17 @@ public class ReactiveEnvInner {
      */
     public Effect createEffect(Runnable inner, boolean isSync) {
         Effect effect = new Effect(inner, isSync);
+        peekCleanup().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
         effect.run();
-        peekEffect().ifPresent(h -> h.addCleanup(effect::dispose)); // creates strong reference
         return effect;
     }
 
     public void onCleanup(Runnable cleanup) {
-        Optional<Effect> maybeEffect = peekEffect();
-        if (maybeEffect.isPresent()) {
-            maybeEffect.get().addCleanup(cleanup);
+        Optional<Cleanup> maybeCleanup = peekCleanup();
+        if (maybeCleanup.isPresent()) {
+            maybeCleanup.get().add(cleanup);
         } else {
-            logger.log(Level.WARNING, "calling onCleanup outside of a reactive context");
+            logger.log(Level.WARNING, "calling onCleanup outside of cleanup scope");
         }
     }
 
@@ -97,16 +101,44 @@ public class ReactiveEnvInner {
         return effect(null, supplier);
     }
 
+    public void cleanup(Cleanup cleanup, Runnable inner) {
+        cleanup(cleanup, ReactiveUtil.toSupplier(inner));
+    }
+
+    public <T> T cleanup(Cleanup cleanup, Supplier<T> inner) {
+        var prev = this.cleanup;
+        this.cleanup = cleanup;
+        try {
+            return inner.get();
+        } finally {
+            this.cleanup = prev;
+        }
+    }
+
+    public void bypass(Runnable inner) {
+        bypass(ReactiveUtil.toSupplier(inner));
+    }
+
+    public <T> T bypass(Supplier<T> inner) {
+        var prev = bypass;
+        bypass = true;
+        try {
+            return inner.get();
+        } finally {
+            bypass = prev;
+        }
+    }
+
+    public Optional<Cleanup> peekCleanup() {
+        return Optional.ofNullable(cleanup);
+    }
+
     boolean isInBatch() {
         return batchCount > 0;
     }
 
     void addBatchedListener(EffectRef ref) {
         ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
-    }
-
-    Optional<Effect> peekEffect() {
-        return Optional.ofNullable(effect);
     }
 
     Executor peekExecutor() {
@@ -125,5 +157,9 @@ public class ReactiveEnvInner {
         } finally {
             this.effect = prev;
         }
+    }
+
+    public Optional<Effect> peekEffect() {
+        return Optional.ofNullable(effect);
     }
 }
