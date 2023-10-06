@@ -47,10 +47,13 @@ public class Effect implements Runnable, Disposable {
     @Override
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        maybeSynchronize(() -> env.batch(() -> env.cleanup(cleanup, () -> {
-            cleanup.run();
-            env.effect(this, effect);
-        })));
+        maybeSynchronize(() ->
+                env.batch(() ->
+                env.cleanup(cleanup, ReactiveUtil.toSupplier(() ->
+                env.provider(provider, ReactiveUtil.toSupplier(() -> {
+                    cleanup.run();
+                    env.effect(this, ReactiveUtil.toSupplier(effect));
+                }))))));
     }
 
     @Override
