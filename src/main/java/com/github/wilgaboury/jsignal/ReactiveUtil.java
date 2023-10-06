@@ -15,8 +15,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import static com.github.wilgaboury.jsignal.ContextManager.DEFAULT_CONTEXT_MANAGER;
-
 public class ReactiveUtil {
     private static final Logger logger = Logger.getLogger(ReactiveUtil.class.getName());
 
@@ -269,19 +267,6 @@ public class ReactiveUtil {
         });
 
         return () -> cancel.get().run();
-    }
-
-    public <T> void createContext(Class<T> clazz, Object obj, DefaultSignal<T> signal) {
-        DEFAULT_CONTEXT_MANAGER.createContext(clazz, obj, signal);
-    }
-
-    public <T, C> DefaultSignal<T> getContext(Class<T> clazz, C obj, Function<C, C> getParent) {
-        for(;;) {
-            obj = getParent.apply(obj);
-            if (obj == null) return null;
-            DefaultSignal<T> signal = DEFAULT_CONTEXT_MANAGER.getContext(clazz, obj);
-            if (signal != null) return signal;
-        }
     }
 
     public static Supplier<Void> toSupplier(Runnable runnable) {
