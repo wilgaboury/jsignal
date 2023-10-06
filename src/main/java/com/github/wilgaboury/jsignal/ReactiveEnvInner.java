@@ -116,17 +116,17 @@ public class ReactiveEnvInner {
     }
 
     public void bypass(Runnable inner) {
-        bypass(ReactiveUtil.toSupplier(inner));
-    }
-
-    public <T> T bypass(Supplier<T> inner) {
         var prev = bypass;
         bypass = true;
         try {
-            return inner.get();
+            inner.run();
         } finally {
             bypass = prev;
         }
+    }
+
+    public boolean shouldBypass() {
+        return bypass;
     }
 
     public Optional<Cleanup> peekCleanup() {

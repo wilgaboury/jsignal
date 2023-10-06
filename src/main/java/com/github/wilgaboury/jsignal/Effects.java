@@ -20,6 +20,9 @@ public class Effects implements Runnable {
     @Override
     public void run() {
         var env = ReactiveEnv.getInstance().get();
+        if (env.shouldBypass())
+            return;
+
         if (env.isInBatch())
             forEach(env::addBatchedListener);
         else
