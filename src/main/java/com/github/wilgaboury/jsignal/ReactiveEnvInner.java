@@ -1,5 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
@@ -16,44 +18,75 @@ public class ReactiveEnvInner {
 
     private Effect effect;
     private Cleanup cleanup;
+    private Provider provider;
     private Executor executor;
     private boolean bypass;
     private int batchCount;
-
     private final Map<Integer, EffectRef> batch;
+
 
     public ReactiveEnvInner() {
         effect = null;
         cleanup = null;
+        provider = new Provider();
         executor = Runnable::run;
         batchCount = 0;
         bypass = false;
         batch = new LinkedHashMap<>();
     }
 
-    /**
-     * @param inner a callback that will get run when any signals accessed during it's execution change
-     * @return An effect. Signals use weak references to listeners so any code relying on this effect must keep
-     * a strong reference to this listener or the effect will stop the next time the garbage collector is run.
-     */
-    public Effect createEffect(Runnable inner, boolean isSync) {
-        Effect effect = new Effect(inner, isSync);
-        peekCleanup().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
-        effect.run();
-        return effect;
+    public Optional<Effect> peekEffect() {
+        return Optional.ofNullable(effect);
     }
 
-    public void onCleanup(Runnable cleanup) {
-        Optional<Cleanup> maybeCleanup = peekCleanup();
-        if (maybeCleanup.isPresent()) {
-            maybeCleanup.get().add(cleanup);
-        } else {
-            logger.log(Level.WARNING, "calling onCleanup outside of cleanup scope");
+    public Optional<Cleanup> peekCleanup() {
+        return Optional.ofNullable(cleanup);
+    }
+
+    public Provider peekProvider() {
+        return provider;
+    }
+
+    public Executor peekExecutor() {
+        return executor;
+    }
+
+    public boolean isBypass() {
+        return bypass;
+    }
+
+    public boolean isBatch() {
+        return batchCount > 0;
+    }
+
+    public <T> T effect(@Nullable Effect effect, Supplier<T> inner) {
+        Effect prev = this.effect;
+        this.effect = effect;
+        try {
+            return inner.get();
+        } finally {
+            this.effect = prev;
         }
     }
 
-    public void executor(Executor executor, Runnable inner) {
-        executor(executor, ReactiveUtil.toSupplier(inner));
+    public <T> T cleanup(@Nullable Cleanup cleanup, Supplier<T> inner) {
+        var prev = this.cleanup;
+        this.cleanup = cleanup;
+        try {
+            return inner.get();
+        } finally {
+            this.cleanup = prev;
+        }
+    }
+
+    public <T> T provider(Provider provider, Supplier<T> inner) {
+        var prev = this.provider;
+        this.provider = provider;
+        try {
+            return inner.get();
+        } finally {
+            this.provider = prev;
+        }
     }
 
     public <T> T executor(Executor executor, Supplier<T> inner) {
@@ -66,14 +99,20 @@ public class ReactiveEnvInner {
         }
     }
 
+    public <T> T bypass(Supplier<T> inner) {
+        var prev = bypass;
+        bypass = true;
+        try {
+            return inner.get();
+        } finally {
+            bypass = prev;
+        }
+    }
 
-    /**
-     * If any signals are set during the execution of this runnable, dependencies will not be notified until the very end.
-     */
-    public void batch(Runnable runnable) {
+    public <T> T batch(Supplier<T> inner) {
         batchCount++;
         try {
-            runnable.run();
+            return inner.get();
         } finally {
             batchCount--;
 
@@ -87,79 +126,30 @@ public class ReactiveEnvInner {
         }
     }
 
-    /**
-     * Any signals accessed during the execution of this runnable will not be tracked.
-     */
-    public void untrack(Runnable runnable) {
-        effect(null, ReactiveUtil.toSupplier(runnable));
+    public Effect createEffect(Runnable inner, boolean isSync) {
+        Effect effect = new Effect(inner, peekProvider(), isSync);
+        peekCleanup().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
+        effect.run();
+        return effect;
     }
 
-    /**
-     * Any signals accessed during the execution of this supplier will not be tracked.
-     */
-    public <T> T untrack(Supplier<T> supplier) {
-        return effect(null, supplier);
-    }
-
-    public void cleanup(Cleanup cleanup, Runnable inner) {
-        cleanup(cleanup, ReactiveUtil.toSupplier(inner));
-    }
-
-    public <T> T cleanup(Cleanup cleanup, Supplier<T> inner) {
-        var prev = this.cleanup;
-        this.cleanup = cleanup;
-        try {
-            return inner.get();
-        } finally {
-            this.cleanup = prev;
+    public void onCleanup(Runnable inner) {
+        Optional<Cleanup> maybeCleanup = peekCleanup();
+        if (maybeCleanup.isPresent()) {
+            maybeCleanup.get().add(inner);
+        } else {
+            logger.log(Level.WARNING, "calling onCleanup outside of cleanup scope");
         }
     }
 
-    public void bypass(Runnable inner) {
-        var prev = bypass;
-        bypass = true;
-        try {
-            inner.run();
-        } finally {
-            bypass = prev;
+    public void run(EffectRef ref) {
+        if (isBypass())
+            return;
+
+        if (isBatch()) {
+            ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
+        } else {
+            ref.run();
         }
-    }
-
-    public boolean shouldBypass() {
-        return bypass;
-    }
-
-    public Optional<Cleanup> peekCleanup() {
-        return Optional.ofNullable(cleanup);
-    }
-
-    boolean isInBatch() {
-        return batchCount > 0;
-    }
-
-    void addBatchedListener(EffectRef ref) {
-        ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
-    }
-
-    Executor peekExecutor() {
-        return executor;
-    }
-
-    void effect(Effect effect, Runnable inner) {
-        effect(effect, ReactiveUtil.toSupplier(inner));
-    }
-
-    <T> T effect(Effect effect, Supplier<T> inner) {
-        Effect prev = this.effect;
-        this.effect = effect;
-        try {
-            return inner.get();
-        } finally {
-            this.effect = prev;
-        }
-    }
-
-    public Optional<Effect> peekEffect() {
-        return Optional.ofNullable(effect);
     }
 }

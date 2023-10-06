@@ -112,7 +112,7 @@ public class ReactiveUtil {
     }
 
     public static void useExecutor(Executor executor, Runnable inner) {
-        ReactiveEnv.getInstance().get().executor(executor, inner);
+        ReactiveEnv.getInstance().get().executor(executor, toSupplier(inner));
     }
 
     public static <T> T useExecutor(Executor executor, Supplier<T> inner) {
@@ -147,8 +147,8 @@ public class ReactiveUtil {
         ReactiveEnv.getInstance().get().onCleanup(cleanup);
     }
 
-    public static void batch(Runnable runnable) {
-        ReactiveEnv.getInstance().get().batch(runnable);
+    public static void batch(Runnable inner) {
+        ReactiveEnv.getInstance().get().batch(toSupplier(inner));
     }
 
     public static void track(Iterable<? extends Trackable> deps) {
@@ -157,12 +157,12 @@ public class ReactiveUtil {
         }
     }
 
-    public static void untrack(Runnable runnable) {
-        ReactiveEnv.getInstance().get().untrack(runnable);
+    public static void untrack(Runnable inner) {
+        untrack(toSupplier(inner));
     }
 
     public static <T> T untrack(Supplier<T> signal) {
-        return ReactiveEnv.getInstance().get().untrack(signal);
+        return ReactiveEnv.getInstance().get().effect(null, signal);
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
@@ -223,6 +223,20 @@ public class ReactiveUtil {
                 return null;
             }
         });
+    }
+
+    public static <T> T createProvider(Provider.Entry entry, Supplier<T> inner) {
+        var env = ReactiveEnv.getInstance().get();
+        return env.provider(env.peekProvider().layer(entry), inner);
+    }
+
+    public static <T> T createProvider(Iterable<Provider.Entry> entries, Supplier<T> inner) {
+        var env = ReactiveEnv.getInstance().get();
+        return env.provider(env.peekProvider().layer(entries), inner);
+    }
+
+    public static <T> T useContext(Context<T> context) {
+        return ReactiveEnv.getInstance().get().peekProvider().use(context);
     }
 
     public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal) {

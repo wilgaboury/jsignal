@@ -15,16 +15,16 @@ public class Context<T> {
         this.clazz = clazz;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public T getDefaultValue() {
         return defaultValue;
     }
 
     public Class<T> getClazz() {
         return clazz;
+    }
+
+    public Provider.Entry provide(T value) {
+        return Provider.Entry.create(this, value);
     }
 
     @Override

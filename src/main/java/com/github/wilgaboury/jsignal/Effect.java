@@ -10,13 +10,15 @@ public class Effect implements Runnable, Disposable {
 
     private final int id;
     private final Runnable effect;
+    private final Provider provider;
     private final Cleanup cleanup;
     private final Long threadId;
     private boolean disposed;
 
-    Effect(Runnable effect, boolean isSync) {
+    Effect(Runnable effect, Provider provider, boolean isSync) {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
+        this.provider = provider;
         this.cleanup = new Cleanup();
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
@@ -66,10 +68,6 @@ public class Effect implements Runnable, Disposable {
     @Override
     public int hashCode() {
         return id;
-    }
-
-    Cleanup getCleanup() {
-        return cleanup;
     }
 
     private void maybeSynchronize(Runnable inner) {
