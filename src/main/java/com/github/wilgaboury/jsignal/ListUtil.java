@@ -27,7 +27,7 @@ public class ListUtil {
      * copied from the SolidJS source code, mapArray function
      * // TODO: copy their optimizations for empty, new, and similar arrays
      */
-    public static <T, U> Computed<List<U>> createMap(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
+    public static <T, U> Supplier<List<U>> map(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
         var items = new ArrayList<T>();
         var mapped = new ArrayList<U>();
         var cleaners = new HashMap<Integer, Runnable>();
@@ -40,7 +40,7 @@ public class ListUtil {
             return map.apply(newItems.get(j), sig);
         };
 
-        return createComputed(on(list, (newItems) -> {
+        return on(list, (newItems) -> {
             return untrack(() -> {
                 var temp = new HashMap<Integer, U>();
                 var tempCleaners =  new ArrayList<>(Collections.<Runnable>nCopies(newItems.size(), null));
@@ -92,6 +92,6 @@ public class ListUtil {
 
                 return mapped;
             });
-        }));
+        });
     }
 }

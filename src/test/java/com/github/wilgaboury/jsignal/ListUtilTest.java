@@ -9,11 +9,11 @@ import java.util.List;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-public class ArrayUtilTest {
+public class ListUtilTest {
     @Test
     public void testMap() {
         Signal<List<Integer>> ints = createSignal(List.of(1, 2, 3, 4), Collections::unmodifiableList);
-        Computed<List<Float>> floats = ListUtil.createMap(ints, (value, idx) -> {
+        Computed<List<Float>> floats = ListUtil.map(ints, (value, idx) -> {
             onCleanup(() -> System.out.println("removing: " + value));
             createEffect(() -> System.out.println("value: " + value + ", idx: " + idx.get()));
             return (float)value;
