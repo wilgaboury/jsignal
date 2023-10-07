@@ -13,11 +13,11 @@ public class ListUtilTest {
     @Test
     public void testMap() {
         Signal<List<Integer>> ints = createSignal(List.of(1, 2, 3, 4), Collections::unmodifiableList);
-        Computed<List<Float>> floats = ListUtil.map(ints, (value, idx) -> {
+        Computed<List<Float>> floats = createComputed(ListUtil.map(ints, (value, idx) -> {
             onCleanup(() -> System.out.println("removing: " + value));
             createEffect(() -> System.out.println("value: " + value + ", idx: " + idx.get()));
             return (float)value;
-        });
+        }));
         ints.accept(List.of(1, 2, 3, 4, 5));
         ints.accept(List.of(2, 1, 3, 4, 5));
         ints.accept(list -> new ArrayList<>(list));

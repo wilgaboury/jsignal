@@ -7,20 +7,14 @@ public class Context<T> {
 
     private final int id;
     private final T defaultValue;
-    private final Class<T> clazz;
 
-    public Context(T defaultValue, Class<T> clazz) {
+    Context(T defaultValue) {
         this.id = nextId.getAndIncrement();
         this.defaultValue = defaultValue;
-        this.clazz = clazz;
     }
 
     public T getDefaultValue() {
         return defaultValue;
-    }
-
-    public Class<T> getClazz() {
-        return clazz;
     }
 
     public Provider.Entry provide(T value) {

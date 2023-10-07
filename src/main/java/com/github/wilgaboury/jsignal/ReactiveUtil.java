@@ -251,6 +251,10 @@ public class ReactiveUtil {
         return env.provider(env.peekProvider().layer(entries), inner);
     }
 
+    public static <T> Context<T> createContext(T defaultValue) {
+        return new Context<>(defaultValue);
+    }
+
     public static <T> T useContext(Context<T> context) {
         return ReactiveEnv.getInstance().get().peekProvider().use(context);
     }

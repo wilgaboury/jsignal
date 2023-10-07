@@ -3,7 +3,7 @@ package com.github.wilgaboury.jsignal.sigui;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class Column {
+public class Row {
     public static Node create(Supplier<List<Node>> nodes) {
         return new Node() {
             @Override

@@ -1,9 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -12,6 +9,19 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class ListUtil {
+    public static <T> Supplier<List<T>> fixed(T... values) {
+        return () -> List.of(values);
+    }
+
+
+    public static <T> Supplier<List<T>> fixed(Supplier<T>... suppliers) {
+        return fixed(suppliers);
+    }
+
+    public static <T> Supplier<List<T>> fixed(Collection<Supplier<T>> suppliers) {
+        return () -> suppliers.stream().map(Supplier::get).toList();
+    }
+
     private static <T> void jsArraySet(List<T> list, int i, T item) {
         if (i < list.size()) {
             list.set(i, item);

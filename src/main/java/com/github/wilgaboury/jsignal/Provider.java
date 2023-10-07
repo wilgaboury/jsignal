@@ -26,7 +26,7 @@ public class Provider {
     }
 
     public <T> T use(Context<T> context) {
-        return contexts.find(context).map(context.getClazz()::cast).orSome(context::getDefaultValue);
+        return contexts.find(context).map(obj  -> (T)obj).orSome(context::getDefaultValue);
     }
 
     public static class Entry {
