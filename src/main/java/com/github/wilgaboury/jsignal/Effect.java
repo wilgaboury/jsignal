@@ -11,7 +11,7 @@ public class Effect implements Runnable, Disposable {
     private final int id;
     private final Runnable effect;
     private final Provider provider;
-    private final Cleanup cleanup;
+    private final Cleaner cleanup;
     private final Long threadId;
     private boolean disposed;
 
@@ -19,7 +19,7 @@ public class Effect implements Runnable, Disposable {
         this.id = nextId.getAndIncrement();
         this.effect = effect;
         this.provider = provider;
-        this.cleanup = new Cleanup();
+        this.cleanup = new Cleaner();
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
     }
@@ -49,7 +49,7 @@ public class Effect implements Runnable, Disposable {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         maybeSynchronize(() ->
                 env.batch(() ->
-                env.cleanup(cleanup, ReactiveUtil.toSupplier(() ->
+                env.cleaner(cleanup, ReactiveUtil.toSupplier(() ->
                 env.provider(provider, ReactiveUtil.toSupplier(() -> {
                     cleanup.run();
                     env.effect(this, ReactiveUtil.toSupplier(effect));

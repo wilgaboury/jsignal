@@ -1,6 +1,5 @@
 package com.github.wilgaboury.jsignal;
 
-import java.lang.ref.Cleaner;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.logging.Level;
@@ -9,14 +8,14 @@ import java.util.logging.Logger;
 /**
  * This class is not thread safe for performance reasons
  */
-public class Cleanup implements Runnable {
-    private static final Logger logger = Logger.getLogger(Cleanup.class.getName());
+public class Cleaner implements Runnable {
+    private static final Logger logger = Logger.getLogger(Cleaner.class.getName());
 
-    private static final Cleaner cleaner = Cleaner.create();
+    private static final java.lang.ref.Cleaner cleaner = java.lang.ref.Cleaner.create();
 
     private final State state;
 
-    public Cleanup() {
+    public Cleaner() {
         this.state = new State();
 
         cleaner.register(this, state);

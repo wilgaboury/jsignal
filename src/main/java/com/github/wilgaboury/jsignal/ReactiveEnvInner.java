@@ -17,7 +17,7 @@ public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
     private Effect effect;
-    private Cleanup cleanup;
+    private Cleaner cleaner;
     private Provider provider;
     private Executor executor;
     private boolean bypass;
@@ -27,7 +27,7 @@ public class ReactiveEnvInner {
 
     public ReactiveEnvInner() {
         effect = null;
-        cleanup = null;
+        cleaner = null;
         provider = new Provider();
         executor = Runnable::run;
         batchCount = 0;
@@ -39,8 +39,8 @@ public class ReactiveEnvInner {
         return Optional.ofNullable(effect);
     }
 
-    public Optional<Cleanup> peekCleanup() {
-        return Optional.ofNullable(cleanup);
+    public Optional<Cleaner> peekCleaner() {
+        return Optional.ofNullable(cleaner);
     }
 
     public Provider peekProvider() {
@@ -69,13 +69,13 @@ public class ReactiveEnvInner {
         }
     }
 
-    public <T> T cleanup(@Nullable Cleanup cleanup, Supplier<T> inner) {
-        var prev = this.cleanup;
-        this.cleanup = cleanup;
+    public <T> T cleaner(@Nullable Cleaner cleaner, Supplier<T> inner) {
+        var prev = this.cleaner;
+        this.cleaner = cleaner;
         try {
             return inner.get();
         } finally {
-            this.cleanup = prev;
+            this.cleaner = prev;
         }
     }
 
@@ -128,13 +128,13 @@ public class ReactiveEnvInner {
 
     public Effect createEffect(Runnable inner, boolean isSync) {
         Effect effect = new Effect(inner, peekProvider(), isSync);
-        peekCleanup().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
+        peekCleaner().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
         effect.run();
         return effect;
     }
 
     public void onCleanup(Runnable inner) {
-        Optional<Cleanup> maybeCleanup = peekCleanup();
+        Optional<Cleaner> maybeCleanup = peekCleaner();
         if (maybeCleanup.isPresent()) {
             maybeCleanup.get().add(inner);
         } else {

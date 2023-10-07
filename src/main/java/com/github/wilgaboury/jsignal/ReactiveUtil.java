@@ -141,6 +141,20 @@ public class ReactiveUtil {
         return withExecutor(ForkJoinPool.commonPool(), inner);
     }
 
+    public static Cleaner createCleaner(Runnable inner) {
+        var env = ReactiveEnv.getInstance().get();
+        var cleaner = new Cleaner();
+        env.peekCleaner().ifPresent(c -> c.add(cleaner));
+        env.cleaner(cleaner, toSupplier(inner));
+        return cleaner;
+    }
+
+    public static <T> T createRootCleaner(Function<Cleaner, T> inner) {
+        var env = ReactiveEnv.getInstance().get();
+        var cleaner = new Cleaner();
+        return env.cleaner(cleaner, () -> inner.apply(cleaner));
+    }
+
     public static void onCleanup(Runnable cleanup) {
         ReactiveEnv.getInstance().get().onCleanup(cleanup);
     }
@@ -169,6 +183,10 @@ public class ReactiveUtil {
 
     public static <T> Runnable on(Supplier<T> dep, Consumer<T> inner) {
         return () -> inner.accept(dep.get());
+    }
+
+    public static <T, U> Supplier<U> on(Supplier<T> dep, Function<T, U> inner) {
+        return () -> inner.apply(dep.get());
     }
 
     public static <T> Runnable on(Supplier<T> dep, BiConsumer<T, T> inner) {

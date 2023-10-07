@@ -1,7 +1,7 @@
 package com.github.wilgaboury.jsignal.sigui;
 
-import java.awt.*;
-
 public interface Node {
-    Dimension bounds();
+    Node[] children();
+    void layout(long node);
+    void render(long node);
 }
