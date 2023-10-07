@@ -30,13 +30,13 @@ public class ListUtil {
     public static <T, U> Computed<List<U>> createMap(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
         var items = new ArrayList<T>();
         var mapped = new ArrayList<U>();
-        var cleaners = new ArrayList<Runnable>();
-        var indexes = new ArrayList<Consumer<Integer>>();
+        var cleaners = new HashMap<Integer, Runnable>();
+        var indexes = new HashMap<Integer, Consumer<Integer>>();
 
         BiFunction<Integer, List<T>, Function<Cleaner, U>> mapper = (j, newItems) -> cleaner -> {
-            jsArraySet(cleaners, j, cleaner);
+            cleaners.put(j, cleaner);
             var sig = createSignal(j);
-            jsArraySet(indexes, j, sig);
+            indexes.put(j, sig);
             return map.apply(newItems.get(j), sig);
         };
 
@@ -66,8 +66,7 @@ public class ListUtil {
                         j = newIndexesNext.get(j);
                         newIndexes.put(item, j);
                     } else {
-                        cleaners.get(i).run();
-                        cleaners.set(i, null);
+                        cleaners.remove(i).run();
                     }
                 }
 
@@ -75,8 +74,8 @@ public class ListUtil {
                 for (int j = 0; j < newItems.size(); j++) {
                     if (temp.containsKey(j)) {
                         jsArraySet(mapped, j, temp.get(j));
-                        jsArraySet(cleaners, j, tempCleaners.get(j));
-                        indexes.set(j, tempIndexes.get(j));
+                        cleaners.put(j, tempCleaners.get(j));
+                        indexes.put(j, tempIndexes.get(j));
                         indexes.get(j).accept(j);
                     } else {
                         jsArraySet(mapped, j, createRootCleaner(mapper.apply(j, newItems)));
