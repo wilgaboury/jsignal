@@ -1,7 +1,9 @@
 package com.github.wilgaboury.jsignal.sigui;
 
+import java.util.List;
+
 public interface Node {
-    Node[] children();
+    List<Node> children();
     void layout(long node);
     void render(long node);
 }
