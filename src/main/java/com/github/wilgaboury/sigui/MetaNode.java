@@ -17,14 +17,14 @@ public class MetaNode {
     private static final java.lang.ref.Cleaner cleaner = java.lang.ref.Cleaner.create();
 
     private final Node node;
-    private final Computed<List<MetaNode>> children;
     private final long yoga;
+    private final Computed<List<MetaNode>> children;
     private final Effect layoutEffect;
 
     MetaNode(Node node) {
         this.node = node;
-        this.children = createChildren();
         this.yoga = Yoga.YGNodeNew();
+        this.children = createChildren();
         this.layoutEffect = createEffect(() -> node.layout(yoga));
 
         final long yogaPass = yoga; // make sure not to capture this in cleaner
@@ -65,7 +65,7 @@ public class MetaNode {
     public void visit(Consumer<MetaNode> visit) {
         visit.accept(this);
         for (var child : children.get()) {
-            visit(visit);
+            child.visit(visit);
         }
     }
 
