@@ -17,85 +17,120 @@ public class ListUtil {
         return () -> suppliers.stream().map(Supplier::get).toList();
     }
 
-    private static <T> void jsArraySet(List<T> list, int i, T item) {
-        if (i < list.size()) {
-            list.set(i, item);
-        } else if (i == list.size()) {
-            list.add(item);
-        } else {
-            list.addAll(Collections.nCopies(i - list.size() - 1, null));
-            list.add(item);
+    private static <T> void expand(List<T> list, int len) {
+        if (len > list.size()) {
+            list.addAll(Collections.nCopies(len - list.size(), null));
         }
     }
 
     /**
      * copied from the SolidJS source code, mapArray function
-     * // TODO: copy their optimizations for empty, new, and similar arrays
      */
     public static <T, U> Supplier<List<U>> map(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
         var items = new ArrayList<T>();
         var mapped = new ArrayList<U>();
-        var cleaners = new HashMap<Integer, Runnable>();
-        var indexes = new HashMap<Integer, Consumer<Integer>>();
+        var indexes = new ArrayList<Consumer<Integer>>();
+        var cleaners = new ArrayList<Runnable>();
 
         BiFunction<Integer, List<T>, Function<Cleaner, U>> mapper = (j, newItems) -> cleaner -> {
-            cleaners.put(j, cleaner);
+            cleaners.set(j, cleaner);
             var sig = createSignal(j);
-            indexes.put(j, sig);
+            indexes.set(j, sig);
             return map.apply(newItems.get(j), sig);
         };
 
         return on(list, (newItems) -> {
             return untrack(() -> {
-                var temp = new HashMap<Integer, U>();
-                var tempCleaners =  new ArrayList<>(Collections.<Runnable>nCopies(newItems.size(), null));
-                var tempIndexes = new ArrayList<>(Collections.<Consumer<Integer>>nCopies(newItems.size(), null));
+                expand(mapped, newItems.size());
+                expand(indexes, newItems.size());
+                expand(cleaners, newItems.size());
 
-                // 0) prepare a map of all indices in newItems, scanning backwards so we encounter them in natural order
-                var newIndexes = new HashMap<T, Integer>();
-                var newIndexesNext = new ArrayList<>(Collections.<Integer>nCopies(newItems.size(), null));
-                for (int j = newItems.size() - 1; j >= 0; j--) {
-                    T item = newItems.get(j);
-                    newIndexesNext.set(j, newIndexes.get(item));
-                    newIndexes.put(item, j);
+                // fast path for empty array
+                if (newItems.size() == 0 && items.size() > 0) {
+                    cleaners.forEach(Runnable::run);
+                    items.clear();
+                    mapped.clear();
+                    indexes.clear();
+                    cleaners.clear();
                 }
+                // fast path for new create
+                else if (items.size() == 0) {
+                    for (int j = 0; j < newItems.size(); j++) {
+                        items.add(newItems.get(j));
+                        mapped.set(j, createRootCleaner(mapper.apply(j, newItems)));
+                    }
+                } else {
+                    var temp = new HashMap<Integer, U>();
+                    var tempCleaners = new ArrayList<>(Collections.<Runnable>nCopies(newItems.size(), null));
+                    var tempIndexes = new ArrayList<>(Collections.<Consumer<Integer>>nCopies(newItems.size(), null));
 
-                // 1) step through all old items and see if they can be found in the new set; if so, save them in a temp array and mark them moved; if not, exit them
-                for (int i = 0; i < items.size(); i++) {
-                    T item = items.get(i);
-                    Integer j = newIndexes.get(item);
-                    if (j != null) {
-                        temp.put(j, mapped.get(i));
-                        tempCleaners.set(j, cleaners.get(i));
-                        tempIndexes.set(j, indexes.get(i));
-                        j = newIndexesNext.get(j);
+                    var start = 0;
+                    var end = Math.min(items.size(), newItems.size());
+                    while (start < end && Objects.equals(items.get(start), newItems.get(start))) {
+                        start++;
+                    }
+
+                    end = items.size() - 1;
+                    var newEnd = newItems.size() - 1;
+                    while (end >= start && newEnd >= start && Objects.equals(items.get(end), newItems.get(newEnd))) {
+                        temp.put(newEnd, mapped.get(end));
+                        tempCleaners.set(newEnd, cleaners.get(end));
+                        tempIndexes.set(newEnd, indexes.get(end));
+
+                        end--;
+                        newEnd--;
+                    }
+
+                    // 0) prepare a map of all indices in newItems, scanning backwards so we encounter them in natural order
+                    var newIndexes = new HashMap<T, Integer>();
+                    var newIndexesNext = new ArrayList<>(Collections.<Integer>nCopies(newEnd + 1, null));
+                    for (int j = newEnd; j >= start; j--) {
+                        T item = newItems.get(j);
+                        newIndexesNext.set(j, newIndexes.get(item));
                         newIndexes.put(item, j);
-                    } else {
-                        cleaners.remove(i).run();
                     }
+
+                    // 1) step through all old items and see if they can be found in the new set; if so, save them in a temp array and mark them moved; if not, exit them
+                    for (int i = start; i <= end; i++) {
+                        T item = items.get(i);
+                        Integer j = newIndexes.get(item);
+                        if (j != null) {
+                            temp.put(j, mapped.get(i));
+                            tempCleaners.set(j, cleaners.get(i));
+                            tempIndexes.set(j, indexes.get(i));
+                            j = newIndexesNext.get(j);
+                            newIndexes.put(item, j);
+                        } else {
+                            cleaners.set(i, null).run();
+                        }
+                    }
+
+                    // 2) set all the new values, pulling from the temp array if copied, otherwise entering the new value
+                    for (int j = start; j < newItems.size(); j++) {
+                        if (temp.containsKey(j)) {
+                            mapped.set(j, temp.get(j));
+                            cleaners.set(j, tempCleaners.get(j));
+                            indexes.set(j, tempIndexes.get(j));
+                            indexes.get(j).accept(j);
+                        } else {
+                            mapped.set(j, createRootCleaner(mapper.apply(j, newItems)));
+                        }
+                    }
+
+                    // 3) in case the new set is shorter than the old, set the length of the mapped array
+                    if (items.size() > newItems.size()) {
+                        int diff = items.size() - newItems.size();
+                        for (int i = 0; i < diff; i++)
+                            mapped.remove(mapped.size() - 1);
+                    }
+
+                    // 4) save a copy of the mapped items for the next update
+                    items.clear();
+                    items.addAll(newItems);
                 }
 
-                // 2) set all the new values, pulling from the temp array if copied, otherwise entering the new value
-                for (int j = 0; j < newItems.size(); j++) {
-                    if (temp.containsKey(j)) {
-                        jsArraySet(mapped, j, temp.get(j));
-                        cleaners.put(j, tempCleaners.get(j));
-                        indexes.put(j, tempIndexes.get(j));
-                        indexes.get(j).accept(j);
-                    } else {
-                        jsArraySet(mapped, j, createRootCleaner(mapper.apply(j, newItems)));
-                    }
-                }
-
-                // 3) in case the new set is shorter than the old, set the length of the mapped array
-                if (items.size() > newItems.size())
-                    mapped.remove(items.size() - newItems.size());
-
-                // 4) save a copy of the mapped items for the next update
-                items.clear();
-                items.addAll(newItems);
-
-                return mapped;
+                // copy array so that mapped does not get leaked externally
+                return mapped.stream().toList();
             });
         });
     }

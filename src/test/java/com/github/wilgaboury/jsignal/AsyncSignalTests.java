@@ -12,7 +12,7 @@ public class AsyncSignalTests {
     public void basicTest() {
         var signal = createAsyncSignal(0, Objects::equals, Clone::identity);
 
-        Context<Integer> myContext = new Context<>(100, Integer.class);
+        Context<Integer> myContext = new Context<>(100);
 
         AtomicSignal<Integer> bruh = createAtomicSignal(0);
         Effect effect = createProvider(myContext.provide(5), () ->
