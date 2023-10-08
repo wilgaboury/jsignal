@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.examples.messages.Server;
+import com.github.wilgaboury.examples.messages.Server;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

@@ -1,10 +1,9 @@
-package com.github.wilgaboury.jsignal.examples.todo;
+package com.github.wilgaboury.examples.todo;
 
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL33.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;

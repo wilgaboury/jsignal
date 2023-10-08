@@ -9,13 +9,8 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class ListUtil {
-    public static <T> Supplier<List<T>> fixed(T... values) {
-        return () -> List.of(values);
-    }
-
-
-    public static <T> Supplier<List<T>> fixed(Supplier<T>... suppliers) {
-        return fixed(suppliers);
+    public static <T> Supplier<List<T>> fixed(T... inner) {
+        return () -> List.of(inner);
     }
 
     public static <T> Supplier<List<T>> fixed(Collection<Supplier<T>> suppliers) {

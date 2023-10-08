@@ -6,7 +6,7 @@ import com.github.wilgaboury.jsignal.interfaces.Signal;
 import java.util.function.Function;
 
 public class SignalDecorator<T> implements Signal<T> {
-    private final Signal<T> signal;
+    protected final Signal<T> signal;
 
     public SignalDecorator(Signal<T> signal) {
         this.signal = signal;

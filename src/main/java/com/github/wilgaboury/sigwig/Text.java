@@ -1,23 +1,14 @@
-package com.github.wilgaboury.jsignal.sigui;
+package com.github.wilgaboury.sigwig;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.jsignal.examples.todo.TodoList;
+import com.github.wilgaboury.sigui.Component;
+import com.github.wilgaboury.sigui.Node;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class Text {
-    public static Node create(Supplier<String> text) {
-        var idx = ReactiveUtil.useContext(TodoList.ItemIdxContext);
-
-        return new Node() {
-            @Override
-            public List<Node> children() {
-                return Collections.emptyList();
-            }
-
+    public static Component create(Supplier<String> text) {
+        return () -> new Node() {
             @Override
             public void layout(long node) {
                 Yoga.YGNodeSetNodeType(node, Yoga.YGNodeTypeText);

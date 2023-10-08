@@ -1,4 +1,4 @@
-package com.github.wilgaboury.jsignal.examples.messages;
+package com.github.wilgaboury.examples.messages;
 
 import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.interfaces.Signal;

@@ -1,6 +1,6 @@
-package com.github.wilgaboury.jsignal.sigui.event.events;
+package com.github.wilgaboury.sigui.event.events;
 
-import com.github.wilgaboury.jsignal.sigui.event.EventType;
+import com.github.wilgaboury.sigui.event.EventType;
 
 public class Event {
     private final EventType type;

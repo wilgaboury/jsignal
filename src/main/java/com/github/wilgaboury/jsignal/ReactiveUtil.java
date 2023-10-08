@@ -1,6 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
+import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.Objects;
@@ -263,32 +264,10 @@ public class ReactiveUtil {
         return new PublisherAdapter<>(signal);
     }
 
-    public static <T> Disposable subscribeTo(Signal<T> signal, Flow.Publisher<T> publisher) {
-        AtomicReference<Runnable> cancel = new AtomicReference<>();
-        publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscription.request(Long.MAX_VALUE);
-                cancel.set(subscription::cancel);
-            }
-
-            @Override
-            public void onNext(T t) {
-                signal.accept(t);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                // no-op
-            }
-
-            @Override
-            public void onComplete() {
-                // no-op
-            }
-        });
-
-        return () -> cancel.get().run();
+    public static <T> Cleaner createSubscriber(Signal<T> signal, Flow.Publisher<T> publisher) {
+        Cleaner cleaner = ReactiveEnv.getInstance().get().peekCleaner().orElseGet(createRootCleaner((val) -> null));
+        publisher.subscribe(new SubscriberAdapter<T>(signal, cleaner));
+        return cleaner;
     }
 
     public static Supplier<Void> toSupplier(Runnable runnable) {

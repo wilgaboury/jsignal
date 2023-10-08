@@ -1,4 +1,4 @@
-package com.github.wilgaboury.jsignal.sigui;
+package com.github.wilgaboury.sigui;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 

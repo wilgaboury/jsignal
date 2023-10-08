@@ -1,24 +1,26 @@
-package com.github.wilgaboury.jsignal.examples.todo;
+package com.github.wilgaboury.examples.todo;
 
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.ListUtil;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
-import com.github.wilgaboury.jsignal.sigui.Column;
-import com.github.wilgaboury.jsignal.sigui.Node;
-import com.github.wilgaboury.jsignal.sigui.Row;
-import com.github.wilgaboury.jsignal.sigui.Text;
+import com.github.wilgaboury.sigui.Component;
+import com.github.wilgaboury.sigwig.Column;
+import com.github.wilgaboury.sigwig.Row;
+import com.github.wilgaboury.sigwig.Text;
 
 import java.util.List;
 import java.util.function.Supplier;
 
 public class TodoList {
     public static final Context<Supplier<Integer>> ItemIdxContext = ReactiveUtil.createContext(() -> -1);
-    public static Node create(Supplier<List<Item>> items) {
 
+    public static Component create(Supplier<List<Item>> items) {
         return Column.create((ListUtil.map(items, (value, idx) ->
                 ReactiveUtil.createProvider(ItemIdxContext.provide(idx), () ->
-                        Row.create(ListUtil.fixed(Text.create(value.getText())))))));
+                        Row.create(ListUtil.fixed(Text.create(value.getText())))
+                )
+        )));
     }
 
     public static class Item {

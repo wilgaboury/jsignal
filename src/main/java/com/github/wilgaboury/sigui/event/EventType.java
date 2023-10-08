@@ -1,4 +1,4 @@
-package com.github.wilgaboury.jsignal.sigui.event;
+package com.github.wilgaboury.sigui.event;
 
 public enum EventType {
     MOUSE_IN,
