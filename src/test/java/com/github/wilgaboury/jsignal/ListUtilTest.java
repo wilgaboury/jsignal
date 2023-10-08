@@ -13,7 +13,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class ListUtilTest {
     @Test
     public void testMap() {
-        Signal<List<Integer>> ints = createSignal(List.of(1, 2, 3, 4), Collections::unmodifiableList);
+        Signal<List<Integer>> ints = createSignal(List.of(1, 1, 2, 3, 4), Collections::unmodifiableList);
         Computed<List<Float>> floats = createComputed(ListUtil.map(ints, (value, idx) -> {
             onCleanup(() -> System.out.println("removing: " + value));
             createEffect(() -> System.out.println("value: " + value + ", idx: " + idx.get()));
@@ -21,8 +21,8 @@ public class ListUtilTest {
         }));
         Effect printEffect = createEffect(() ->
                 System.out.println(floats.get().stream().map(Object::toString).collect(Collectors.joining(", "))));
-        ints.accept(List.of(1, 2, 3, 4, 5));
-        ints.accept(List.of(2, 1, 3, 4, 5));
+        ints.accept(List.of(1, 1, 2, 3, 4, 5));
+        ints.accept(List.of(2, 1, 1, 3, 4, 5));
         ints.accept(list -> new ArrayList<>(list));
         ints.mutate(list -> {
             list.remove(4);

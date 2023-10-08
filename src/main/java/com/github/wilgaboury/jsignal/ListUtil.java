@@ -13,16 +13,6 @@ public class ListUtil {
         return () -> List.of(inner);
     }
 
-    public static <T> Supplier<List<T>> fixed(Collection<Supplier<T>> suppliers) {
-        return () -> suppliers.stream().map(Supplier::get).toList();
-    }
-
-    private static <T> void expand(List<T> list, int len) {
-        if (len > list.size()) {
-            list.addAll(Collections.nCopies(len - list.size(), null));
-        }
-    }
-
     /**
      * copied from the SolidJS source code, mapArray function
      */
@@ -32,15 +22,15 @@ public class ListUtil {
         var indexes = new ArrayList<Consumer<Integer>>();
         var cleaners = new ArrayList<Runnable>();
 
-        BiFunction<Integer, List<T>, Function<Cleaner, U>> mapper = (j, newItems) -> cleaner -> {
-            cleaners.set(j, cleaner);
-            var sig = createSignal(j);
-            indexes.set(j, sig);
-            return map.apply(newItems.get(j), sig);
-        };
-
         return on(list, (newItems) -> {
             return untrack(() -> {
+                Function<Integer, Function<Cleaner, U>> mapper = j -> cleaner -> {
+                    cleaners.set(j, cleaner);
+                    var sig = createSignal(j);
+                    indexes.set(j, sig);
+                    return map.apply(newItems.get(j), sig);
+                };
+
                 expand(mapped, newItems.size());
                 expand(indexes, newItems.size());
                 expand(cleaners, newItems.size());
@@ -57,19 +47,21 @@ public class ListUtil {
                 else if (items.size() == 0) {
                     for (int j = 0; j < newItems.size(); j++) {
                         items.add(newItems.get(j));
-                        mapped.set(j, createRootCleaner(mapper.apply(j, newItems)));
+                        mapped.set(j, createRootCleaner(mapper.apply(j)));
                     }
                 } else {
                     var temp = new HashMap<Integer, U>();
-                    var tempCleaners = new ArrayList<>(Collections.<Runnable>nCopies(newItems.size(), null));
-                    var tempIndexes = new ArrayList<>(Collections.<Consumer<Integer>>nCopies(newItems.size(), null));
+                    List<Runnable> tempCleaners = nullArrayList(newItems.size());
+                    List<Consumer<Integer>> tempIndexes = nullArrayList(newItems.size());
 
+                    // skip common prefix
                     var start = 0;
                     var end = Math.min(items.size(), newItems.size());
                     while (start < end && Objects.equals(items.get(start), newItems.get(start))) {
                         start++;
                     }
 
+                    // skip common suffix
                     end = items.size() - 1;
                     var newEnd = newItems.size() - 1;
                     while (end >= start && newEnd >= start && Objects.equals(items.get(end), newItems.get(newEnd))) {
@@ -83,10 +75,10 @@ public class ListUtil {
 
                     // 0) prepare a map of all indices in newItems, scanning backwards so we encounter them in natural order
                     var newIndexes = new HashMap<T, Integer>();
-                    var newIndexesNext = new ArrayList<>(Collections.<Integer>nCopies(newEnd + 1, null));
+                    var newIndexesNext = new HashMap<Integer, Integer>();
                     for (int j = newEnd; j >= start; j--) {
                         T item = newItems.get(j);
-                        newIndexesNext.set(j, newIndexes.get(item));
+                        newIndexesNext.put(j, newIndexes.get(item));
                         newIndexes.put(item, j);
                     }
 
@@ -113,7 +105,7 @@ public class ListUtil {
                             indexes.set(j, tempIndexes.get(j));
                             indexes.get(j).accept(j);
                         } else {
-                            mapped.set(j, createRootCleaner(mapper.apply(j, newItems)));
+                            mapped.set(j, createRootCleaner(mapper.apply(j)));
                         }
                     }
 
@@ -133,5 +125,15 @@ public class ListUtil {
                 return mapped.stream().toList();
             });
         });
+    }
+
+    private static <T> void expand(List<T> list, int len) {
+        if (len > list.size()) {
+            list.addAll(Collections.nCopies(len - list.size(), null));
+        }
+    }
+
+    private static <T> ArrayList<T> nullArrayList(int len) {
+        return new ArrayList<>(Collections.nCopies(len, null));
     }
 }

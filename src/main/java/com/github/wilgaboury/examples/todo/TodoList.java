@@ -12,12 +12,14 @@ import com.github.wilgaboury.sigwig.Text;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+
 public class TodoList {
     public static final Context<Supplier<Integer>> ItemIdxContext = ReactiveUtil.createContext(() -> -1);
 
     public static Component create(Supplier<List<Item>> items) {
         return Column.create((ListUtil.map(items, (value, idx) ->
-                ReactiveUtil.createProvider(ItemIdxContext.provide(idx), () ->
+                createProvider(ItemIdxContext.provide(idx), () ->
                         Row.create(ListUtil.fixed(Text.create(value.getText())))
                 )
         )));

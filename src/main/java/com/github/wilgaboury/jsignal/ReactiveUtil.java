@@ -260,7 +260,7 @@ public class ReactiveUtil {
         return ReactiveEnv.getInstance().get().peekProvider().use(context);
     }
 
-    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal) {
+    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal)  {
         return new PublisherAdapter<>(signal);
     }
 
