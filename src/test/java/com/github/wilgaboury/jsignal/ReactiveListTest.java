@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-public class ListUtilTest {
+public class ReactiveListTest {
     @Test
     public void testMap() {
         Signal<List<Integer>> ints = createSignal(List.of(1, 1, 2, 3, 4), Collections::unmodifiableList);
-        Computed<List<Float>> floats = createComputed(ListUtil.map(ints, (value, idx) -> {
+        Computed<List<Float>> floats = createComputed(ReactiveList.createMapped(ints, (value, idx) -> {
             onCleanup(() -> System.out.println("removing: " + value));
             createEffect(() -> System.out.println("value: " + value + ", idx: " + idx.get()));
             return (float)value;

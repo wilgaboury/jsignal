@@ -7,6 +7,10 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.function.Supplier;
 
 public class Text {
+    public static Component create(String text) {
+        return create(() -> text);
+    }
+
     public static Component create(Supplier<String> text) {
         return () -> new Node() {
             @Override

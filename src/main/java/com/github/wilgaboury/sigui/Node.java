@@ -11,8 +11,4 @@ public interface Node {
     default void layout(long node) {}
 
     default void render(long node) {}
-
-    static Node empty() {
-        return new Node(){};
-    }
 }

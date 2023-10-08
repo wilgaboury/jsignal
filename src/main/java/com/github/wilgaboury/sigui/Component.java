@@ -5,6 +5,6 @@ import java.util.function.Supplier;
 @FunctionalInterface
 public interface Component extends Supplier<Node> {
     static Component empty() {
-        return Node::empty;
+        return () -> null;
     }
 }

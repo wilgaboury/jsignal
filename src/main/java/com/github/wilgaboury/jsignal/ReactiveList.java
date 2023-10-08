@@ -8,21 +8,29 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-public class ListUtil {
-    public static <T> Supplier<List<T>> fixed(T... inner) {
+public class ReactiveList {
+    public static <T> Supplier<List<T>> of(T... inner) {
         return () -> List.of(inner);
+    }
+
+    public static <T> Supplier<List<T>> fixed(Supplier<T>... inner) {
+        return () -> Arrays.stream(inner).map(Supplier::get).toList();
+    }
+
+    public static <T> Supplier<List<T>> compose(Supplier<List<T>>... inner) {
+        return () -> Arrays.stream(inner).map(Supplier::get).flatMap(List::stream).toList();
     }
 
     /**
      * copied from the SolidJS source code, mapArray function
      */
-    public static <T, U> Supplier<List<U>> map(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
+    public static <T, U> Computed<List<U>> createMapped(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
         var items = new ArrayList<T>();
         var mapped = new ArrayList<U>();
         var indexes = new ArrayList<Consumer<Integer>>();
         var cleaners = new ArrayList<Runnable>();
 
-        return on(list, (newItems) -> {
+        return createComputed(on(list, (newItems) -> {
             return untrack(() -> {
                 Function<Integer, Function<Cleaner, U>> mapper = j -> cleaner -> {
                     cleaners.set(j, cleaner);
@@ -124,7 +132,7 @@ public class ListUtil {
                 // copy array so that mapped does not get leaked externally
                 return mapped.stream().toList();
             });
-        });
+        }));
     }
 
     private static <T> void expand(List<T> list, int len) {
