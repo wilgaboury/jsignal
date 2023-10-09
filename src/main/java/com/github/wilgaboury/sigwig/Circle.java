@@ -3,24 +3,17 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Node;
 import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Font;
 import io.github.humbleui.skija.Paint;
-import io.github.humbleui.skija.TextLine;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.function.Supplier;
 
-public class Text {
-    public static Component create(String text) {
-        return create(() -> text);
-    }
-
-    public static Component create(Supplier<String> text) {
+public class Circle {
+    public static Component create() {
         return () -> new Node() {
             @Override
             public void layout(long node) {
-                Yoga.YGNodeSetNodeType(node, Yoga.YGNodeTypeText);
-                text.get();
+                Yoga.YGNodeStyleSetWidth(node, 50f);
+                Yoga.YGNodeStyleSetHeight(node, 50f);
             }
 
             @Override
@@ -30,10 +23,9 @@ public class Text {
                 float x = Yoga.YGNodeLayoutGetLeft(node);
                 float y = Yoga.YGNodeLayoutGetTop(node);
 
-                // do rendering with text
-                try (Paint paint = new Paint()) {
-                    paint.setColor(0xFF000000);
-                    canvas.drawTextLine(TextLine.make(text.get(), new Font()), x, y, paint);
+                try (var paint = new Paint()) {
+                    paint.setColor(0x40FFFFFF);
+                    canvas.drawCircle(x + width / 2, y + height / 2, Math.min(width, height) / 2, paint);
                 }
             }
         };

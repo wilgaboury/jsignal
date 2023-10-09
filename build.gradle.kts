@@ -5,6 +5,9 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
+val skijaArtifact = "skija-linux-x64";
+val skijaVersion = "0.116.1";
+
 val lwjglVersion = "3.3.3"
 
 val lwjglNatives = Pair(
@@ -35,14 +38,11 @@ repositories {
 dependencies {
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
-    implementation("org.lwjgl", "lwjgl-fmod")
-    implementation("org.lwjgl", "lwjgl-glfw")
-    implementation("org.lwjgl", "lwjgl-opengl")
     implementation("org.lwjgl", "lwjgl-yoga")
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-yoga", classifier = lwjglNatives)
+
+    implementation("io.github.humbleui:${skijaArtifact}:${skijaVersion}")
+    implementation("io.github.humbleui:jwm:0.4.15")
 
     implementation("org.jetbrains:annotations:24.0.0")
     implementation("org.functionaljava:functionaljava:5.0")

@@ -5,7 +5,7 @@ import com.github.wilgaboury.sigui.event.EventType;
 import java.util.*;
 
 public class Events {
-    public static final Map<Node, Map<EventType, List<Object>>> registry = new HashMap<>();
+    public static final Map<Node, Map<EventType, List<Object>>> registry = new WeakHashMap<>();
     public static final Map<EventType, Map<MetaNode, List<Object>>> listeners = new EnumMap<>(EventType.class);
 
     private static void register(Node node, EventHandler handler) {
@@ -16,7 +16,7 @@ public class Events {
 
     static void register(Node node, MetaNode meta) {
         for (var entry : registry.getOrDefault(node, Collections.emptyMap()).entrySet()) {
-            var map = listeners.computeIfAbsent(entry.getKey(), k -> new HashMap<>());
+            var map = listeners.computeIfAbsent(entry.getKey(), k -> new WeakHashMap<>());
             map.put(meta, entry.getValue());
         }
     }

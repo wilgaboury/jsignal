@@ -1,5 +1,7 @@
 package com.github.wilgaboury.sigui;
 
+import io.github.humbleui.skija.Canvas;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -10,5 +12,5 @@ public interface Node {
 
     default void layout(long node) {}
 
-    default void render(long node) {}
+    default void paint(Canvas canvas, long node) {}
 }
