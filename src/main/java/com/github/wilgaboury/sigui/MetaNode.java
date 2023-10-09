@@ -16,12 +16,16 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class MetaNode {
     private static final java.lang.ref.Cleaner cleaner = java.lang.ref.Cleaner.create();
 
+    private final Window widnow;
+    private final MetaNode parent;
     private final Node node;
     private final long yoga;
     private final Computed<List<MetaNode>> children;
     private final Effect layoutEffect;
 
-    MetaNode(Node node) {
+    MetaNode(MetaNode parent, Node node) {
+        this.widnow = useContext(Window.CONTEXT);
+        this.parent = parent;
         this.node = node;
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
@@ -29,6 +33,8 @@ public class MetaNode {
 
         final long yogaPass = yoga; // make sure not to capture this in cleaner
         cleaner.register(this, () -> SiguiThread.invokeLater(() -> Yoga.YGNodeFree(yogaPass)));
+
+        Events.register(node, this);
     }
 
     private Computed<List<MetaNode>> createChildren() {
@@ -38,7 +44,7 @@ public class MetaNode {
                         .filter(Objects::nonNull)
                         .toList(),
                 (child, idx) -> {
-                    var meta = new MetaNode(child);
+                    var meta = new MetaNode(this, child);
                     onCleanup(() -> Yoga.YGNodeRemoveChild(meta.yoga, idx.get()));
                     createEffect(on(idx, (cur, prev) -> {
                         if (prev != null)
@@ -70,6 +76,6 @@ public class MetaNode {
     }
 
     public static Computed<Optional<MetaNode>> create(Component component) {
-        return createComputed(() -> Optional.ofNullable(component.get()).map(MetaNode::new));
+        return createComputed(() -> Optional.ofNullable(component.get()).map(n -> new MetaNode(null, n)));
     }
 }

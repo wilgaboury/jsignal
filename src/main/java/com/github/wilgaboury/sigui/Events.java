@@ -2,16 +2,23 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.sigui.event.EventType;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Events {
-    public static final Map<Node, Map<EventType, Object>> registry = new HashMap<>();
+    public static final Map<Node, Map<EventType, List<Object>>> registry = new HashMap<>();
+    public static final Map<EventType, Map<MetaNode, List<Object>>> listeners = new EnumMap<>(EventType.class);
 
     private static void register(Node node, EventHandler handler) {
-        var handlers = registry.computeIfAbsent(node, k -> new HashMap<>());
-        handlers.putIfAbsent(handler.getType(), handler.getHandler());
+        var handlerMap = registry.computeIfAbsent(node, k -> new HashMap<>());
+        var handlers = handlerMap.computeIfAbsent(handler.getType(), k -> new ArrayList<>());
+        handlers.add(handler.getHandler());
+    }
+
+    static void register(Node node, MetaNode meta) {
+        for (var entry : registry.getOrDefault(node, Collections.emptyMap()).entrySet()) {
+            var map = listeners.computeIfAbsent(entry.getKey(), k -> new HashMap<>());
+            map.put(meta, entry.getValue());
+        }
     }
 
     public static Component register(EventHandler handler, Component inner) {

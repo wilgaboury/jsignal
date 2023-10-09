@@ -3,6 +3,10 @@ package com.github.wilgaboury.jsignal;
 public class Ref<T> {
     private T ref;
 
+    public Ref() {
+        this(null);
+    }
+
     public Ref(T ref) {
         this.ref = ref;
     }

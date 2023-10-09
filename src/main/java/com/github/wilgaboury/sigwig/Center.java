@@ -18,6 +18,8 @@ public class Center {
             public void layout(long node) {
                 Yoga.YGNodeStyleSetJustifyContent(node, Yoga.YGJustifyCenter);
                 Yoga.YGNodeStyleSetAlignItems(node, Yoga.YGAlignCenter);
+                Yoga.YGNodeStyleSetWidthPercent(node, 100f);
+                Yoga.YGNodeStyleSetHeightPercent(node, 100f);
             }
         };
     }

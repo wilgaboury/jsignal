@@ -8,13 +8,13 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.nio.IntBuffer;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createContext;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL33C.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -24,14 +24,16 @@ public class Window {
     static final Set<Window> windows = new HashSet<>();
 
     private final long window;
-    private final Signal<Optional<MetaNode>> root;
+    private final Queue<Runnable> renderQueue;
 
-    public Window(long window, Component root) {
+    private Signal<Optional<MetaNode>> root;
+
+    Window(long window) {
         this.window = window;
-        this.root = MetaNode.create(root);
+        this.renderQueue = new ArrayDeque<>();
     }
 
-    public static Window create(Component root) {
+    public static Window create(Supplier<Component> root) {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
@@ -40,7 +42,9 @@ public class Window {
         if ( handle == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
-        var window = new Window(handle, root);
+        var window = new Window(handle);
+        window.root = createProvider(CONTEXT.provide(window), () -> MetaNode.create(root.get()));
+
         window.layout();
         windows.add(window);
 
@@ -88,6 +92,10 @@ public class Window {
         windows.remove(this);
     }
 
+    public void invokeDuringRender(Runnable runnable) {
+        renderQueue.add(runnable);
+    }
+
     void layout() {
         root.get().ifPresent(r -> {
             try (MemoryStack stack = stackPush()) {
@@ -107,6 +115,10 @@ public class Window {
         }
 
         glfwMakeContextCurrent(window);
+
+        while (!renderQueue.isEmpty()) {
+            renderQueue.poll().run();
+        }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
