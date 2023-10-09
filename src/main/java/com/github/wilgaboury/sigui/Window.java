@@ -46,7 +46,8 @@ public class Window {
 
         glfwSetKeyCallback(handle, (h, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-                glfwSetWindowShouldClose(h, true); // We will detect this in the rendering loop
+                SiguiThread.invokeLater(() -> window.close());
+                // glfwSetWindowShouldClose(h, true); // We will detect this in the rendering loop
         });
 
         // center the window
@@ -82,6 +83,11 @@ public class Window {
         return window;
     }
 
+    public void close() {
+        glfwDestroyWindow(window);
+        windows.remove(this);
+    }
+
     void layout() {
         root.get().ifPresent(r -> {
             try (MemoryStack stack = stackPush()) {
@@ -96,7 +102,7 @@ public class Window {
 
     void render() {
         if (glfwWindowShouldClose(window)) {
-            glfwDestroyWindow(window);
+            close();
             return;
         }
 
