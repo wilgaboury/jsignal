@@ -1,5 +1,9 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.davidmoten.rtree.Entry;
+import com.github.davidmoten.rtree.RTree;
+import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.WeakRef;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
@@ -7,10 +11,10 @@ import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Surface;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -24,28 +28,31 @@ public class SiguiWindow {
     private static Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
-    private final Layer layer;
+
+    private RTree<MetaNode, Rectangle> absoluteTree;
+
     private boolean shouldLayout;
     private Signal<Optional<MetaNode>> root;
 
-    SiguiWindow(Window window, Layer layer) {
-        this.window = window;
-        this.layer = layer;
-        this.shouldLayout = false;
+    // hacky solution for stupid weird offset bug
+    private boolean firstFrame = true;
 
+    SiguiWindow(Window window) {
+        this.window = window;
+
+        this.absoluteTree = RTree.create();
+
+        this.shouldLayout = false;
     }
 
     public static SiguiWindow create(Supplier<Component> root) {
         Window window = App.makeWindow();
         LayerGLSkija layer = new LayerGLSkija();
 
-
-        window.setContentSize(300, 300);
+        window.setContentSize(400, 400);
         window.setLayer(layer);
-        layer.reconfigure();
-        layer.resize(window.getWindowRect().getWidth(), window.getWindowRect().getHeight());
 
-        var that = new SiguiWindow(window, layer);
+        var that = new SiguiWindow(window);
         that.root = createProvider(CONTEXT.provide(new WeakRef<>(that)), () -> MetaNode.create(root.get()));
         that.requestLayout();
         window.setEventListener(that::handleEvent);
@@ -56,34 +63,57 @@ public class SiguiWindow {
         return that;
     }
 
-
     public Window getWindow() {
         return window;
     }
 
     public void close() {
-        window.close();
         windows.remove(this);
+        window.close();
     }
 
-    void layout() {
+    private void layout() {
         if (!shouldLayout)
             return;
 
-        root.get().ifPresent(r -> {
+        root.get().ifPresent(node -> {
             var rect = window.getContentRect();
-            Yoga.nYGNodeCalculateLayout(r.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+            Yoga.nYGNodeCalculateLayout(node.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+            absoluteTree = node.updateAbsoluteTree(absoluteTree);
+            node.generateRenderOrder();
         });
-        shouldLayout = false;
 
-        window.requestFrame();
+        shouldLayout = false;
     }
 
-    void paint(Canvas canvas) {
-        canvas.clear(0xFF264653);
+    private void paint(Canvas canvas) {
+        canvas.clear(0xFFCC3333);
         int save = canvas.getSaveCount();
-        root.get().ifPresent(r -> r.visit(n -> n.getNode().paint(canvas, n.getYoga())));
-        canvas.restoreToCount(save);
+        try {
+            root.get().ifPresent(n -> paintInner(canvas, n));
+        } finally {
+            canvas.restoreToCount(save);
+        }
+    }
+
+    private void paintInner(Canvas canvas, MetaNode n) {
+        var node = n.getNode();
+        var yoga = n.getYoga();
+        float dx = Yoga.YGNodeLayoutGetLeft(yoga);
+        float dy = Yoga.YGNodeLayoutGetTop(yoga);
+
+        var count = canvas.save();
+        try {
+            canvas.translate(dx, dy);
+
+            node.paint(canvas, yoga);
+            for (MetaNode child : n.getChildren()) {
+                paintInner(canvas, child);
+            }
+            node.paintAfter(canvas);
+        } finally {
+            canvas.restoreToCount(count);
+        }
     }
 
     public void requestLayout() {
@@ -92,20 +122,45 @@ public class SiguiWindow {
     }
 
     void handleEvent(Event e) {
-        if (e instanceof EventWindowClose) {
+        if (e instanceof EventWindowCloseRequest) {
+            close();
+        } else if (e instanceof EventWindowClose) {
             if (windows.size() == 0)
                 App.terminate();
-            return;
-        }
-
-        if (e instanceof EventWindowResize) {
-            requestLayout();
         } else if (e instanceof EventFrameSkija ee) {
             layout();
             paint(ee.getSurface().getCanvas());
-        } else if (e instanceof EventWindowCloseRequest) {
-            layer.close();
-            window.close();
+
+            if (firstFrame) {
+                firstFrame = false;
+                window.requestFrame();
+            }
+        } else if (e instanceof EventWindowResize) {
+            requestLayout();
+        } else if (e instanceof EventMouseButton ee) {
+            System.out.println(pick(ee.getX(), ee.getY()).getNode().getClass().getName());
+        }
+    }
+
+    private MetaNode pick(int x, int y) {
+        MetaNode normal = root.get().map(node -> node.pick(x, y)).orElse(null);
+        List<MetaNode> absolute = absoluteTree.search(PointFloat.create(x, y))
+                .map(Entry::value)
+                .sorted((n1, n2) -> Integer.compare(n1.getRenderOrder(), n2.getRenderOrder()))
+                .toList()
+                .toBlocking()
+                .first();
+
+        if (normal == null && absolute.isEmpty()) {
+            return null;
+        } else if (normal == null) {
+            return absolute.get(0);
+        } else if (absolute.isEmpty()) {
+            return normal;
+        } else if (normal.getRenderOrder() > absolute.get(0).getRenderOrder()) {
+            return normal;
+        } else {
+            return absolute.get(0);
         }
     }
 }

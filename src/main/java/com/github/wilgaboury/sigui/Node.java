@@ -12,5 +12,9 @@ public interface Node {
 
     default void layout(long node) {}
 
-    default void paint(Canvas canvas, long node) {}
+    default void paint(Canvas canvas, long node) {
+    }
+
+    default void paintAfter(Canvas canvas) {
+    }
 }

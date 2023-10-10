@@ -46,6 +46,7 @@ dependencies {
 
     implementation("org.jetbrains:annotations:24.0.0")
     implementation("org.functionaljava:functionaljava:5.0")
+    implementation("com.github.davidmoten:rtree:0.11")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
