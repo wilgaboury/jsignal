@@ -104,7 +104,7 @@ public class SiguiWindow {
 
         var count = canvas.save();
         try {
-            canvas.translate(offset.dx(), offset.dx());
+            canvas.translate(offset.dx(), offset.dy());
             if (node.clip()) {
                 var width = Yoga.YGNodeLayoutGetWidth(yoga);
                 var height = Yoga.YGNodeLayoutGetHeight(yoga);

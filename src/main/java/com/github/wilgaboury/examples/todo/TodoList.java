@@ -5,19 +5,21 @@ import com.github.wilgaboury.jsignal.ReactiveList;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
 import com.github.wilgaboury.sigui.Component;
-import com.github.wilgaboury.sigwig.Column;
+import com.github.wilgaboury.sigwig.Flex;
 import com.github.wilgaboury.sigwig.Text;
 
 import java.util.List;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
+
 public class TodoList {
     public static final Context<Supplier<Integer>> ItemIdxContext = ReactiveUtil.createContext(() -> -1);
 
     public static Component create(Supplier<List<Item>> items) {
-        return Column.create((ReactiveList.createMapped(items, (value, idx) ->
+        return Flex.builder().column().children((ReactiveList.createMapped(items, (value, idx) ->
                 createProvider(ItemIdxContext.provide(idx), () ->
-                        Row.create(ReactiveList.of(Text.create(value.getText())))
+                        Flex.builder().column().children(ReactiveList.of(Text.create(value.getText())))
                 )
         )));
     }
