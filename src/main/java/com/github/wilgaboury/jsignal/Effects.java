@@ -1,5 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.EffectLike;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +14,7 @@ public class Effects implements Runnable {
         this.effects = effects;
     }
 
-    public void add(Effect effect, Executor executor) {
+    public void add(EffectLike effect, Executor executor) {
         effects.putIfAbsent(effect.getId(), new EffectRef(effect, executor));
     }
 
@@ -23,7 +25,7 @@ public class Effects implements Runnable {
         Iterator<EffectRef> itr = effects.values().iterator();
         while (itr.hasNext()) {
             EffectRef ref = itr.next();
-            Optional<Effect> effect = ref.getEffect();
+            Optional<EffectLike> effect = ref.getEffect();
 
             if (effect.isEmpty() || effect.get().isDisposed())
                 itr.remove();

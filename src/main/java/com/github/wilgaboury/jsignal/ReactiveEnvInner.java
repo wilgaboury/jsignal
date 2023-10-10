@@ -1,5 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -16,7 +17,7 @@ import java.util.logging.Logger;
 public class ReactiveEnvInner {
     private static final Logger logger = Logger.getLogger(ReactiveEnvInner.class.getName());
 
-    private Effect effect;
+    private EffectLike effect;
     private Cleaner cleaner;
     private Provider provider;
     private Executor executor;
@@ -35,7 +36,7 @@ public class ReactiveEnvInner {
         batch = new LinkedHashMap<>();
     }
 
-    public Optional<Effect> peekEffect() {
+    public Optional<EffectLike> peekEffect() {
         return Optional.ofNullable(effect);
     }
 
@@ -59,8 +60,8 @@ public class ReactiveEnvInner {
         return batchCount > 0;
     }
 
-    public <T> T effect(@Nullable Effect effect, Supplier<T> inner) {
-        Effect prev = this.effect;
+    public <T> T effect(@Nullable EffectLike effect, Supplier<T> inner) {
+        EffectLike prev = this.effect;
         this.effect = effect;
         try {
             return inner.get();

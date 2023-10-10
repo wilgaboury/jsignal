@@ -1,11 +1,12 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.Disposable;
+import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-public class Effect implements Runnable, Disposable {
+public class Effect implements EffectLike {
     private static final AtomicInteger nextId = new AtomicInteger(0);
 
     private final int id;
@@ -16,7 +17,7 @@ public class Effect implements Runnable, Disposable {
     private boolean disposed;
 
     Effect(Runnable effect, Provider provider, boolean isSync) {
-        this.id = nextId.getAndIncrement();
+        this.id = nextId();
         this.effect = effect;
         this.provider = provider;
         this.cleanup = new Cleaner();
@@ -40,6 +41,7 @@ public class Effect implements Runnable, Disposable {
         });
     }
 
+    @Override
     public boolean isDisposed() {
         return maybeSynchronize(() -> disposed);
     }
@@ -47,13 +49,19 @@ public class Effect implements Runnable, Disposable {
     @Override
     public void run() {
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
-        maybeSynchronize(() ->
-                env.batch(() ->
-                env.cleaner(cleanup, ReactiveUtil.toSupplier(() ->
-                env.provider(provider, ReactiveUtil.toSupplier(() -> {
-                    cleanup.run();
-                    env.effect(this, ReactiveUtil.toSupplier(effect));
-                }))))));
+        maybeSynchronize(() -> {
+            if (isDisposed())
+                return;
+
+            env.batch(() ->
+                    env.cleaner(cleanup, ReactiveUtil.toSupplier(() ->
+                            env.provider(provider, ReactiveUtil.toSupplier(() -> {
+                                cleanup.run();
+                                env.effect(this, ReactiveUtil.toSupplier(effect));
+                            })))
+                    )
+            );
+        });
     }
 
     @Override
@@ -87,5 +95,9 @@ public class Effect implements Runnable, Disposable {
                 return inner.get();
             }
         }
+    }
+
+    public static int nextId() {
+        return nextId.getAndIncrement();
     }
 }

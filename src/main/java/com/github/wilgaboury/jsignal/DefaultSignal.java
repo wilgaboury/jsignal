@@ -8,6 +8,7 @@ import com.github.wilgaboury.jsignal.interfaces.Signal;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 /**

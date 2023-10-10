@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.skija.Canvas;
+import org.lwjgl.util.yoga.Yoga;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,9 +13,15 @@ public interface Node {
 
     default void layout(long node) {}
 
-    default void paint(Canvas canvas, long node) {
+    default boolean clip() {
+        return false;
     }
 
-    default void paintAfter(Canvas canvas) {
+    default Offset offset(long node) {
+        return new Offset(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node));
     }
+
+    default void paint(Canvas canvas) {}
+
+    record Offset(float dx, float dy) {};
 }
