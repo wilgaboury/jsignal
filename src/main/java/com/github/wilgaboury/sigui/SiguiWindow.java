@@ -46,24 +46,6 @@ public class SiguiWindow {
         this.shouldLayout = false;
     }
 
-    public static SiguiWindow create(Supplier<Component> root) {
-        Window window = App.makeWindow();
-        LayerGLSkija layer = new LayerGLSkija();
-
-        window.setContentSize(400, 400);
-        window.setLayer(layer);
-
-        var that = new SiguiWindow(window);
-        that.root = createProvider(CONTEXT.provide(new WeakRef<>(that)), () -> MetaNode.create(root.get()));
-        that.requestLayout();
-        window.setEventListener(that::handleEvent);
-        windows.add(that);
-
-        Sigui.invokeLater(() -> window.setVisible(true));
-
-        return that;
-    }
-
     public Window getWindow() {
         return window;
     }
@@ -166,5 +148,22 @@ public class SiguiWindow {
         } else {
             return absolute.get(0);
         }
+    }
+
+    public static SiguiWindow create(Window window, Supplier<Component> root) {
+        LayerGLSkija layer = new LayerGLSkija();
+
+        window.setContentSize(400, 400);
+        window.setLayer(layer);
+
+        var that = new SiguiWindow(window);
+        that.root = createProvider(CONTEXT.provide(new WeakRef<>(that)), () -> MetaNode.create(root.get()));
+        that.requestLayout();
+        window.setEventListener(that::handleEvent);
+        windows.add(that);
+
+        Sigui.invokeLater(() -> window.setVisible(true));
+
+        return that;
     }
 }
