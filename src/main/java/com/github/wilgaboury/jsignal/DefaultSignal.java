@@ -8,7 +8,6 @@ import com.github.wilgaboury.jsignal.interfaces.Signal;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 /**
@@ -40,7 +39,8 @@ public class DefaultSignal<T> implements Signal<T> {
         assertThread();
         ReactiveEnvInner env = ReactiveEnv.getInstance().get();
         env.peekEffect().ifPresent(effect -> {
-            assert threadId == null || Objects.equals(threadId, effect.getThreadId())
+            assert threadId == null ||
+                    (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))
                     : "signal thread does not match effect thread";
             effects.add(effect, env.peekExecutor());
         });

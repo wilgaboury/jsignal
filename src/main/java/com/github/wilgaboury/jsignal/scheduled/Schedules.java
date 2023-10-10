@@ -21,7 +21,7 @@ public class Schedules {
             private final AtomicReference<Future<?>> future = new AtomicReference<>(null);
 
             @Override
-            public void dispose() {
+            public void close() {
                 disposed.set(true);
                 Future<?> future = this.future.get();
                 if (future != null) {
@@ -52,7 +52,7 @@ public class Schedules {
             private Future<?> future = null;
 
             @Override
-            public synchronized void dispose() {
+            public synchronized void close() {
                 disposed = true;
                 value = null;
             }

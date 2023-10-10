@@ -11,6 +11,7 @@ import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.HashSet;
@@ -99,18 +100,21 @@ public class SiguiWindow {
     private void paintInner(Canvas canvas, MetaNode n) {
         var node = n.getNode();
         var yoga = n.getYoga();
-        float dx = Yoga.YGNodeLayoutGetLeft(yoga);
-        float dy = Yoga.YGNodeLayoutGetTop(yoga);
+        var offset = node.offset(yoga);
 
         var count = canvas.save();
         try {
-            canvas.translate(dx, dy);
+            canvas.translate(offset.dx(), offset.dx());
+            if (node.clip()) {
+                var width = Yoga.YGNodeLayoutGetWidth(yoga);
+                var height = Yoga.YGNodeLayoutGetHeight(yoga);
+                canvas.clipRect(Rect.makeXYWH(0, 0, width, height));
+            }
 
-            node.paint(canvas, yoga);
+            node.paint(canvas);
             for (MetaNode child : n.getChildren()) {
                 paintInner(canvas, child);
             }
-            node.paintAfter(canvas);
         } finally {
             canvas.restoreToCount(count);
         }

@@ -3,9 +3,7 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Node;
 import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Font;
 import io.github.humbleui.skija.Paint;
-import io.github.humbleui.skija.TextLine;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
@@ -24,16 +22,11 @@ public class Text {
             }
 
             @Override
-            public void paint(Canvas canvas, long node) {
-                float width = Yoga.YGNodeLayoutGetWidth(node);
-                float height = Yoga.YGNodeLayoutGetHeight(node);
-                float x = Yoga.YGNodeLayoutGetLeft(node);
-                float y = Yoga.YGNodeLayoutGetTop(node);
-
+            public void paint(Canvas canvas) {
                 // do rendering with text
                 try (Paint paint = new Paint()) {
                     paint.setColor(0xFF000000);
-                    canvas.drawTextLine(TextLine.make(text.get(), new Font()), x, y, paint);
+//                    canvas.drawTextLine(TextLine.make(text.get(), new Font()), x, y, paint);
                 }
             }
         };

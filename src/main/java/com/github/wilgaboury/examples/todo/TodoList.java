@@ -6,13 +6,10 @@ import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigwig.Column;
-import com.github.wilgaboury.sigwig.Row;
 import com.github.wilgaboury.sigwig.Text;
 
 import java.util.List;
 import java.util.function.Supplier;
-
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class TodoList {
     public static final Context<Supplier<Integer>> ItemIdxContext = ReactiveUtil.createContext(() -> -1);

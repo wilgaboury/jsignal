@@ -18,7 +18,7 @@ public class Circle {
             }
 
             @Override
-            public void paint(Canvas canvas, long node) {
+            public void paint(Canvas canvas) {
                 try (var paint = new Paint()) {
                     paint.setColor(0x40FFFFFF);
                     canvas.drawCircle(radius, radius, radius, paint);
