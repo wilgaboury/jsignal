@@ -3,7 +3,7 @@ package com.github.wilgaboury.jsignal;
 import com.github.wilgaboury.jsignal.interfaces.Clone;
 import com.github.wilgaboury.jsignal.interfaces.Equals;
 import com.github.wilgaboury.jsignal.interfaces.Mutate;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -14,14 +14,14 @@ import java.util.function.Function;
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
-public class DefaultSignal<T> implements Signal<T> {
+public class Signal<T> implements SignalLike<T> {
     protected final Effects effects;
     protected T value;
     protected final Equals<T> equals;
     protected final Clone<T> clone;
     protected final Long threadId;
 
-    public DefaultSignal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
+    public Signal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
         this.effects = new Effects(isSync ? new LinkedHashMap<>() : new ConcurrentHashMap<>());
         this.value = value;
         this.equals = equals;

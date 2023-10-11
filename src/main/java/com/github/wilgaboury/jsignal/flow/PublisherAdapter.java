@@ -1,7 +1,7 @@
 package com.github.wilgaboury.jsignal.flow;
 
 import com.github.wilgaboury.jsignal.Effect;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.Collections;
 import java.util.Set;
@@ -12,10 +12,10 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.createAsyncEffect;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.withAsyncExecutor;
 
 public class PublisherAdapter<T> implements Flow.Publisher<T> {
-    private final Signal<T> signal;
+    private final SignalLike<T> signal;
     private final Set<Subscription> subscriptions;
 
-    public PublisherAdapter(Signal<T> signal) {
+    public PublisherAdapter(SignalLike<T> signal) {
         this.signal = signal;
         this.subscriptions = Collections.newSetFromMap(new ConcurrentHashMap<>());
     }

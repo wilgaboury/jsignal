@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class ReactiveListTest {
     @Test
     public void testMap() {
-        Signal<List<Integer>> ints = createSignal(List.of(1, 1, 2, 3, 4), Collections::unmodifiableList);
+        SignalLike<List<Integer>> ints = createSignal(List.of(1, 1, 2, 3, 4), Collections::unmodifiableList);
         Computed<List<Float>> floats = createComputed(ReactiveList.createMapped(ints, (value, idx) -> {
             onCleanup(() -> System.out.println("removing: " + value));
             createEffect(() -> System.out.println("value: " + value + ", idx: " + idx.get()));

@@ -22,31 +22,31 @@ public class ReactiveUtil {
     private ReactiveUtil() {
     }
 
-    public static <T> DefaultSignal<T> createSignal(T value) {
+    public static <T> Signal<T> createSignal(T value) {
         return createSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> DefaultSignal<T> createSignal(T value, Equals<T> equals) {
+    public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
         return createSignal(value, equals, Clone::identity);
     }
 
-    public static <T> DefaultSignal<T> createSignal(T value, Clone<T> clone) {
+    public static <T> Signal<T> createSignal(T value, Clone<T> clone) {
         return createSignal(value, Objects::deepEquals, clone);
     }
 
-    public static <T> DefaultSignal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
-        return new DefaultSignal<>(value, equals, clone, true);
+    public static <T> Signal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new Signal<>(value, equals, clone, true);
     }
 
-    public static <T> DefaultSignal<T> createAsyncSignal(T value) {
+    public static <T> Signal<T> createAsyncSignal(T value) {
         return createAsyncSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> DefaultSignal<T> createAsyncSignal(T value, Equals<T> equals) {
+    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals) {
         return createAsyncSignal(value, equals, Clone::identity);
     }
 
-    public static <T> DefaultSignal<T> createAsyncSignal(T value, Clone<T> clone) {
+    public static <T> Signal<T> createAsyncSignal(T value, Clone<T> clone) {
         return createAsyncSignal(value, Objects::deepEquals, clone);
     }
 
@@ -54,8 +54,8 @@ public class ReactiveUtil {
      * This should only be used when the inner type is thread safe, otherwise use
      * AtomicSignal which will wrap the value in a read-write lock.
      */
-    public static <T> DefaultSignal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
-        return new DefaultSignal<>(value, equals, clone, false);
+    public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
+        return new Signal<>(value, equals, clone, false);
     }
 
     public static <T> AtomicSignal<T> createAtomicSignal(T value) {
@@ -78,7 +78,7 @@ public class ReactiveUtil {
         return createComputed(createSignal(null), supplier);
     }
 
-    public static <T> Computed<T> createComputed(Signal<T> signal, Supplier<T> supplier) {
+    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
         return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
     }
 
@@ -86,11 +86,11 @@ public class ReactiveUtil {
         return createComputed(createSignal(null), inner);
     }
 
-    public static <T> Computed<T> createComputed(Signal<T> signal, Function<T, T> inner) {
+    public static <T> Computed<T> createComputed(SignalLike<T> signal, Function<T, T> inner) {
         return new Computed<>(signal, createEffect(() -> signal.accept(inner)));
     }
 
-    public static <T> Computed<T> createAsyncComputed(Signal<T> signal, Supplier<T> supplier) {
+    public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
         return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
     }
 
@@ -260,11 +260,11 @@ public class ReactiveUtil {
         return ReactiveEnv.getInstance().get().peekProvider().use(context);
     }
 
-    public static <T> Flow.Publisher<T> createPublisher(Signal<T> signal)  {
+    public static <T> Flow.Publisher<T> createPublisher(SignalLike<T> signal)  {
         return new PublisherAdapter<>(signal);
     }
 
-    public static <T> Cleaner createSubscriber(Signal<T> signal, Flow.Publisher<T> publisher) {
+    public static <T> Cleaner createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
         Cleaner cleaner = ReactiveEnv.getInstance().get().peekCleaner().orElseGet(createRootCleaner((val) -> null));
         publisher.subscribe(new SubscriberAdapter<T>(signal, cleaner));
         return cleaner;

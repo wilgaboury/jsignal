@@ -1,14 +1,14 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.Mutate;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.function.Function;
 
-public class SignalDecorator<T> implements Signal<T> {
-    protected final Signal<T> signal;
+public class SignalDecorator<T> implements SignalLike<T> {
+    protected final SignalLike<T> signal;
 
-    public SignalDecorator(Signal<T> signal) {
+    public SignalDecorator(SignalLike<T> signal) {
         this.signal = signal;
     }
 

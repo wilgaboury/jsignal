@@ -1,6 +1,5 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.interfaces.Disposable;
 import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 
 import java.util.concurrent.atomic.AtomicInteger;

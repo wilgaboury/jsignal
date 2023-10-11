@@ -3,7 +3,7 @@ package com.github.wilgaboury.examples.todo;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.ReactiveList;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigwig.Flex;
 import com.github.wilgaboury.sigwig.Text;
@@ -29,19 +29,19 @@ public class TodoList {
     }
 
     public static class Item {
-        private final Signal<Boolean> checked;
-        private final Signal<String> text;
+        private final SignalLike<Boolean> checked;
+        private final SignalLike<String> text;
 
-        public Item(Signal<Boolean> checked, Signal<String> text) {
+        public Item(SignalLike<Boolean> checked, SignalLike<String> text) {
             this.checked = checked;
             this.text = text;
         }
 
-        public Signal<Boolean> getChecked() {
+        public SignalLike<Boolean> getChecked() {
             return checked;
         }
 
-        public Signal<String> getText() {
+        public SignalLike<String> getText() {
             return text;
         }
     }

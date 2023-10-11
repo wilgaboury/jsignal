@@ -6,7 +6,7 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.WeakRef;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigui.event.MouseEvent;
@@ -34,7 +34,7 @@ public class SiguiWindow {
     private final Window window;
     private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
-    private Signal<Optional<MetaNode>> root;
+    private SignalLike<Optional<MetaNode>> root;
 
     private MetaNode mouseDown;
     private MetaNode hovered;
@@ -137,6 +137,7 @@ public class SiguiWindow {
             }
         } else if (e instanceof EventMouseMove ee) {
             var newHovered = pick(ee.getX(), ee.getY());
+            System.out.println(newHovered);
             if (hovered != newHovered) {
                 var parents = hovered == null ? null : hovered.getParents();
                 var newParents = newHovered == null ? null : newHovered.getParents();

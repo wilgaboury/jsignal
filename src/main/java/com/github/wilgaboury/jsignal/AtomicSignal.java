@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
-public class AtomicSignal<T> extends DefaultSignal<T> {
+public class AtomicSignal<T> extends Signal<T> {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public AtomicSignal(T value, Equals<T> equals, Clone<T> clone) {

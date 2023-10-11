@@ -1,7 +1,7 @@
 package com.github.wilgaboury.examples.messages;
 
 import com.github.wilgaboury.jsignal.Effect;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,7 +17,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class Server {
     private static final Logger logger = Logger.getLogger(Server.class.getName());
 
-    private final Signal<Integer> port;
+    private final SignalLike<Integer> port;
     private final Effect serverStartEffect;
 
     public Server(int port) {

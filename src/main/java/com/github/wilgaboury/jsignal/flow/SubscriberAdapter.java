@@ -2,7 +2,7 @@ package com.github.wilgaboury.jsignal.flow;
 
 import com.github.wilgaboury.jsignal.Cleaner;
 import com.github.wilgaboury.jsignal.SignalDecorator;
-import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Flow;
@@ -10,7 +10,7 @@ import java.util.concurrent.Flow;
 public class SubscriberAdapter<T> extends SignalDecorator<T> implements Flow.Subscriber<T> {
     private final WeakReference<Cleaner> cleaner;
 
-    public SubscriberAdapter(Signal<T> signal, Cleaner cleaner) {
+    public SubscriberAdapter(SignalLike<T> signal, Cleaner cleaner) {
         super(signal);
         this.cleaner = new WeakReference<>(cleaner);
     }
