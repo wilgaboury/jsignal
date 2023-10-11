@@ -29,7 +29,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
 public class SiguiWindow {
     public static final Context<WeakRef<SiguiWindow>> CONTEXT = createContext(new WeakRef<>(null));
 
-    private static Set<SiguiWindow> windows = new HashSet<>();
+    private static final Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
     private RTree<MetaNode, Rectangle> absoluteTree;
@@ -137,7 +137,6 @@ public class SiguiWindow {
             }
         } else if (e instanceof EventMouseMove ee) {
             var newHovered = pick(ee.getX(), ee.getY());
-            System.out.println(newHovered);
             if (hovered != newHovered) {
                 var parents = hovered == null ? null : hovered.getParents();
                 var newParents = newHovered == null ? null : newHovered.getParents();

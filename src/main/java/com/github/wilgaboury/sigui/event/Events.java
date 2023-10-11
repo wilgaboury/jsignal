@@ -8,24 +8,24 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class Events {
-    public static final Map<Node, Map<EventType, List<Consumer<?>>>> listeners = new WeakHashMap<>();
+    public static final Map<EventType, Map<Node, Collection<Consumer<?>>>> registry = new HashMap<>();
 
     public static void listen(Node node, EventListener listener) {
-        var handlerMap = listeners.computeIfAbsent(node, k -> new HashMap<>());
-        var handlers = handlerMap.computeIfAbsent(listener.getType(), k -> new ArrayList<>());
-        handlers.add(listener.getListener());
+        var nodes = registry.computeIfAbsent(listener.getType(), k -> new WeakHashMap<>());
+        var listeners = nodes.computeIfAbsent(node, k -> new LinkedHashSet<>());
+        listeners.add(listener.getListener());
     }
 
     public static void unlisten(Node node, EventListener listener) {
-        var handlerMap = listeners.get(node);
-        if (handlerMap == null)
+        var nodes = registry.get(listener.getType());
+        if (nodes == null)
+            return;
+
+        var listeners = nodes.get(node);
+        if (listeners == null)
             return;
         
-        var handlers = handlerMap.get(listener.getType());
-        if (handlers == null)
-            return;
-        
-        handlers.remove(listener.getListener());
+        listeners.remove(listener.getListener());
     }
 
     public static Component listen(EventListener handler, Component inner) {
@@ -47,36 +47,34 @@ public class Events {
     }
 
     public static <T extends Event> void fireBubble(T event, MetaNode node) {
-        for (; node != null && event.propagating(); node = node.getParent()) {
-            var types = listeners.get(node.getNode());
-            if (types == null)
+        var nodes = registry.get(event.getType());
+        if (nodes == null || nodes.isEmpty())
+            return;
+
+        for (; node != null && event.isPropagating(); node = node.getParent()) {
+            var listeners = nodes.get(node.getNode());
+            if (listeners == null)
                 continue;
 
-            var list = types.get(event.getType());
-            if (list == null)
-                continue;
-
-            for (Consumer<?> listener : list) {
+            for (Consumer<?> listener : listeners) {
                 ((Consumer<T>)listener).accept(event);
-                if (!event.propagating())
+                if (!event.isImmediatePropagating())
                     return;
             }
         }
     }
 
     public static <T extends Event> void fire(T event, MetaNode node) {
-        var types = listeners.get(node.getNode());
-        if (types == null)
+        var nodes = registry.get(event.getType());
+        if (nodes == null)
             return;
 
-        var list = types.get(event.getType());
-        if (list == null)
+        var listeners = nodes.get(node.getNode());
+        if (listeners == null)
             return;
 
-        for (Consumer<?> listener : list) {
+        for (Consumer<?> listener : listeners) {
             ((Consumer<T>)listener).accept(event);
-            if (!event.propagating())
-                return;
         }
     }
 }
