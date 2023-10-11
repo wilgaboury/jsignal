@@ -7,6 +7,7 @@ import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.WeakRef;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.sigui.event.EventType;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
@@ -29,20 +30,19 @@ public class SiguiWindow {
     private static Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
-
     private RTree<MetaNode, Rectangle> absoluteTree;
-
     private boolean shouldLayout;
     private Signal<Optional<MetaNode>> root;
+
+    private MetaNode mouseDown;
+    private MetaNode hovered;
 
     // hacky solution for stupid weird offset bug
     private boolean firstFrame = true;
 
     SiguiWindow(Window window) {
         this.window = window;
-
         this.absoluteTree = RTree.create();
-
         this.shouldLayout = false;
     }
 
@@ -124,7 +124,20 @@ public class SiguiWindow {
         } else if (e instanceof EventWindowResize) {
             requestLayout();
         } else if (e instanceof EventMouseButton ee) {
-            System.out.println(pick(ee.getX(), ee.getY()).getNode().getClass().getName());
+            if (hovered != null) {
+                if (ee.isPressed()) {
+                    mouseDown = hovered;
+                } else {
+                    if (mouseDown == hovered) {
+                        Events.forEach(EventType.MOUSE_CLICK, hovered, obj ->
+                                EventHandler.toMouseClick(obj).accept(null));
+                    }
+                }
+            }
+        } else if (e instanceof EventMouseMove ee) {
+            hovered = pick(ee.getX(), ee.getY());
+        } else if (e instanceof EventMouseScroll) {
+
         }
     }
 
@@ -146,7 +159,7 @@ public class SiguiWindow {
         } else if (normal.getRenderOrder() > absolute.get(0).getRenderOrder()) {
             return normal;
         } else {
-            return absolute.get(0);
+            return absolute.get(0).pick(x, y);
         }
     }
 

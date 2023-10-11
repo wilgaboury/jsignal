@@ -4,6 +4,9 @@ import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * TODO: make threading more like a normal effect, with async variant
+ */
 public class SideEffect implements EffectLike {
     private final int id;
     private final Runnable effect;

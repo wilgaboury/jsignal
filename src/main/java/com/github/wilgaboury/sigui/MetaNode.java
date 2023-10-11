@@ -85,11 +85,11 @@ public class MetaNode {
         );
     }
 
-    public MetaNode pick(int x, int y) {
-        var rect = YogaUtil.toRect(yoga);
-        if (rect.contains(x, y)) {
-            int xNew = x - rect.getLeft();
-            int yNew = y - rect.getTop();
+    public MetaNode pick(float x, float y) {
+        if (Util.contains(YogaUtil.toRect(yoga), x, y)) {
+            var offset = node.offset(yoga);
+            float xNew = x - offset.dx();
+            float yNew = y - offset.dy();
             for (var child : children.get()) {
                 MetaNode result = child.pick(xNew, yNew);
                 if (result != null) {

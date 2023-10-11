@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.interfaces.Acceptable;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.event.MouseEvent;
 
@@ -24,6 +25,10 @@ public class EventHandler {
 
     public static EventHandler onMouseClick(Consumer<MouseEvent> handler) {
         return new EventHandler(EventType.MOUSE_CLICK, handler);
+    }
+
+    static Consumer<MouseEvent> toMouseClick(Object obj) {
+        return (Consumer<MouseEvent>) obj;
     }
 
     public static EventHandler onMouseDown(Consumer<MouseEvent> handler) {

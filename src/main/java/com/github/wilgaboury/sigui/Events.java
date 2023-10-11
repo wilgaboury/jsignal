@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigui;
 import com.github.wilgaboury.sigui.event.EventType;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Events {
     public static final Map<Node, Map<EventType, List<Object>>> registry = new WeakHashMap<>();
@@ -37,5 +38,18 @@ public class Events {
             }
             return node;
         };
+    }
+
+    public static void forEach(EventType type, MetaNode node, Consumer<Object> inner) {
+        var nodes = listeners.get(type);
+        if (nodes == null)
+            return;
+        var list = nodes.get(node);
+        if (list == null)
+            return;
+
+        for (Object obj : list) {
+            inner.accept(obj);
+        }
     }
 }

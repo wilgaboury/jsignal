@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import io.github.humbleui.types.IRect;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 public class YogaUtil {
@@ -23,12 +23,12 @@ public class YogaUtil {
         }
     }
 
-    public static IRect toRect(long node) {
-        int x = (int)Yoga.YGNodeLayoutGetLeft(node);
-        int y = (int)Yoga.YGNodeLayoutGetTop(node);
-        int width = (int)Yoga.YGNodeLayoutGetWidth(node);
-        int height = (int)Yoga.YGNodeLayoutGetHeight(node);
+    public static Rect toRect(long node) {
+        float x = Yoga.YGNodeLayoutGetLeft(node);
+        float y = (int)Yoga.YGNodeLayoutGetTop(node);
+        float width = (int)Yoga.YGNodeLayoutGetWidth(node);
+        float height = (int)Yoga.YGNodeLayoutGetHeight(node);
 
-        return IRect.makeXYWH(x, y, width, height);
+        return Rect.makeXYWH(x, y, width, height);
     }
 }

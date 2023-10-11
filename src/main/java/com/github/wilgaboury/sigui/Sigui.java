@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.jwm.App;
+import io.github.humbleui.jwm.Window;
 
 import java.util.logging.Logger;
 
@@ -13,5 +14,9 @@ public class Sigui {
 
     public static void invokeLater(Runnable runnable) {
         App.runOnUIThread(runnable);
+    }
+
+    public static Window createWindow() {
+        return App.makeWindow();
     }
 }
