@@ -7,7 +7,10 @@ import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.WeakRef;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
+import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import com.github.wilgaboury.sigui.event.Events;
+import com.github.wilgaboury.sigui.event.MouseEvent;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
@@ -129,8 +132,7 @@ public class SiguiWindow {
                     mouseDown = hovered;
                 } else {
                     if (mouseDown == hovered) {
-                        Events.forEach(EventType.MOUSE_CLICK, hovered, obj ->
-                                EventHandler.toMouseClick(obj).accept(null));
+                        Events.fire(new MouseEvent(EventType.MOUSE_CLICK), hovered);
                     }
                 }
             }

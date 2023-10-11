@@ -1,11 +1,12 @@
 package com.github.wilgaboury.examples.todo;
 
 import com.github.wilgaboury.jsignal.ReactiveList;
-import com.github.wilgaboury.sigui.EventHandler;
-import com.github.wilgaboury.sigui.Events;
 import com.github.wilgaboury.sigui.Sigui;
 import com.github.wilgaboury.sigui.SiguiWindow;
-import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.event.Events;
+import com.github.wilgaboury.sigwig.Circle;
+import com.github.wilgaboury.sigwig.Flex;
 
 public class TodoApp {
     public static void main(String[] args) {
@@ -14,8 +15,8 @@ public class TodoApp {
             window.setTitle("Todo App");
 
             SiguiWindow.create(window,
-                    () -> Events.register(
-                            EventHandler.onMouseClick(e -> System.out.println("clicked")),
+                    () -> Events.listen(
+                            EventListener.onMouseClick(e -> System.out.println("clicked")),
                             Flex.builder()
                                     .center()
                                     .row()

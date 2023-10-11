@@ -12,8 +12,12 @@ public class Sigui {
         App.start(runnable);
     }
 
-    public static void invokeLater(Runnable runnable) {
+    public static void invoke(Runnable runnable) {
         App.runOnUIThread(runnable);
+    }
+
+    public static void invokeLater(Runnable runnable) {
+        App._nRunOnUIThread(runnable);
     }
 
     public static Window createWindow() {

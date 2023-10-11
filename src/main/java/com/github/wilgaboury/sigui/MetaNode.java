@@ -53,8 +53,6 @@ public class MetaNode {
 
         final long yogaPass = yoga; // make sure not to capture this in cleaner
         cleaner.register(this, () -> Sigui.invokeLater(() -> Yoga.YGNodeFree(yogaPass)));
-
-        Events.register(node, this);
     }
 
     private Computed<List<MetaNode>> createChildren() {
@@ -86,6 +84,7 @@ public class MetaNode {
     }
 
     public MetaNode pick(float x, float y) {
+        // TODO: optimize, only check elements that are visible, i.e. respect window and clipping
         if (Util.contains(YogaUtil.toRect(yoga), x, y)) {
             var offset = node.offset(yoga);
             float xNew = x - offset.dx();
@@ -108,6 +107,7 @@ public class MetaNode {
             final var entry = absoluteEntry;
             result = tree.delete(entry);
         }
+        // TODO: optimize, only add absolute positioned things that are outside their parent
         if (Yoga.YGNodeStyleGetPositionType(yoga) == Yoga.YGPositionTypeAbsolute) {
             final var entry = new EntryDefault<>(this, toAbsoluteRect());
             absoluteEntry = entry;
@@ -139,6 +139,10 @@ public class MetaNode {
 
     public Node getNode() {
         return node;
+    }
+
+    public MetaNode getParent() {
+        return parent;
     }
 
     public List<MetaNode> getChildren() {
