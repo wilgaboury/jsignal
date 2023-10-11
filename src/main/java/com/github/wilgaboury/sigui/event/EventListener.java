@@ -19,15 +19,31 @@ public class EventListener {
         return listener;
     }
 
-    public static EventListener onMouseClick(Consumer<MouseEvent> handler) {
-        return new EventListener(EventType.MOUSE_CLICK, handler);
+    public static EventListener onMouseIn(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_IN, listener);
     }
 
-    static Consumer<MouseEvent> toMouseClick(Object obj) {
-        return (Consumer<MouseEvent>) obj;
+    public static EventListener onMouseOut(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_OUT, listener);
     }
 
-    public static EventListener onMouseDown(Consumer<MouseEvent> handler) {
-        return new EventListener(EventType.MOUSE_DOWN, handler);
+    public static EventListener onMouseLeave(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_LEAVE, listener);
+    }
+
+    public static EventListener onMouseOver(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_OVER, listener);
+    }
+
+    public static EventListener onMouseDown(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_DOWN, listener);
+    }
+
+    public static EventListener onMouseUp(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_UP, listener);
+    }
+
+    public static EventListener onMouseClick(Consumer<MouseEvent> listener) {
+        return new EventListener(EventType.MOUSE_CLICK, listener);
     }
 }

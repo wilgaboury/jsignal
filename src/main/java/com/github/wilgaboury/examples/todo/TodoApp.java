@@ -8,6 +8,7 @@ import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.Circle;
 import com.github.wilgaboury.sigwig.Flex;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public class TodoApp {
@@ -19,8 +20,12 @@ public class TodoApp {
             var num = ReactiveUtil.createSignal(0);
 
             SiguiWindow.create(window,
-                    () -> Events.listen(
+                    () -> Events.listen(List.of(
                             EventListener.onMouseClick(e -> num.accept(i -> i + 1)),
+//                            EventListener.onMouseIn(e -> System.out.println("mouse in")),
+                            EventListener.onMouseOut(e -> System.out.println("mouse out"))
+//                            EventListener.onMouseLeave(e -> System.out.println("mouse leave"))),
+                            ),
                             Flex.builder()
                                     .center()
                                     .column()

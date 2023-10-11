@@ -46,7 +46,7 @@ public class Events {
         };
     }
 
-    public static <T extends Event> void fire(T event, MetaNode node) {
+    public static <T extends Event> void fireBubble(T event, MetaNode node) {
         for (; node != null && event.propagating(); node = node.getParent()) {
             var types = listeners.get(node.getNode());
             if (types == null)
@@ -61,6 +61,22 @@ public class Events {
                 if (!event.propagating())
                     return;
             }
+        }
+    }
+
+    public static <T extends Event> void fire(T event, MetaNode node) {
+        var types = listeners.get(node.getNode());
+        if (types == null)
+            return;
+
+        var list = types.get(event.getType());
+        if (list == null)
+            return;
+
+        for (Consumer<?> listener : list) {
+            ((Consumer<T>)listener).accept(event);
+            if (!event.propagating())
+                return;
         }
     }
 }

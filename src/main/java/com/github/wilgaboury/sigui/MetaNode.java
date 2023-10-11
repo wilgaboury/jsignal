@@ -8,9 +8,7 @@ import com.github.davidmoten.rtree.internal.EntryDefault;
 import com.github.wilgaboury.jsignal.*;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -143,6 +141,16 @@ public class MetaNode {
 
     public MetaNode getParent() {
         return parent;
+    }
+
+    public Collection<MetaNode> getParents() {
+        var node = this.parent;
+        var res = new LinkedHashSet<MetaNode>();
+        while (node != null) {
+            res.add(node);
+            node = node.getParent();
+        }
+        return res;
     }
 
     public List<MetaNode> getChildren() {

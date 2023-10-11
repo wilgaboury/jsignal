@@ -7,7 +7,6 @@ import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.WeakRef;
 import com.github.wilgaboury.jsignal.interfaces.Signal;
-import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigui.event.MouseEvent;
@@ -132,14 +131,34 @@ public class SiguiWindow {
                     mouseDown = hovered;
                 } else {
                     if (mouseDown == hovered) {
-                        Events.fire(new MouseEvent(EventType.MOUSE_CLICK), hovered);
+                        Events.fireBubble(new MouseEvent(EventType.MOUSE_CLICK), hovered);
                     }
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
-            hovered = pick(ee.getX(), ee.getY());
-        } else if (e instanceof EventMouseScroll) {
+            var newHovered = pick(ee.getX(), ee.getY());
+            if (hovered != newHovered) {
+                var parents = hovered == null ? null : hovered.getParents();
+                var newParents = newHovered == null ? null : newHovered.getParents();
 
+                if (hovered != null) {
+                    Events.fireBubble(new MouseEvent(EventType.MOUSE_LEAVE), hovered);
+                    var node = hovered;
+                    while (node != null && (newParents == null || !newParents.contains(node))) {
+                        Events.fire(new MouseEvent(EventType.MOUSE_OUT), hovered);
+                        node = node.getParent();
+                    }
+                }
+
+                if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
+                    Events.fire(new MouseEvent(EventType.MOUSE_IN), newHovered);
+                }
+
+                hovered = newHovered;
+            }
+            Events.fireBubble(new MouseEvent(EventType.MOUSE_OVER), hovered);
+        } else if (e instanceof EventWindowFocusOut) {
+            hovered = null;
         }
     }
 
