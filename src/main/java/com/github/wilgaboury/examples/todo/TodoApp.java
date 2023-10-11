@@ -16,12 +16,17 @@ public class TodoApp {
 
             SiguiWindow.create(window,
                     () -> Events.listen(
-                            EventListener.onMouseClick(e -> System.out.println("clicked")),
+                            EventListener.onMouseClick(e -> System.out.println("click1")),
                             Flex.builder()
                                     .center()
                                     .row()
                                     .children(ReactiveList.of(
-                                            Circle.create(),
+                                            Events.listen(
+                                                    EventListener.onMouseClick(e -> {
+                                                        System.out.println("click2");
+                                                        e.stopPropagation();
+                                                    }),
+                                                    Circle.create()),
                                             Circle.create(),
                                             Circle.create()
                                     ))

@@ -47,15 +47,15 @@ public class Events {
     }
 
     public static <T extends Event> void fire(T event, MetaNode node) {
-        var types = listeners.get(node.getNode());
-        if (types == null)
-            return;
-
-        var list = types.get(event.getType());
-        if (list == null)
-            return;
-
         while (node != null && event.propagating()) {
+            var types = listeners.get(node.getNode());
+            if (types == null)
+                continue;
+
+            var list = types.get(event.getType());
+            if (list == null)
+                continue;
+
             for (Consumer<?> listener : list) {
                 ((Consumer<T>)listener).accept(event);
                 if (!event.propagating())
