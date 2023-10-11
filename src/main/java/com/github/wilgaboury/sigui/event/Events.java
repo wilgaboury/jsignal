@@ -47,7 +47,7 @@ public class Events {
     }
 
     public static <T extends Event> void fire(T event, MetaNode node) {
-        while (node != null && event.propagating()) {
+        for (; node != null && event.propagating(); node = node.getParent()) {
             var types = listeners.get(node.getNode());
             if (types == null)
                 continue;
@@ -61,7 +61,6 @@ public class Events {
                 if (!event.propagating())
                     return;
             }
-            node = node.getParent();
         }
     }
 }

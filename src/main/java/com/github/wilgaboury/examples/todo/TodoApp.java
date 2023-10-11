@@ -23,7 +23,7 @@ public class TodoApp {
                             EventListener.onMouseClick(e -> num.accept(i -> i + 1)),
                             Flex.builder()
                                     .center()
-                                    .row()
+                                    .column()
                                     .children(() ->
                                             Stream.generate(Circle::create)
                                                     .limit(num.get())
