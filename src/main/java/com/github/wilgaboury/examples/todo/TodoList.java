@@ -3,7 +3,7 @@ package com.github.wilgaboury.examples.todo;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.ReactiveList;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigwig.Flex;
 import com.github.wilgaboury.sigwig.Text;
@@ -24,25 +24,10 @@ public class TodoList {
 
     private static Component createItem(Item value, Supplier<Integer> idx) {
         return createProvider(ItemIdxContext.provide(idx), () ->
-                Flex.builder().column().children(ReactiveList.of(Text.create(value.getText())))
+                Flex.builder().column().children(ReactiveList.of(Text.create(value.text())))
         );
     }
 
-    public static class Item {
-        private final SignalLike<Boolean> checked;
-        private final SignalLike<String> text;
-
-        public Item(SignalLike<Boolean> checked, SignalLike<String> text) {
-            this.checked = checked;
-            this.text = text;
-        }
-
-        public SignalLike<Boolean> getChecked() {
-            return checked;
-        }
-
-        public SignalLike<String> getText() {
-            return text;
-        }
+    public record Item(Signal<Boolean> checked, Signal<String> text) {
     }
 }

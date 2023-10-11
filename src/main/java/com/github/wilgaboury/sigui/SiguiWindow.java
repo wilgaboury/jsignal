@@ -142,10 +142,10 @@ public class SiguiWindow {
                 var newParents = newHovered == null ? null : newHovered.getParents();
 
                 if (hovered != null) {
-                    Events.fireBubble(new MouseEvent(EventType.MOUSE_LEAVE), hovered);
+                    Events.fireBubble(new MouseEvent(EventType.MOUSE_OUT), hovered);
                     var node = hovered;
-                    while (node != null && (newParents == null || !newParents.contains(node))) {
-                        Events.fire(new MouseEvent(EventType.MOUSE_OUT), hovered);
+                    while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
+                        Events.fire(new MouseEvent(EventType.MOUSE_LEAVE), node);
                         node = node.getParent();
                     }
                 }
