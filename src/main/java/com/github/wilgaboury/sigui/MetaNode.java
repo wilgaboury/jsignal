@@ -62,17 +62,17 @@ public class MetaNode {
                         .filter(Objects::nonNull)
                         .toList(),
                 (child, idx) -> {
-                    var meta = new MetaNode(this, child, idx);
+                    final var meta = new MetaNode(this, child, idx);
 
                     onCleanup(() -> {
-                        Yoga.YGNodeRemoveChild(meta.yoga, idx.get());
+                        Yoga.YGNodeRemoveChild(yoga, meta.yoga);
 
                         requestLayout();
                     });
 
                     createEffect(on(idx, (cur, prev) -> {
                         if (prev != null)
-                            Yoga.YGNodeRemoveChild(meta.yoga, prev);
+                            Yoga.YGNodeRemoveChild(yoga, meta.yoga);
                         Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
 
                         requestLayout();
