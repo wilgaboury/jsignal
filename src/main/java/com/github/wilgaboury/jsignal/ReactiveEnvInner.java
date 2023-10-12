@@ -143,14 +143,8 @@ public class ReactiveEnvInner {
         }
     }
 
-    public void run(EffectRef ref) {
-        if (isBypass())
-            return;
-
-        if (isBatch()) {
-            ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
-        } else {
-            ref.run();
-        }
+    public void addToBatch(EffectRef ref) {
+        assert isBatch();
+        ref.getEffect().ifPresent(effect -> batch.putIfAbsent(effect.getId(), ref));
     }
 }

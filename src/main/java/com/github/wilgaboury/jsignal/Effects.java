@@ -22,15 +22,17 @@ public class Effects implements Runnable {
     public void run() {
         var env = ReactiveEnv.getInstance().get();
 
-        Iterator<EffectRef> itr = effects.values().iterator();
-        while (itr.hasNext()) {
-            EffectRef ref = itr.next();
-            Optional<EffectLike> effect = ref.getEffect();
+        env.batch(ReactiveUtil.toSupplier(() -> {
+            Iterator<EffectRef> itr = effects.values().iterator();
+            while (itr.hasNext()) {
+                EffectRef ref = itr.next();
+                Optional<EffectLike> effect = ref.getEffect();
 
-            if (effect.isEmpty() || effect.get().isDisposed())
-                itr.remove();
-            else
-                env.run(ref);
-        }
+                if (effect.isEmpty() || effect.get().isDisposed())
+                    itr.remove();
+                else
+                    env.addToBatch(ref);
+            }
+        }));
     }
 }

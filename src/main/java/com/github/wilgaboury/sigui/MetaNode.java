@@ -5,7 +5,10 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 import com.github.davidmoten.rtree.internal.EntryDefault;
-import com.github.wilgaboury.jsignal.*;
+import com.github.wilgaboury.jsignal.Computed;
+import com.github.wilgaboury.jsignal.Effect;
+import com.github.wilgaboury.jsignal.ReactiveList;
+import com.github.wilgaboury.jsignal.Ref;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
@@ -17,36 +20,34 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 public class MetaNode {
     private static final java.lang.ref.Cleaner cleaner = java.lang.ref.Cleaner.create();
 
-    private final WeakRef<SiguiWindow> window;
+    private final SiguiWindow window;
 
     private final MetaNode parent;
     private final Node node;
-    private final Supplier<Integer> index;
 
     private final long yoga;
     private final Computed<List<MetaNode>> children;
 
+    private final Effect layoutEffect;
+
     private Entry<MetaNode, Rectangle> absoluteEntry;
     private int renderOrder;
 
-    private final Effect layoutEffect;
-
-    MetaNode(MetaNode parent, Node node, Supplier<Integer> index) {
+    MetaNode(MetaNode parent, Node node) {
         this.window = useContext(SiguiWindow.CONTEXT);
 
         this.parent = parent;
         this.node = node;
-        this.index = index;
 
         this.yoga = Yoga.YGNodeNew();
-        this.children = createChildren();
+        this.children = parent == null ? createRootChild() : createChildren();
 
         this.absoluteEntry = null;
         this.renderOrder = 0;
 
         this.layoutEffect = createEffect(() -> {
             node.layout(yoga);
-            requestLayout();
+            window.requestLayout();
         });
 
         final long yogaPass = yoga; // make sure not to capture this in cleaner
@@ -55,17 +56,20 @@ public class MetaNode {
 
     private Computed<List<MetaNode>> createChildren() {
         return ReactiveList.createMapped(
-                () -> node.children().stream()
-                        .map(Supplier::get)
-                        .filter(Objects::nonNull)
-                        .toList(),
+                () -> {
+                    Sigui.hotSwapTrigger.track();
+                    return node.children().stream()
+                            .map(Supplier::get)
+                            .filter(Objects::nonNull)
+                            .toList();
+                },
                 (child, idx) -> {
-                    final var meta = new MetaNode(this, child, idx);
+                    var meta = new MetaNode(this, child);
 
                     onCleanup(() -> {
                         Yoga.YGNodeRemoveChild(yoga, meta.yoga);
 
-                        requestLayout();
+                        window.requestLayout();
                     });
 
                     createEffect(on(idx, (cur, prev) -> {
@@ -73,12 +77,36 @@ public class MetaNode {
                             Yoga.YGNodeRemoveChild(yoga, meta.yoga);
                         Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
 
-                        requestLayout();
+                        window.requestLayout();
                     }));
 
                     return meta;
                 }
         );
+    }
+
+    private Computed<List<MetaNode>> createRootChild() {
+        return createComputed(() -> {
+            Sigui.hotSwapTrigger.track();
+
+            var child = node.children().get(0).get();
+            if (child == null)
+                return Collections.emptyList();
+
+            var meta = new MetaNode(this, child);
+
+            onCleanup(() -> {
+                Yoga.YGNodeRemoveChild(yoga, meta.yoga);
+
+                window.requestLayout();
+            });
+
+            Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
+
+            window.requestLayout();
+
+            return List.of(meta);
+        });
     }
 
     public MetaNode pick(float x, float y) {
@@ -131,10 +159,6 @@ public class MetaNode {
         });
     }
 
-    private void requestLayout() {
-        window.get().ifPresent(SiguiWindow::requestLayout);
-    }
-
     public Node getNode() {
         return node;
     }
@@ -181,9 +205,18 @@ public class MetaNode {
         visit((n) -> {}, post);
     }
 
-    public static Computed<Optional<MetaNode>> create(Component component) {
-        var ret = createComputed(() -> Optional.ofNullable(component.get()).map(n -> new MetaNode(null, n, () -> 0)));
-        ret.get().ifPresent(MetaNode::requestLayout);
-        return ret;
+    public static MetaNode createRoot(Component component) {
+        return new MetaNode(null, new Node() {
+            @Override
+            public List<Component> children() {
+                return List.of(component);
+            }
+
+            @Override
+            public void layout(long yoga) {
+                Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
+                Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
+            }
+        });
     }
 }

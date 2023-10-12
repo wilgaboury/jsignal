@@ -2,6 +2,7 @@ package com.github.wilgaboury.examples.todo;
 
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Sigui;
 import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigui.event.EventListener;
@@ -11,39 +12,40 @@ import com.github.wilgaboury.sigwig.Flex;
 import io.github.humbleui.jwm.Window;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class TodoApp {
     public static void main(String[] args) {
-        Sigui.start(() -> {
-            Window window = Sigui.createWindow();
-            window.setTitle("Todo App");
+        Sigui.start(TodoApp::runApp);
+    }
 
-            Signal<Integer> num = ReactiveUtil.createSignal(0);
+    public static void runApp() {
+        Window window = Sigui.createWindow();
+        window.setTitle("Todo List");
 
-            SiguiWindow.create(window,
-                    () -> Events.listen(List.of(
-                            EventListener.onMouseClick(e -> num.accept(i -> i + 1)),
-//                            EventListener.onMouseIn(e -> System.out.println("mouse in")),
-                            EventListener.onMouseOut(e -> System.out.println("mouse out bottom")),
-                            EventListener.onMouseLeave(e -> System.out.println("mouse leave bottom"))
-                            ),
-                            Flex.builder()
-                                    .center()
-                                    .column()
-                                    .children(() ->
-                                            Stream.generate(() ->
-                                                    Events.listen(List.of(
-                                                            EventListener.onMouseOut(e -> System.out.println("mouse out circle")),
-                                                            EventListener.onMouseLeave(e -> System.out.println("mouse leave circle"))
-                                                            ),
-                                                            Circle.create()
-                                                    ))
-                                                    .limit(num.get())
-                                                    .toList()
-                                    )
-                    )
-            );
-        });
+        Signal<Integer> num = ReactiveUtil.createSignal(2);
+
+        SiguiWindow.create(window,
+                () -> Events.listen(
+                        EventListener.onMouseClick(e -> num.accept(i -> i + 1)),
+                        Flex.builder()
+                                .center()
+                                .column()
+                                .children(() -> ballList(num))
+                )
+        );
+    }
+
+    public static List<Component> ballList(Supplier<Integer> num) {
+        return Stream.generate(() ->
+                        Events.listen(List.of(
+                                        EventListener.onMouseOut(e -> System.out.println("mouse out circle")),
+                                        EventListener.onMouseLeave(e -> System.out.println("mouse leave circle"))
+                                ),
+                                Circle.create()
+                        ))
+                .limit(num.get())
+                .toList();
     }
 }

@@ -48,6 +48,8 @@ dependencies {
     implementation("org.functionaljava:functionaljava:5.0")
     implementation("com.github.davidmoten:rtree:0.11")
 
+    implementation("org.hotswapagent:hotswap-agent-core:1.4.1")
+
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }

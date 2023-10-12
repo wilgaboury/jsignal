@@ -9,11 +9,14 @@ import java.util.function.Consumer;
 
 public class Events {
     public static final Map<EventType, Map<Node, Collection<Consumer<?>>>> registry = new HashMap<>();
+    public static final Map<Node, Collection<EventType>> typesRegistry = new WeakHashMap<>();
 
     public static void listen(Node node, EventListener listener) {
         var nodes = registry.computeIfAbsent(listener.getType(), k -> new WeakHashMap<>());
         var listeners = nodes.computeIfAbsent(node, k -> new LinkedHashSet<>());
         listeners.add(listener.getListener());
+        var types = typesRegistry.computeIfAbsent(node, k -> new HashSet<>());
+        types.add(listener.getType());
     }
 
     public static void unlisten(Node node, EventListener listener) {
@@ -26,6 +29,17 @@ public class Events {
             return;
         
         listeners.remove(listener.getListener());
+
+        if (!listeners.isEmpty())
+            return;
+
+        var types = typesRegistry.get(node);
+        if (types != null)
+            types.remove(listener.getType());
+    }
+
+    public static void unlistenAll(Node node, EventListener listener) {
+
     }
 
     public static Component listen(EventListener handler, Component inner) {

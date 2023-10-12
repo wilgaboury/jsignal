@@ -1,5 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
+import com.github.wilgaboury.jsignal.interfaces.Equals;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -139,5 +140,27 @@ public class BasicSignalTests {
 
                     onCleanup(() -> {});
                 })));
+    }
+
+    @Test
+    public void testConcurrentModificationIssues() {
+        Signal<Void> trigger = createSignal(null, Equals::never);
+        Ref<Boolean> bruh = new Ref<>(false);
+        Effect e1 = createEffect(() -> {
+            trigger.track();
+            if (bruh.get()) {
+                createEffect(() -> {
+                    trigger.track();
+                });
+            }
+        });
+        Effect e2 = createEffect(() -> {
+            trigger.track();
+        });
+        Effect e3 = createEffect(() -> {
+            trigger.track();
+        });
+        bruh.set(true);
+        trigger.accept(v -> null);
     }
 }

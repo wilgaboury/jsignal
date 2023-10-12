@@ -5,8 +5,6 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.WeakRef;
-import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigui.event.MouseEvent;
@@ -17,24 +15,22 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createContext;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
 
 public class SiguiWindow {
-    public static final Context<WeakRef<SiguiWindow>> CONTEXT = createContext(new WeakRef<>(null));
+    public static final Context<SiguiWindow> CONTEXT = createContext(null);
+    public static final Context<Window> CONTEXT_RAW = createContext(null);
 
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
     private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
-    private SignalLike<Optional<MetaNode>> root;
+    private MetaNode root;
 
     private MetaNode mouseDown;
     private MetaNode hovered;
@@ -52,6 +48,8 @@ public class SiguiWindow {
         return window;
     }
 
+
+
     public void close() {
         windows.remove(this);
         window.close();
@@ -61,12 +59,10 @@ public class SiguiWindow {
         if (!shouldLayout)
             return;
 
-        root.get().ifPresent(node -> {
-            var rect = window.getContentRect();
-            Yoga.nYGNodeCalculateLayout(node.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-            absoluteTree = node.updateAbsoluteTree(absoluteTree);
-            node.generateRenderOrder();
-        });
+        var rect = window.getContentRect();
+        Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+        absoluteTree = root.updateAbsoluteTree(absoluteTree);
+        root.generateRenderOrder();
 
         shouldLayout = false;
     }
@@ -75,7 +71,7 @@ public class SiguiWindow {
         canvas.clear(0xFFCC3333);
         int save = canvas.getSaveCount();
         try {
-            root.get().ifPresent(n -> paintInner(canvas, n));
+            paintInner(canvas, root);
         } finally {
             canvas.restoreToCount(save);
         }
@@ -106,6 +102,10 @@ public class SiguiWindow {
 
     public void requestLayout() {
         shouldLayout = true;
+        window.requestFrame();
+    }
+
+    public void requestFrame() {
         window.requestFrame();
     }
 
@@ -163,7 +163,7 @@ public class SiguiWindow {
     }
 
     private MetaNode pick(int x, int y) {
-        MetaNode normal = root.get().map(node -> node.pick(x, y)).orElse(null);
+        MetaNode normal = root.pick(x, y);
         List<MetaNode> absolute = absoluteTree.search(PointFloat.create(x, y))
                 .map(Entry::value)
                 .sorted((n1, n2) -> Integer.compare(n1.getRenderOrder(), n2.getRenderOrder()))
@@ -191,7 +191,11 @@ public class SiguiWindow {
         window.setLayer(layer);
 
         var that = new SiguiWindow(window);
-        that.root = createProvider(CONTEXT.provide(new WeakRef<>(that)), () -> MetaNode.create(root.get()));
+        that.root = createProvider(List.of(
+                CONTEXT.provide(that),
+                CONTEXT_RAW.provide(that.window)),
+                () -> MetaNode.createRoot(root.get())
+        );
         that.requestLayout();
         window.setEventListener(that::handleEvent);
         windows.add(that);
@@ -199,5 +203,9 @@ public class SiguiWindow {
         Sigui.invokeLater(() -> window.setVisible(true));
 
         return that;
+    }
+
+    public static Collection<SiguiWindow> getWindows() {
+        return Collections.unmodifiableSet(windows);
     }
 }
