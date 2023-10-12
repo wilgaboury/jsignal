@@ -7,7 +7,7 @@ import io.github.humbleui.skija.Paint;
 import org.lwjgl.util.yoga.Yoga;
 
 public class Circle {
-    private static final float radius = 100f;
+    private static final float radius = 50f;
 
     public static Component create() {
         return () -> new Node() {

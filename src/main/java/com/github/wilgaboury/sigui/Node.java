@@ -24,4 +24,14 @@ public interface Node {
     default void paint(Canvas canvas) {}
 
     record Offset(float dx, float dy) {};
+
+    @FunctionalInterface
+    interface Layouter {
+        void layout(long node);
+    }
+
+    @FunctionalInterface
+    interface Painter {
+        void paint(Canvas canvas);
+    }
 }
