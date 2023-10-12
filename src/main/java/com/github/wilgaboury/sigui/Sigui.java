@@ -1,20 +1,33 @@
 package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.jsignal.interfaces.Equals;
+import com.github.wilgaboury.jsignal.Trigger;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Window;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class Sigui {
     private static final Logger logger = Logger.getLogger(Sigui.class.getName());
-    public static Signal<Void> hotSwapTrigger;
+    public final static AtomicBoolean enableHotSwap = new AtomicBoolean(false);
+    public final static AtomicBoolean enableHotRestart = new AtomicBoolean(false);
+    public static Trigger hotSwapTrigger;
+    public static Trigger hotRestartTrigger;
+
+    public static void setEnableHotSwap(boolean enabled) {
+        enableHotSwap.set(enabled);
+    }
+
+    public static void setEnableHotRestart(boolean enabled) {
+        enableHotRestart.set(enabled);
+    }
 
     public static void start(Runnable runnable) {
         App.start(() -> {
-            hotSwapTrigger = ReactiveUtil.createSignal(null, Equals::never);
+            hotSwapTrigger = enableHotSwap.get() ? ReactiveUtil.createTrigger() : new Trigger(ReactiveUtil.createEmptySignal());
+            hotRestartTrigger = enableHotRestart.get() ? ReactiveUtil.createTrigger() : new Trigger(ReactiveUtil.createEmptySignal());
+
             runnable.run();
         });
     }

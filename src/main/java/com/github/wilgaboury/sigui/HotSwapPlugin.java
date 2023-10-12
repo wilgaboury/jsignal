@@ -9,8 +9,8 @@ public class HotSwapPlugin {
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
     public static void onAnyReload() {
         Sigui.invokeLater(() -> {
-            Sigui.hotSwapTrigger.accept(v -> null);
-            Sigui.requestLayout();
+            Sigui.hotSwapTrigger.trigger();
+            Sigui.hotRestartTrigger.trigger();
         });
     }
 }

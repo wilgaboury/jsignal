@@ -74,6 +74,18 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
+    public static <T> EmptySignal<T> createEmptySignal() {
+        return new EmptySignal<>();
+    }
+
+    public static Trigger createTrigger() {
+        return new Trigger(createSignal(null, Equals::never));
+    }
+
+    public static Trigger createAsyncTrigger() {
+        return new Trigger(createAsyncSignal(null, Equals::never));
+    }
+
     public static <T> Computed<T> createComputed(Supplier<T> supplier) {
         return createComputed(createSignal(null), supplier);
     }
@@ -258,6 +270,14 @@ public class ReactiveUtil {
 
     public static <T> T useContext(Context<T> context) {
         return ReactiveEnv.getInstance().get().peekProvider().use(context);
+    }
+
+    public static Provider saveContext() {
+        return ReactiveEnv.getInstance().get().peekProvider();
+    }
+
+    public static <T> T loadContext(Provider provider, Supplier<T> inner) {
+        return ReactiveEnv.getInstance().get().provider(provider, inner);
     }
 
     public static <T> Flow.Publisher<T> createPublisher(SignalLike<T> signal)  {

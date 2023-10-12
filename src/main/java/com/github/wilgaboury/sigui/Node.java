@@ -6,6 +6,9 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The primary layout and rendering primitive of Sigui
+ */
 public interface Node {
     default List<Component> children() {
         return Collections.emptyList();

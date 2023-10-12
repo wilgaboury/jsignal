@@ -4,6 +4,7 @@ import com.github.davidmoten.rtree.Entry;
 import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.PointFloat;
+import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.event.Events;
@@ -18,8 +19,7 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createContext;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class SiguiWindow {
     public static final Context<SiguiWindow> CONTEXT = createContext(null);
@@ -30,7 +30,7 @@ public class SiguiWindow {
     private final Window window;
     private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
-    private MetaNode root;
+    private Computed<MetaNode> root;
 
     private MetaNode mouseDown;
     private MetaNode hovered;
@@ -60,9 +60,9 @@ public class SiguiWindow {
             return;
 
         var rect = window.getContentRect();
-        Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-        absoluteTree = root.updateAbsoluteTree(absoluteTree);
-        root.generateRenderOrder();
+        Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+        absoluteTree = root.get().updateAbsoluteTree(absoluteTree);
+        root.get().generateRenderOrder();
 
         shouldLayout = false;
     }
@@ -71,7 +71,7 @@ public class SiguiWindow {
         canvas.clear(0xFFCC3333);
         int save = canvas.getSaveCount();
         try {
-            paintInner(canvas, root);
+            paintInner(canvas, root.get());
         } finally {
             canvas.restoreToCount(save);
         }
@@ -163,7 +163,7 @@ public class SiguiWindow {
     }
 
     private MetaNode pick(int x, int y) {
-        MetaNode normal = root.pick(x, y);
+        MetaNode normal = root.get().pick(x, y);
         List<MetaNode> absolute = absoluteTree.search(PointFloat.create(x, y))
                 .map(Entry::value)
                 .sorted((n1, n2) -> Integer.compare(n1.getRenderOrder(), n2.getRenderOrder()))
@@ -191,12 +191,14 @@ public class SiguiWindow {
         window.setLayer(layer);
 
         var that = new SiguiWindow(window);
-        that.root = createProvider(List.of(
+        that.root = createComputed(() -> {
+            Sigui.hotRestartTrigger.track();
+            that.requestLayout();
+            return createProvider(List.of(
                 CONTEXT.provide(that),
                 CONTEXT_RAW.provide(that.window)),
-                () -> MetaNode.createRoot(root.get())
-        );
-        that.requestLayout();
+                () -> MetaNode.createRoot(root.get()));
+        });
         window.setEventListener(that::handleEvent);
         windows.add(that);
 

@@ -46,6 +46,8 @@ public class MetaNode {
         this.renderOrder = 0;
 
         this.layoutEffect = createEffect(() -> {
+            Sigui.hotSwapTrigger.track();
+
             node.layout(yoga);
             window.requestLayout();
         });
@@ -56,13 +58,10 @@ public class MetaNode {
 
     private Computed<List<MetaNode>> createChildren() {
         return ReactiveList.createMapped(
-                () -> {
-                    Sigui.hotSwapTrigger.track();
-                    return node.children().stream()
+                () -> node.children().stream()
                             .map(Supplier::get)
                             .filter(Objects::nonNull)
-                            .toList();
-                },
+                            .toList(),
                 (child, idx) -> {
                     var meta = new MetaNode(this, child);
 
@@ -87,8 +86,6 @@ public class MetaNode {
 
     private Computed<List<MetaNode>> createRootChild() {
         return createComputed(() -> {
-            Sigui.hotSwapTrigger.track();
-
             var child = node.children().get(0).get();
             if (child == null)
                 return Collections.emptyList();

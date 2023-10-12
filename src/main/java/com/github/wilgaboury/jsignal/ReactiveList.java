@@ -9,16 +9,12 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class ReactiveList {
-    public static <T> Supplier<List<T>> of(T... inner) {
-        return () -> List.of(inner);
+    public static <T> Computed<List<T>> createFixed(Supplier<T>... inner) {
+        return createComputed(() -> Arrays.stream(inner).map(Supplier::get).toList());
     }
 
-    public static <T> Supplier<List<T>> fixed(Supplier<T>... inner) {
-        return () -> Arrays.stream(inner).map(Supplier::get).toList();
-    }
-
-    public static <T> Supplier<List<T>> compose(Supplier<List<T>>... inner) {
-        return () -> Arrays.stream(inner).map(Supplier::get).flatMap(List::stream).toList();
+    public static <T> Computed<List<T>> createComposed(Supplier<List<T>>... inner) {
+        return createComputed(() -> Arrays.stream(inner).map(Supplier::get).flatMap(List::stream).toList());
     }
 
     /**
