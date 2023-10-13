@@ -7,7 +7,6 @@ import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Sigui;
 import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigui.event.EventListener;
-import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.*;
 import io.github.humbleui.jwm.Window;
 
@@ -31,30 +30,28 @@ public class TodoApp {
         Signal<Boolean> isBall = ReactiveUtil.createSignal(false);
 
         SiguiWindow.create(window,
-                () -> ReactiveUtil.createProvider(TEST_CONTEXT.provide(0), () -> Events.listen(
-                        EventListener.onMouseClick(e -> isBall.accept(v -> !v)),
-                        Box.create(() -> Style.builder()
-                                .background(EzColors.BLACK)
-                                .border(20, EzColors.RED_400)
-                                .pad(10 ,20)
-                                .wrap()
-                                .center()
-                                .row()
-                                .build(), ReactiveUtil.createComputed(() -> ballList(5, isBall)))
-                ))
+                () -> ReactiveUtil.createProvider(TEST_CONTEXT.provide(0), () ->
+                        Box.builder()
+                                .events(() -> List.of(
+                                        EventListener.onMouseClick(e -> isBall.accept(v -> !v))
+                                ))
+                                .style(() -> Style.builder()
+                                        .background(isBall.get() ? EzColors.FUCHSIA_600 : EzColors.BLACK)
+                                        .border(new Insets(15))
+                                        .borderColor(isBall.get() ? EzColors.SLATE_500 : EzColors.RED_100)
+                                        .padding(new Insets(10, 10))
+                                        .column()
+                                        .center()
+                                        .build()
+                                )
+                                .children(ReactiveUtil.createComputed(() -> ballList(5, isBall)))
+                )
         );
     }
 
     public static List<Component> ballList(int num, Supplier<Boolean> isBall) {
         System.out.println(ReactiveUtil.useContext(TEST_CONTEXT));
-        Sigui.hotSwapTrigger.track();
-        return Stream.generate(() ->
-                        Events.listen(List.of(
-                                        EventListener.onMouseOut(e -> System.out.println("mouse out circle")),
-                                        EventListener.onMouseLeave(e -> System.out.println("mouse leave circle"))
-                                ),
-                                When.create(isBall, Circle::create, Rectangle::create)
-                        ))
+        return Stream.generate(() -> When.create(isBall, Circle::create, Rectangle::create))
                 .limit(num)
                 .toList();
     }

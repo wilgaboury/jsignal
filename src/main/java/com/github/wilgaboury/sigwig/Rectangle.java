@@ -10,7 +10,7 @@ public class Rectangle {
     private static final float radius = 25;
 
     public static Component create() {
-        return () -> new Node() {
+        return Component.create(() -> new Node() {
             @Override
             public void layout(long node) {
                 Yoga.YGNodeStyleSetWidth(node, radius*2);
@@ -24,6 +24,6 @@ public class Rectangle {
                     canvas.drawCircle(radius, radius, radius, paint);
                 }
             }
-        };
+        });
     }
 }

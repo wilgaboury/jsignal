@@ -1,16 +1,5 @@
 package com.github.wilgaboury.examples.todo;
 
-import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.ReactiveList;
-import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.Component;
-import com.github.wilgaboury.sigwig.Flex;
-import com.github.wilgaboury.sigwig.Text;
-
-import java.util.List;
-import java.util.function.Supplier;
-
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createProvider;
 
 public class TodoList {

@@ -58,6 +58,7 @@ public class MetaNode {
     }
 
     private Computed<List<MetaNode>> createChildren() {
+        // TODO: this is recreating node objects every time
         return ReactiveList.createMapped(
                 () -> node.children().stream()
                             .map(Supplier::get)

@@ -8,7 +8,7 @@ public class NodeDecorator implements Node {
     private final Node node;
 
     public NodeDecorator(Node node) {
-        this.node = node;
+        this.node = node == null ? Node.empty() : node;
     }
 
     @Override

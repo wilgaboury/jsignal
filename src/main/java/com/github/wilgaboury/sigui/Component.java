@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.ReactiveEnv;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 
 import java.util.function.Supplier;
@@ -10,7 +11,8 @@ public interface Component extends Supplier<Node> {
         return () -> null;
     }
 
-    static Component lazy(Supplier<Component> child) {
-        return ReactiveUtil.captureContext(child);
+    static Component create(Supplier<Node> supplier) {
+        var computed = ReactiveUtil.createComputed(supplier);
+        return computed::get;
     }
 }

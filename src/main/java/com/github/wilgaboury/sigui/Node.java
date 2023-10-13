@@ -5,6 +5,7 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -36,5 +37,9 @@ public interface Node {
     @FunctionalInterface
     interface Painter {
         void paint(Canvas canvas, long node);
+    }
+
+    static Node empty() {
+        return new Node() {};
     }
 }

@@ -7,7 +7,7 @@ import org.hotswap.agent.annotation.Plugin;
 @Plugin(name = "Sigui", testedVersions = {})
 public class HotSwapPlugin {
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public static void onAnyReload() {
+    public static void onAnyReload(Class<?> clazz) {
         Sigui.invokeLater(() -> {
             Sigui.hotSwapTrigger.trigger();
             Sigui.hotRestartTrigger.trigger();

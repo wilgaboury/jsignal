@@ -9,6 +9,13 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// TODO: figure out how to dedup transative dependencies
+// Ex createEffect(() -> { track; createEffect(() -> track })
+// outer effect should only run once
+// actually inner effect should get first disposed and then recreated during reruning of first
+// Ex var i = createComputed(() -> { track; crateComputed(() -> track); bruh)};
+// maybe this all just works correctly lol, make some unit tests tho
+
 /**
  * All signals that communicate and track dependencies with each other share one of these objects. The context's job is
  * to create the "environment" that listeners run in. Meaning to provide the current listener to signals being accessed
