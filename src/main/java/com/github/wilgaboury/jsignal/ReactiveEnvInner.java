@@ -136,11 +136,7 @@ public class ReactiveEnvInner {
 
     public void onCleanup(Runnable inner) {
         Optional<Cleaner> maybeCleanup = peekCleaner();
-        if (maybeCleanup.isPresent()) {
-            maybeCleanup.get().add(inner);
-        } else {
-            logger.log(Level.WARNING, "calling onCleanup outside of cleanup scope");
-        }
+        maybeCleanup.ifPresent(value -> value.add(inner));
     }
 
     public void addToBatch(EffectRef ref) {

@@ -23,12 +23,64 @@ public class YogaUtil {
         }
     }
 
-    public static Rect toRect(long node) {
+    public static Rect relRect(long node) {
         float x = Yoga.YGNodeLayoutGetLeft(node);
-        float y = (int)Yoga.YGNodeLayoutGetTop(node);
-        float width = (int)Yoga.YGNodeLayoutGetWidth(node);
-        float height = (int)Yoga.YGNodeLayoutGetHeight(node);
+        float y = Yoga.YGNodeLayoutGetTop(node);
+        float width = Yoga.YGNodeLayoutGetWidth(node);
+        float height = Yoga.YGNodeLayoutGetHeight(node);
 
         return Rect.makeXYWH(x, y, width, height);
+    }
+
+    public static Rect boundingRect(long node) {
+        float width = Yoga.YGNodeLayoutGetWidth(node);
+        float height = Yoga.YGNodeLayoutGetHeight(node);
+
+        return Rect.makeXYWH(0, 0, width, height);
+    }
+
+    public static Rect borderRect(long node) {
+        var rect = boundingRect(node);
+        var left = Yoga.YGNodeLayoutGetMargin(node, Yoga.YGEdgeLeft);
+        var top = Yoga.YGNodeLayoutGetMargin(node, Yoga.YGEdgeTop);
+        var right = Yoga.YGNodeLayoutGetMargin(node, Yoga.YGEdgeRight);
+        var bottom = Yoga.YGNodeLayoutGetMargin(node, Yoga.YGEdgeBottom);
+
+        return Rect.makeLTRB(
+                rect.getLeft() + left,
+                rect.getTop() + top,
+                rect.getRight() - right,
+                rect.getBottom() - bottom
+        );
+    }
+
+    public static Rect paddingRect(long node) {
+        var rect = boundingRect(node);
+        var left = Yoga.YGNodeLayoutGetBorder(node, Yoga.YGEdgeLeft);
+        var top = Yoga.YGNodeLayoutGetBorder(node, Yoga.YGEdgeTop);
+        var right = Yoga.YGNodeLayoutGetBorder(node, Yoga.YGEdgeRight);
+        var bottom = Yoga.YGNodeLayoutGetBorder(node, Yoga.YGEdgeBottom);
+
+        return Rect.makeLTRB(
+                rect.getLeft() + left,
+                rect.getTop() + top,
+                rect.getRight() - right,
+                rect.getBottom() - bottom
+        );
+    }
+
+    public static Rect contentRect(long node) {
+        var rect = paddingRect(node);
+        var left = Yoga.YGNodeLayoutGetPadding(node, Yoga.YGEdgeLeft);
+        var top = Yoga.YGNodeLayoutGetPadding(node, Yoga.YGEdgeTop);
+        var right = Yoga.YGNodeLayoutGetPadding(node, Yoga.YGEdgeRight);
+        var bottom = Yoga.YGNodeLayoutGetPadding(node, Yoga.YGEdgeBottom);
+
+        return Rect.makeLTRB(
+                rect.getLeft() + left,
+                rect.getTop() + top,
+                rect.getRight() - right,
+                rect.getBottom() - bottom
+        );
     }
 }

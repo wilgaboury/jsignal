@@ -91,7 +91,7 @@ public class SiguiWindow {
                 canvas.clipRect(Rect.makeXYWH(0, 0, width, height));
             }
 
-            node.paint(canvas);
+            node.paint(canvas, yoga);
             for (MetaNode child : n.getChildren()) {
                 paintInner(canvas, child);
             }

@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Trigger;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Window;
+import org.lwjgl.util.yoga.Yoga;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -15,6 +16,8 @@ public class Sigui {
     public static Trigger hotSwapTrigger;
     public static Trigger hotRestartTrigger;
 
+    private static long clearNodeStyle;
+
     public static void setEnableHotSwap(boolean enabled) {
         enableHotSwap.set(enabled);
     }
@@ -25,6 +28,7 @@ public class Sigui {
 
     public static void start(Runnable runnable) {
         App.start(() -> {
+            clearNodeStyle = Yoga.YGNodeNew();
             hotSwapTrigger = enableHotSwap.get() ? ReactiveUtil.createTrigger() : new Trigger(ReactiveUtil.createEmptySignal());
             hotRestartTrigger = enableHotRestart.get() ? ReactiveUtil.createTrigger() : new Trigger(ReactiveUtil.createEmptySignal());
 
@@ -54,5 +58,9 @@ public class Sigui {
         for (var window : SiguiWindow.getWindows()) {
             window.requestLayout();
         }
+    }
+
+    public static void clearNodeStyle(long node) {
+        Yoga.YGNodeCopyStyle(node, clearNodeStyle);
     }
 }

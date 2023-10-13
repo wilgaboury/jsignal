@@ -3,7 +3,9 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.NodeDecorator;
+import com.github.wilgaboury.sigui.YogaUtil;
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Paint;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.ArrayList;
@@ -25,9 +27,9 @@ public class Style {
         }
     }
 
-    public void paint(Canvas canvas) {
+    public void paint(Canvas canvas, long yoga) {
         for (var painter : painters) {
-            painter.paint(canvas);
+            painter.paint(canvas, yoga);
         }
     }
 
@@ -59,6 +61,64 @@ public class Style {
             return this;
         }
 
+        public Builder pad(float pad) {
+            layouters.add(node -> {
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeAll, pad);
+            });
+            return this;
+        }
+
+        public Builder pad(float y, float x) {
+            layouters.add(node -> {
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeHorizontal, x);
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeVertical, y);
+            });
+            return this;
+        }
+
+        public Builder pad(float top, float right, float bottom, float left) {
+            layouters.add(node -> {
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeTop, top);
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeRight, right);
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeBottom, bottom);
+                Yoga.YGNodeStyleSetPadding(node, Yoga.YGEdgeLeft, left);
+            });
+            return this;
+        }
+
+        public Builder border(float width, int color) {
+            layouters.add(node -> {
+                Yoga.YGNodeStyleSetBorder(node, Yoga.YGEdgeAll, width);
+            });
+            painters.add((canvas, yoga) -> {
+                try (var paint = new Paint()) {
+                    paint.setColor(color);
+                    canvas.drawDRRect(
+                            YogaUtil.borderRect(yoga).withRadii(0),
+                            YogaUtil.paddingRect(yoga).withRadii(0),
+                            paint);
+                }
+            });
+            return this;
+        }
+
+        public Builder wrap() {
+            layouters.add(node -> {
+                Yoga.YGNodeStyleSetFlexWrap(node, Yoga.YGWrapWrap);
+            });
+            return this;
+        }
+
+        public Builder background(int color) {
+            painters.add((canvas, yoga) -> {
+                try (var paint = new Paint()) {
+                    paint.setColor(color);
+                    canvas.drawRect(YogaUtil.paddingRect(yoga), paint);
+                }
+            });
+            return this;
+        }
+
         public Style build() {
             layouters.trimToSize();
             painters.trimToSize();
@@ -75,9 +135,9 @@ public class Style {
             }
 
             @Override
-            public void paint(Canvas canvas) {
-                style.get().paint(canvas);
-                super.paint(canvas);
+            public void paint(Canvas canvas, long yoga) {
+                style.get().paint(canvas, yoga);
+                super.paint(canvas, yoga);
             }
         };
     }

@@ -22,7 +22,7 @@ public class Text {
             }
 
             @Override
-            public void paint(Canvas canvas) {
+            public void paint(Canvas canvas, long node) {
                 // do rendering with text
                 try (Paint paint = new Paint()) {
                     paint.setColor(0xFF000000);

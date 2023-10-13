@@ -26,6 +26,7 @@ public class ReactiveList {
         var indexes = new ArrayList<Consumer<Integer>>();
         var cleaners = new ArrayList<Runnable>();
 
+        onCleanup(() -> cleaners.forEach(Runnable::run));
         return createComputed(on(list, (newItems) -> {
             return untrack(() -> {
                 Function<Integer, Function<Cleaner, U>> mapper = j -> cleaner -> {

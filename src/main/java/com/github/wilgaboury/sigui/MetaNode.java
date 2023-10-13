@@ -48,6 +48,7 @@ public class MetaNode {
         this.layoutEffect = createEffect(() -> {
             Sigui.hotSwapTrigger.track();
 
+            Sigui.clearNodeStyle(yoga);
             node.layout(yoga);
             window.requestLayout();
         });
@@ -108,7 +109,7 @@ public class MetaNode {
 
     public MetaNode pick(float x, float y) {
         // TODO: optimize, only check elements that are visible, i.e. respect window and clipping
-        if (Util.contains(YogaUtil.toRect(yoga), x, y)) {
+        if (Util.contains(YogaUtil.relRect(yoga), x, y)) {
             var offset = node.offset(yoga);
             float xNew = x - offset.dx();
             float yNew = y - offset.dy();

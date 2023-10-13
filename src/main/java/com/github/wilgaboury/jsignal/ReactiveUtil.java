@@ -280,6 +280,11 @@ public class ReactiveUtil {
         return ReactiveEnv.getInstance().get().provider(provider, inner);
     }
 
+    public static <T> T captureContext(Supplier<T> inner) {
+        Provider provider = ReactiveUtil.saveContext();
+        return ReactiveUtil.loadContext(provider, inner);
+    }
+
     public static <T> Flow.Publisher<T> createPublisher(SignalLike<T> signal)  {
         return new PublisherAdapter<>(signal);
     }

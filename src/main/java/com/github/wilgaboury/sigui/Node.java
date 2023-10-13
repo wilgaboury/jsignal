@@ -24,7 +24,7 @@ public interface Node {
         return new Offset(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node));
     }
 
-    default void paint(Canvas canvas) {}
+    default void paint(Canvas canvas, long node) {}
 
     record Offset(float dx, float dy) {};
 
@@ -35,6 +35,6 @@ public interface Node {
 
     @FunctionalInterface
     interface Painter {
-        void paint(Canvas canvas);
+        void paint(Canvas canvas, long node);
     }
 }

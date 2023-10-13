@@ -32,7 +32,7 @@ public class NodeDecorator implements Node {
     }
 
     @Override
-    public void paint(Canvas canvas) {
-        node.paint(canvas);
+    public void paint(Canvas canvas, long yoga) {
+        node.paint(canvas, yoga);
     }
 }
