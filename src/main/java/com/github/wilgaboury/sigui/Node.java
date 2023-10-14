@@ -1,11 +1,10 @@
 package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.skija.Canvas;
-import org.lwjgl.util.yoga.Yoga;
+import io.github.humbleui.skija.Matrix33;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -15,35 +14,25 @@ public interface Node {
         return Collections.emptyList();
     }
 
-    default void layout(long node) {}
+    default void layout(long yoga) {}
 
-    default boolean focus() {
-        return false;
+    default Matrix33 transform(long yoga) {
+        return Matrix33.IDENTITY;
     }
 
-    default boolean clip() {
-        return false;
+    default void paint(Canvas canvas, long yoga) {
+        canvas.setMatrix(Matrix33.makeTranslate(5, 5).makeConcat(5, 5).)
     }
 
-    default Offset offset(long node) {
-        return new Offset(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node));
-    }
-
-    default void paint(Canvas canvas, long node) {}
-
-    record Offset(float dx, float dy) {};
+    default void paintAfter(Canvas canvas, long yoga) {}
 
     @FunctionalInterface
     interface Layouter {
-        void layout(long node);
+        void layout(long yoga);
     }
 
     @FunctionalInterface
     interface Painter {
-        void paint(Canvas canvas, long node);
-    }
-
-    static Node empty() {
-        return new Node() {};
+        void paint(Canvas canvas, long yoga);
     }
 }

@@ -112,6 +112,7 @@ public class MetaNode {
         // TODO: optimize, only check elements that are visible, i.e. respect window and clipping
         if (Util.contains(YogaUtil.relRect(yoga), x, y)) {
             var offset = node.offset(yoga);
+//            return new Offset(Yoga.YGNodeLayoutGetLeft(node), Yoga.YGNodeLayoutGetTop(node));
             float xNew = x - offset.dx();
             float yNew = y - offset.dy();
             for (var child : children.get()) {
