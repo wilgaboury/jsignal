@@ -3,12 +3,13 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.sigui.YogaUtil;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
+import io.github.humbleui.types.RRect;
 import org.lwjgl.util.yoga.Yoga;
 
 public class Style {
     private final Float radius;
     private final Insets margins;
-    private final Insets border;
+    private final Float border;
     private final Insets padding;
     private final Integer justify;
     private final Integer align;
@@ -40,7 +41,7 @@ public class Style {
         }
 
         if (border != null) {
-            border.set(Yoga::YGNodeStyleSetBorder, node);
+            Yoga.YGNodeStyleSetBorder(node, Yoga.YGEdgeAll, border);
         }
 
         if (padding != null) {
@@ -89,14 +90,19 @@ public class Style {
                 canvas.drawRect(rect, paint);
             }
 
-            if (borderColor != null) {
-                var outer = YogaUtil.borderRect(yoga);
-                var inner = YogaUtil.paddingRect(yoga);
+            if (borderColor != null && border != null && border > 0) {
+                var outer = YogaUtil.borderRect(yoga).withRadii(radius == null ? 0 : radius);
+                var inner = outer.inflate(-border);
+                RRect innerRadius;
+                if (inner instanceof RRect r) {
+                    innerRadius = r;
+                } else {
+                    innerRadius = inner.withRadii(0);
+                }
                 paint.setColor(borderColor);
-                canvas.drawDRRect(outer.withRadii(0), inner.withRadii(0), paint);
+                canvas.drawDRRect(outer, innerRadius, paint);
             }
         }
-
     }
 
     public static Builder builder() {
@@ -106,7 +112,7 @@ public class Style {
     public static class Builder {
         private Float radius;
         private Insets margins;
-        private Insets border;
+        private Float border;
         private Insets padding;
         private Integer justify;
         private Integer align;
@@ -145,7 +151,7 @@ public class Style {
             return this;
         }
 
-        public Builder border(Insets border) {
+        public Builder border(Float border) {
             this.border = border;
             return this;
         }
@@ -162,6 +168,11 @@ public class Style {
 
         public Builder borderColor(Integer color) {
             this.borderColor = color;
+            return this;
+        }
+
+        public Builder radius(Float radius) {
+            this.radius = radius;
             return this;
         }
 

@@ -6,10 +6,10 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.sigui.event.EventType;
-import com.github.wilgaboury.sigui.event.Events;
-import com.github.wilgaboury.sigui.event.MouseEvent;
+import com.github.wilgaboury.sigui.event.*;
+import com.github.wilgaboury.sigwig.EzColors;
 import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.Event;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.skija.Canvas;
@@ -34,6 +34,7 @@ public class SiguiWindow {
 
     private MetaNode mouseDown;
     private MetaNode hovered;
+    private MetaNode focus;
 
     // hacky solution for stupid weird offset bug
     private boolean firstFrame = true;
@@ -48,11 +49,13 @@ public class SiguiWindow {
         return window;
     }
 
-
-
     public void close() {
         windows.remove(this);
         window.close();
+    }
+
+    public MetaNode getRoot() {
+        return root.get();
     }
 
     private void layout() {
@@ -68,7 +71,7 @@ public class SiguiWindow {
     }
 
     private void paint(Canvas canvas) {
-        canvas.clear(0xFFCC3333);
+        canvas.clear(EzColors.WHITE);
         int save = canvas.getSaveCount();
         try {
             paintInner(canvas, root.get());
@@ -125,10 +128,36 @@ public class SiguiWindow {
             }
         } else if (e instanceof EventWindowResize) {
             requestLayout();
+        } else if (e instanceof EventKey ee) {
+            if (focus == null) {
+                if (root == null) {
+                    return;
+                } else {
+                    focus = root.get();
+                }
+            }
+
+            if (ee.isPressed()) {
+                Events.fireBubble(new KeyboardEvent(EventType.KEY_DOWN, ee), focus);
+            } else {
+                Events.fireBubble(new KeyboardEvent(EventType.KEY_UP, ee), focus);
+            }
         } else if (e instanceof EventMouseButton ee) {
             if (hovered != null) {
                 if (ee.isPressed()) {
                     mouseDown = hovered;
+
+                    Events.fireBubble(new MouseEvent(EventType.MOUSE_DOWN), mouseDown);
+
+                    var focusTemp = mouseDown;
+                    while (!focusTemp.getNode().focus() && focusTemp.getParent() != null) {
+                        focusTemp = focusTemp.getParent();
+                    }
+                    if (focusTemp != focus) {
+                        Events.fire(new FocusEvent(EventType.BLUR), focus);
+                        focus = focusTemp;
+                        Events.fire(new FocusEvent(EventType.FOCUS), focus);
+                    }
                 } else {
                     if (mouseDown == hovered) {
                         Events.fireBubble(new MouseEvent(EventType.MOUSE_CLICK), hovered);

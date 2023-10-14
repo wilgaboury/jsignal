@@ -17,6 +17,10 @@ public interface Node {
 
     default void layout(long node) {}
 
+    default boolean focus() {
+        return false;
+    }
+
     default boolean clip() {
         return false;
     }

@@ -8,4 +8,8 @@ public enum EventType {
     MOUSE_DOWN,
     MOUSE_UP,
     MOUSE_CLICK,
+    FOCUS,
+    BLUR,
+    KEY_DOWN,
+    KEY_UP,
 }

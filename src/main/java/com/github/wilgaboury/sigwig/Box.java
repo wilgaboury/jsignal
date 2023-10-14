@@ -23,6 +23,7 @@ public class Box {
     public static class Builder {
         private Supplier<Style> style = () -> Style.builder().build();
         private Supplier<List<EventListener>> listeners = Collections::emptyList;
+        private boolean focus = false;
 
         public Builder style(Supplier<Style> style) {
             this.style = style;
@@ -34,12 +35,22 @@ public class Box {
             return this;
         }
 
+        public Builder focus() {
+            focus = true;
+            return this;
+        }
+
         public Component apply(Supplier<Node> inner) {
             return Component.create(applyRaw(inner));
         }
 
         public Supplier<Node> applyRaw(Supplier<Node> inner) {
             return () -> applyListeners(listeners, new NodeDecorator(inner.get()) {
+                @Override
+                public boolean focus() {
+                    return focus;
+                }
+
                 @Override
                 public void layout(long node) {
                     style.get().layout(node);
@@ -61,6 +72,11 @@ public class Box {
                 @Override
                 public List<Component> children() {
                     return List.of(child);
+                }
+
+                @Override
+                public boolean focus() {
+                    return focus;
                 }
 
                 @Override
@@ -87,6 +103,11 @@ public class Box {
                 }
 
                 @Override
+                public boolean focus() {
+                    return focus;
+                }
+
+                @Override
                 public void layout(long node) {
                     style.get().layout(node);
                 }
@@ -107,6 +128,11 @@ public class Box {
                 @Override
                 public List<Component> children() {
                     return children.get();
+                }
+
+                @Override
+                public boolean focus() {
+                    return focus;
                 }
 
                 @Override

@@ -78,6 +78,24 @@ public class Events {
         }
     }
 
+    public static <T extends Event> void fireFirst(T event, MetaNode node) {
+        var nodes = registry.get(event.getType());
+        if (nodes == null || nodes.isEmpty())
+            return;
+
+        for (; node != null && event.isPropagating(); node = node.getParent()) {
+            var listeners = nodes.get(node.getNode());
+            if (listeners == null)
+                continue;
+
+            for (Consumer<?> listener : listeners) {
+                ((Consumer<T>)listener).accept(event);
+                if (!event.isImmediatePropagating())
+                    return;
+            }
+        }
+    }
+
     public static <T extends Event> void fire(T event, MetaNode node) {
         var nodes = registry.get(event.getType());
         if (nodes == null)

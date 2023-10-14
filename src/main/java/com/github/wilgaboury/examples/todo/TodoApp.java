@@ -7,6 +7,7 @@ import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.Sigui;
 import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.*;
 import io.github.humbleui.jwm.Window;
 
@@ -29,7 +30,7 @@ public class TodoApp {
 
         Signal<Boolean> isBall = ReactiveUtil.createSignal(false);
 
-        SiguiWindow.create(window,
+        var siguiWindow = SiguiWindow.create(window,
                 () -> ReactiveUtil.createProvider(TEST_CONTEXT.provide(0), () ->
                         Box.builder()
                                 .events(() -> List.of(
@@ -37,7 +38,8 @@ public class TodoApp {
                                 ))
                                 .style(() -> Style.builder()
                                         .background(isBall.get() ? EzColors.FUCHSIA_600 : EzColors.BLACK)
-                                        .border(new Insets(15))
+                                        .radius(50f)
+                                        .border(15f)
                                         .borderColor(isBall.get() ? EzColors.SLATE_500 : EzColors.RED_100)
                                         .padding(new Insets(10, 10))
                                         .column()
@@ -47,6 +49,10 @@ public class TodoApp {
                                 .children(ReactiveUtil.createComputed(() -> ballList(5, isBall)))
                 )
         );
+
+        Events.listen(siguiWindow.getRoot().getNode(), EventListener.onKeyDown(e -> {
+            System.out.println(e.getEvent().getKey().getName());
+        }));
     }
 
     public static List<Component> ballList(int num, Supplier<Boolean> isBall) {
