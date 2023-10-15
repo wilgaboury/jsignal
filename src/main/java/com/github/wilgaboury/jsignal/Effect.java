@@ -54,10 +54,11 @@ public class Effect implements EffectLike {
 
             env.batch(() ->
                     env.cleaner(cleanup, ReactiveUtil.toSupplier(() ->
-                            env.provider(provider, ReactiveUtil.toSupplier(() -> {
+                            env.provider(provider, () -> {
                                 cleanup.run();
                                 env.effect(this, ReactiveUtil.toSupplier(effect));
-                            })))
+                                return null;
+                            }))
                     )
             );
         });
@@ -81,7 +82,10 @@ public class Effect implements EffectLike {
     }
 
     private void maybeSynchronize(Runnable inner) {
-        maybeSynchronize(ReactiveUtil.toSupplier(inner));
+        maybeSynchronize(() -> {
+            inner.run();
+            return null;
+        });
     }
 
     private <T> T maybeSynchronize(Supplier<T> inner) {
