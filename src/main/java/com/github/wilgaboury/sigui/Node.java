@@ -14,14 +14,12 @@ public interface Node {
         return Collections.emptyList();
     }
 
+    default boolean focus() {
+        return false;
+    }
     default void layout(long yoga) {}
 
-    default Matrix33 transform(long yoga) {
-        return Matrix33.IDENTITY;
-    }
-
     default void paint(Canvas canvas, long yoga) {
-        canvas.setMatrix(Matrix33.makeTranslate(5, 5).makeConcat(5, 5).)
     }
 
     default void paintAfter(Canvas canvas, long yoga) {}
@@ -34,5 +32,9 @@ public interface Node {
     @FunctionalInterface
     interface Painter {
         void paint(Canvas canvas, long yoga);
+    }
+
+    static Node empty() {
+        return new Node() {};
     }
 }

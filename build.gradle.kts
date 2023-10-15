@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id("java")
 }
@@ -5,7 +7,8 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
-val skijaArtifact = "skija-linux-x64";
+val skijaArtifact = "skija-windows-x64";
+//val skijaArtifact = "skija-linux-x64";
 val skijaVersion = "0.116.1";
 
 val lwjglVersion = "3.3.3"
@@ -40,6 +43,7 @@ dependencies {
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-yoga")
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-yoga", classifier = lwjglNatives)
 
     implementation("io.github.humbleui:${skijaArtifact}:${skijaVersion}")
     implementation("io.github.humbleui:jwm:0.4.15")
@@ -57,3 +61,11 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+
+
+
+
+
+
+

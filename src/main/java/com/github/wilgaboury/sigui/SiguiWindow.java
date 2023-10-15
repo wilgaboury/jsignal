@@ -11,6 +11,7 @@ import com.github.wilgaboury.sigwig.EzColors;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.Event;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
+import io.github.humbleui.jwm.skija.LayerD3D12Skija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.types.Rect;
@@ -83,16 +84,12 @@ public class SiguiWindow {
     private void paintInner(Canvas canvas, MetaNode n) {
         var node = n.getNode();
         var yoga = n.getYoga();
-        var offset = node.offset(yoga);
+        var dx = Yoga.YGNodeLayoutGetLeft(yoga);
+        var dy = Yoga.YGNodeLayoutGetTop(yoga);
 
         var count = canvas.save();
         try {
-            canvas.translate(offset.dx(), offset.dy());
-            if (node.clip()) {
-                var width = Yoga.YGNodeLayoutGetWidth(yoga);
-                var height = Yoga.YGNodeLayoutGetHeight(yoga);
-                canvas.clipRect(Rect.makeXYWH(0, 0, width, height));
-            }
+            canvas.translate(dx, dy);
 
             node.paint(canvas, yoga);
             for (MetaNode child : n.getChildren()) {
@@ -214,7 +211,8 @@ public class SiguiWindow {
     }
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {
-        LayerGLSkija layer = new LayerGLSkija();
+//        LayerGLSkija layer = new LayerGLSkija();
+        LayerD3D12Skija layer = new LayerD3D12Skija();
 
         window.setContentSize(400, 400);
         window.setLayer(layer);

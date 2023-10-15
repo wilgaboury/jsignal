@@ -22,16 +22,6 @@ public class NodeDecorator implements Node {
     }
 
     @Override
-    public boolean clip() {
-        return node.clip();
-    }
-
-    @Override
-    public Node.Offset offset(long n) {
-        return node.offset(n);
-    }
-
-    @Override
     public void paint(Canvas canvas, long yoga) {
         node.paint(canvas, yoga);
     }

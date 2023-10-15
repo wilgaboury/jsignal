@@ -40,7 +40,7 @@ public class TodoApp {
                                         .background(isBall.get() ? EzColors.FUCHSIA_600 : EzColors.BLACK)
                                         .radius(50f)
                                         .border(15f)
-                                        .borderColor(isBall.get() ? EzColors.SLATE_500 : EzColors.RED_100)
+                                        .borderColor(isBall.get() ? EzColors.GRAY_600 : EzColors.RED_100)
                                         .padding(new Insets(10, 10))
                                         .column()
                                         .center()
