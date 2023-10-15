@@ -10,12 +10,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.*;
 
-public class HotSwapTest {
-
-
-
+public class Component3HotSwapTest {
     @Test
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Sigui.start(() -> {
             Component3 component3 = new MyComponent();
             var computed = component3.render();

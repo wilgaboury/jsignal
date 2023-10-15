@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Computed;
 import org.hotswap.agent.annotation.Init;
 import org.hotswap.agent.annotation.LoadEvent;
 import org.hotswap.agent.annotation.OnClassLoadEvent;
@@ -13,12 +12,12 @@ import org.hotswap.agent.util.ReflectionHelper;
 
 import java.util.*;
 
-@Plugin(name = "ComplexSiguiHotswapPlugin",
+@Plugin(name = "Component4SiguiHotswapPlugin",
         description = "Reactive java UI",
         testedVersions = {"0.1", "0.2"},
         expectedVersions = {"0.1", "0.2"}
 )
-public class SiguiHotswapPlugin {
+public class Component3SiguiHotswapPlugin {
     private static final Map<String, Set<Object>> components3 = Collections.synchronizedMap(new HashMap<>());
 
     @Init
@@ -35,7 +34,7 @@ public class SiguiHotswapPlugin {
     @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component3")
     public static void initPlugin(CtClass ct) throws NotFoundException, CannotCompileException {
         for (CtConstructor constructor : ct.getDeclaredConstructors()) {
-            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class));
+            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(Component3SiguiHotswapPlugin.class));
         }
     }
 
@@ -45,7 +44,7 @@ public class SiguiHotswapPlugin {
             return;
 
         CtMethod ctMethod = ct.getDeclaredMethod("render");
-        ctMethod.insertAfter(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class,
+        ctMethod.insertAfter(PluginManagerInvoker.buildCallPluginMethod(Component3SiguiHotswapPlugin.class,
                 "registerComponent3", "$0", "java.lang.Object", "$_", "java.lang.Object"));
     }
 
