@@ -1,18 +1,25 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.ReactiveEnv;
-import com.github.wilgaboury.jsignal.ReactiveUtil;
-
 import java.util.function.Supplier;
 
-@FunctionalInterface
-public interface Component extends Supplier<Node> {
-    static Component empty() {
-        return () -> null;
+public abstract class Component implements Supplier<Node> {
+    @Override
+    public abstract Node get();
+
+    public static Component from(Node node) {
+        return new Constant(node);
     }
 
-    static Component create(Supplier<Node> supplier) {
-        var computed = ReactiveUtil.createComputed(supplier);
-        return computed::get;
+    private static class Constant extends Component {
+        private final Node node;
+
+        public Constant(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public Node get() {
+            return node;
+        }
     }
 }

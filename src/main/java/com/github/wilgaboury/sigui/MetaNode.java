@@ -204,10 +204,11 @@ public class MetaNode {
     }
 
     public static MetaNode createRoot(Component component) {
+        var computed = createComputed(component);
         return new MetaNode(null, new Node() {
             @Override
-            public List<Component> children() {
-                return List.of(component);
+            public List<Computed<Node>> children() {
+                return List.of(computed);
             }
 
             @Override

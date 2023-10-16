@@ -3,9 +3,7 @@ package com.github.wilgaboury.examples.todo;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.Component;
-import com.github.wilgaboury.sigui.Sigui;
-import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.*;
@@ -60,5 +58,28 @@ public class TodoApp {
         return Stream.generate(() -> When.create(isBall, Circle::create, Rectangle::create))
                 .limit(num)
                 .toList();
+    }
+
+    public static class App extends Component {
+
+        @Override
+        public Node get() {
+            return Node.builder()
+                    .setLayout(yoga -> {
+                        // bruh
+                    })
+                    .setPaint((canvas, yoga) -> {
+                        // bruh
+                    })
+                    .setChildren(new Children.Nodes(
+                            Node.builder()
+                                    .setPaint((canvas, yoga) -> {
+
+                                    })
+                                    .setChildren(Children.Dynamic.forEach())
+                                    .build()
+                    ))
+                    .build();
+        }
     }
 }

@@ -12,15 +12,15 @@ import org.hotswap.agent.util.ReflectionHelper;
 
 import java.util.*;
 
-@Plugin(name = "ComplexSiguiHotswapPlugin",
-        description = "Reactive java UI",
-        testedVersions = {"0.1", "0.2"},
-        expectedVersions = {"0.1", "0.2"}
+@Plugin(
+        name = "SiguiHotswapPlugin",
+        description = "Reactive java UI Plugin For Component Hot Swapping",
+        testedVersions = {}
 )
-public class Component4SiguiHotswapPlugin {
+public class SiguiHotswapPlugin {
     private static final String TRIGGER_FIELD = "ha$trigger";
 
-    private final Map<String, Set<Object>> components = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, Set<Object>> componentInstances = Collections.synchronizedMap(new HashMap<>());
 
     @Init
     Scheduler scheduler;
@@ -30,15 +30,15 @@ public class Component4SiguiHotswapPlugin {
         System.out.println("Initializing sigui hotswap plugin");
     }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component4", events = LoadEvent.DEFINE )
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component", events = LoadEvent.DEFINE )
     public static void instrumentComponentSuperClass(CtClass ct, ClassPool pool) throws NotFoundException, CannotCompileException {
         CtClass trigger = pool.get("com.github.wilgaboury.jsignal.Trigger");
         CtField triggerField = new CtField(trigger, TRIGGER_FIELD, ct);
         ct.addField(triggerField, "com.github.wilgaboury.jsignal.ReactiveUtil.createTrigger()");
 
         for (CtConstructor constructor : ct.getDeclaredConstructors()) {
-            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(Component4SiguiHotswapPlugin.class));
-            constructor.insertAfter(PluginManagerInvoker.buildCallPluginMethod(Component4SiguiHotswapPlugin.class,
+            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class));
+            constructor.insertAfter(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class,
                     "registerComponent", "$0", "java.lang.Object"));
         }
     }
@@ -46,17 +46,16 @@ public class Component4SiguiHotswapPlugin {
     public void registerComponent(Object component) {
         Class<?> clazz = component.getClass();
         while (clazz != null && !clazz.equals(Object.class)) {
-//            var objs = components3.computeIfAbsent(clazz, k -> Collections.newSetFromMap(
-//                    Collections.synchronizedMap(new WeakHashMap<>())));
-            var objs = components.computeIfAbsent(clazz.getName(), k -> Collections.synchronizedSet(new HashSet<>()));
-            objs.add(component);
+            var components = componentInstances.computeIfAbsent(clazz.getName(), k -> Collections.newSetFromMap(
+                    Collections.synchronizedMap(new WeakHashMap<>())));
+            components.add(component);
             clazz = clazz.getSuperclass();
         }
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.DEFINE)
-    public static void instrumentComponent(CtClass ct) throws NotFoundException, CannotCompileException {
-        if (!isChildClass(ct, "com.github.wilgaboury.experimental.Component4"))
+    public static void instrumentComponentClasses(CtClass ct) throws NotFoundException, CannotCompileException {
+        if (!isChildClass(ct, "com.github.wilgaboury.experimental.Component"))
             return;
 
         CtMethod ctMethod = ct.getDeclaredMethod("get");
@@ -69,10 +68,10 @@ public class Component4SiguiHotswapPlugin {
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
     public void onComponentRedefine(String name) {
         name = name.replace("/", ".");
-        if (!components.containsKey(name))
+        if (!componentInstances.containsKey(name))
             return;
 
-        for (var component : components.getOrDefault(name, Collections.emptySet())) {
+        for (var component : componentInstances.getOrDefault(name, Collections.emptySet())) {
             scheduler.scheduleCommand(new ReloadComponentCommand(component));
         }
     }
