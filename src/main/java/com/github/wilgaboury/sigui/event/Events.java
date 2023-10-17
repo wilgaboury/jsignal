@@ -42,24 +42,6 @@ public class Events {
 
     }
 
-    public static Component listen(EventListener handler, Component inner) {
-        return () -> {
-            var node = inner.get();
-            listen(node, handler);
-            return node;
-        };
-    }
-
-    public static Component listen(List<EventListener> listeners, Component inner) {
-        return () -> {
-            var node = inner.get();
-            for (var listener : listeners) {
-                listen(node, listener);
-            }
-            return node;
-        };
-    }
-
     public static <T extends Event> void fireBubble(T event, MetaNode node) {
         var nodes = registry.get(event.getType());
         if (nodes == null || nodes.isEmpty())

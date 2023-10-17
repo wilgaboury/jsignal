@@ -2,6 +2,8 @@ package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.skija.Canvas;
 
+import java.util.function.Supplier;
+
 /**
  * The primary layout and rendering primitive of Sigui
  */
@@ -10,12 +12,14 @@ public final class Node {
     private final Layouter layout;
     private final Painter paint;
     private final Painter paintAfter;
+    private final Supplier<Boolean> focus;
 
     public Node(Builder builder) {
         this.children = builder.children;
         this.layout = builder.layout;
         this.paint = builder.paint;
         this.paintAfter = builder.paintAfter;
+        this.focus = builder.focus;
     }
 
     public Nodes children() {
@@ -32,6 +36,10 @@ public final class Node {
 
     public void paintAfter(Canvas canvas, long yoga) {
         paintAfter.paint(canvas, yoga);
+    }
+
+    public boolean getFocus() {
+        return focus.get();
     }
 
     @FunctionalInterface
@@ -53,6 +61,7 @@ public final class Node {
         private Layouter layout = (yoga) -> {};
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
+        private Supplier<Boolean> focus = () -> false;
 
         public Nodes getChildren() {
             return children;
@@ -87,6 +96,15 @@ public final class Node {
 
         public Builder setPaintAfter(Painter paintAfter) {
             this.paintAfter = paintAfter;
+            return this;
+        }
+
+        public Supplier<Boolean> getFocus() {
+            return focus;
+        }
+
+        public Builder setFocus(Supplier<Boolean> focus) {
+            this.focus = focus;
             return this;
         }
 

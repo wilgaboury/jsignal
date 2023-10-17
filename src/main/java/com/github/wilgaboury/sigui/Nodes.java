@@ -43,15 +43,15 @@ public sealed interface Nodes permits
         return new Dynamic(composed);
     }
 
-    static List<Computed<Node>> composeHelper(List<Nodes> children) {
+    static Dynamic component(Component component) {
+        return new Dynamic(ReactiveUtil.createComputed(() -> normalize(component.render())));
+    }
+
+    private static List<Computed<Node>> composeHelper(List<Nodes> children) {
         return children.stream()
                 .map(Nodes::normalize)
                 .flatMap(Collection::stream)
                 .toList();
-    }
-
-    static Dynamic component(Component component) {
-        return new Dynamic(ReactiveUtil.createComputed(() -> normalize(component.render())));
     }
 
     private static List<Computed<Node>> normalize(Nodes child) {
@@ -59,7 +59,7 @@ public sealed interface Nodes permits
             case None n -> Collections.emptyList();
             case Single s -> List.of(Computed.constant(s.get()));
             case Fixed f -> f.get().stream().map(Computed::constant).toList();
-            case Dynamic d -> d.get().get();
+            case Dynamic d -> d.get();
         };
     }
 
@@ -96,8 +96,8 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
-        public Computed<List<Computed<Node>>> get() {
-            return children;
+        public List<Computed<Node>> get() {
+            return children.get();
         }
     }
 }

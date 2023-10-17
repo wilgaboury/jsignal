@@ -68,67 +68,43 @@ public class MetaNode {
 
     private Computed<List<MetaNode>> createChildren() {
         switch (node.children()) {
-            case Nodes.None n -> {
-                return Computed.constant(Collections.emptyList());
+            case Nodes.Single s -> {
+                var meta = new MetaNode(this, s.get());
+                Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
+                return Computed.constant(List.of(meta));
             }
-            case Nodes.Fixed ns -> {
+            case Nodes.Fixed f -> {
                 Ref<Integer> i = new Ref<>(0);
-                return Computed.constant(ns.getChildren().stream().map(n -> {
+                return Computed.constant(f.get().stream().map(n -> {
                     var meta = new MetaNode(this, n);
                     Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
                     i.set(i.get() + 1);
                     return meta;
                 }).toList());
             }
-            case Nodes.Dynamic s -> {
-                return Computed.constant(s.getChildren());
+            case Nodes.Dynamic d -> {
+                return ReactiveList.createMapped(
+                        () -> d.get().stream()
+                                .map(Supplier::get)
+                                .filter(Objects::nonNull)
+                                .toList(),
+                        (child, idx) -> {
+                            var meta = new MetaNode(this, child);
+                            createEffect(on(idx, (cur, prev) -> {
+                                if (prev != null)
+                                    Yoga.YGNodeRemoveChild(yoga, meta.yoga);
+                                Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
+
+                                window.requestLayout();
+                            }));
+                            return meta;
+                        }
+                );
             }
-            case Nodes.
             default -> {
-                return null;
+                return Computed.constant(Collections.emptyList());
             }
         }
-
-        // TODO: this is recreating node objects every time
-        return ReactiveList.createMapped(
-                () -> node.children().stream()
-                            .map(Supplier::get)
-                            .filter(Objects::nonNull)
-                            .toList(),
-                (child, idx) -> {
-                    var meta = new MetaNode(this, child);
-                    createEffect(on(idx, (cur, prev) -> {
-                        if (prev != null)
-                            Yoga.YGNodeRemoveChild(yoga, meta.yoga);
-                        Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
-
-                        window.requestLayout();
-                    }));
-                    return meta;
-                }
-        );
-    }
-
-    private Computed<List<MetaNode>> createRootChild() {
-        return createComputed(() -> {
-            var child = node.children().get(0).get();
-            if (child == null)
-                return Collections.emptyList();
-
-            var meta = new MetaNode(this, child);
-
-            onCleanup(() -> {
-                Yoga.YGNodeRemoveChild(yoga, meta.yoga);
-
-                window.requestLayout();
-            });
-
-            Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
-
-            window.requestLayout();
-
-            return List.of(meta);
-        });
     }
 
     public MetaNode pick(float x, float y) {
@@ -227,18 +203,12 @@ public class MetaNode {
     }
 
     public static MetaNode createRoot(Component component) {
-        var computed = createComputed(component);
-        return new MetaNode(null, new Node() {
-            @Override
-            public List<Computed<Node>> children() {
-                return List.of(computed);
-            }
-
-            @Override
-            public void layout(long yoga) {
-                Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
-                Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
-            }
-        });
+        return new MetaNode(null, Node.builder()
+                .setLayout(yoga -> {
+                    Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
+                    Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
+                })
+                .setChildren(Nodes.component(component))
+                .build());
     }
 }

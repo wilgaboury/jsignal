@@ -147,7 +147,7 @@ public class SiguiWindow {
                     Events.fireBubble(new MouseEvent(EventType.MOUSE_DOWN), mouseDown);
 
                     var focusTemp = mouseDown;
-                    while (!focusTemp.getNode().focus() && focusTemp.getParent() != null) {
+                    while (!focusTemp.getNode().getFocus() && focusTemp.getParent() != null) {
                         focusTemp = focusTemp.getParent();
                     }
                     if (focusTemp != focus) {
@@ -221,9 +221,11 @@ public class SiguiWindow {
         that.root = createComputed(() -> {
             that.requestLayout();
             return createProvider(List.of(
-                CONTEXT.provide(that),
-                CONTEXT_RAW.provide(that.window)),
-                () -> MetaNode.createRoot(root.get()));
+                    CONTEXT.provide(that),
+                    CONTEXT_RAW.provide(that.window)
+                ),
+                () -> MetaNode.createRoot(root.get())
+            );
         });
         window.setEventListener(that::handleEvent);
         windows.add(that);
