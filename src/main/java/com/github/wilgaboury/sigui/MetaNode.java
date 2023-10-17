@@ -40,16 +40,19 @@ public class MetaNode {
         this.node = node;
 
         this.yoga = Yoga.YGNodeNew();
-        this.children = parent == null ? createRootChild() : createChildren();
+        this.children = createChildren();
 
         this.absoluteEntry = null;
         this.renderOrder = 0;
 
-        this.layoutEffect = createEffect(() -> {
-            Sigui.hotSwapTrigger.track();
+        this.layoutEffect = createEffect(this::layoutEffectInner);
 
-            Sigui.clearNodeStyle(yoga);
-            node.layout(yoga);
+        onCleanup(() -> {
+            if (parent != null) {
+                Yoga.YGNodeRemoveChild(parent.yoga, yoga);
+            }
+            Yoga.YGNodeFree(yoga);
+
             window.requestLayout();
         });
 
@@ -57,7 +60,35 @@ public class MetaNode {
         cleaner.register(this, () -> Sigui.invokeLater(() -> Yoga.YGNodeFree(yogaPass)));
     }
 
+    private void layoutEffectInner() {
+        Sigui.clearNodeStyle(yoga);
+        node.layout(yoga);
+        window.requestLayout();
+    }
+
     private Computed<List<MetaNode>> createChildren() {
+        switch (node.children()) {
+            case Nodes.None n -> {
+                return Computed.constant(Collections.emptyList());
+            }
+            case Nodes.Nodes ns -> {
+                Ref<Integer> i = new Ref<>(0);
+                return Computed.constant(ns.getChildren().stream().map(n -> {
+                    var meta = new MetaNode(this, n);
+                    Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
+                    i.set(i.get() + 1);
+                    return meta;
+                }).toList());
+            }
+            case Nodes.Static s -> {
+                return Computed.constant(s.getChildren());
+            }
+            case Nodes.
+            default -> {
+                return null;
+            }
+        }
+
         // TODO: this is recreating node objects every time
         return ReactiveList.createMapped(
                 () -> node.children().stream()
@@ -66,13 +97,6 @@ public class MetaNode {
                             .toList(),
                 (child, idx) -> {
                     var meta = new MetaNode(this, child);
-
-                    onCleanup(() -> {
-                        Yoga.YGNodeRemoveChild(yoga, meta.yoga);
-
-                        window.requestLayout();
-                    });
-
                     createEffect(on(idx, (cur, prev) -> {
                         if (prev != null)
                             Yoga.YGNodeRemoveChild(yoga, meta.yoga);
@@ -80,7 +104,6 @@ public class MetaNode {
 
                         window.requestLayout();
                     }));
-
                     return meta;
                 }
         );

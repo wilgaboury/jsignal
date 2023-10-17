@@ -211,15 +211,14 @@ public class SiguiWindow {
     }
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {
-//        LayerGLSkija layer = new LayerGLSkija();
-        LayerD3D12Skija layer = new LayerD3D12Skija();
+        LayerGLSkija layer = new LayerGLSkija();
+//        LayerD3D12Skija layer = new LayerD3D12Skija();
 
         window.setContentSize(400, 400);
         window.setLayer(layer);
 
         var that = new SiguiWindow(window);
         that.root = createComputed(() -> {
-            Sigui.hotRestartTrigger.track();
             that.requestLayout();
             return createProvider(List.of(
                 CONTEXT.provide(that),

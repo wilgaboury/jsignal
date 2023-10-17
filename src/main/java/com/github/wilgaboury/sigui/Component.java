@@ -2,24 +2,23 @@ package com.github.wilgaboury.sigui;
 
 import java.util.function.Supplier;
 
-public abstract class Component implements Supplier<Node> {
-    @Override
-    public abstract Node get();
+public abstract class Component {
+    public abstract Nodes render();
 
-    public static Component from(Node node) {
-        return new Constant(node);
-    }
+//    public static <N extends Nodes> Component<N> from(N nodes) {
+//        return new Constant<>(nodes);
+//    }
 
-    private static class Constant extends Component {
-        private final Node node;
-
-        public Constant(Node node) {
-            this.node = node;
-        }
-
-        @Override
-        public Node get() {
-            return node;
-        }
-    }
+//    private static class Constant<N extends Nodes> extends Component<N> {
+//        private final N node;
+//
+//        public Constant(N node) {
+//            this.node = node;
+//        }
+//
+//        @Override
+//        public N get() {
+//            return node;
+//        }
+//    }
 }

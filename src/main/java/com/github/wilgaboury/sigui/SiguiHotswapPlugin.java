@@ -1,5 +1,7 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.ReactiveUtil;
+import com.github.wilgaboury.jsignal.Trigger;
 import org.hotswap.agent.annotation.Init;
 import org.hotswap.agent.annotation.LoadEvent;
 import org.hotswap.agent.annotation.OnClassLoadEvent;
@@ -20,6 +22,7 @@ import java.util.*;
 public class SiguiHotswapPlugin {
     private static final String TRIGGER_FIELD = "ha$trigger";
 
+    private Trigger relayoutTrigger;
     private final Map<String, Set<Object>> componentInstances = Collections.synchronizedMap(new HashMap<>());
 
     @Init
@@ -28,16 +31,22 @@ public class SiguiHotswapPlugin {
     @Init
     public void init() {
         System.out.println("Initializing sigui hotswap plugin");
+        relayoutTrigger = ReactiveUtil.createTrigger();
     }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component", events = LoadEvent.DEFINE )
-    public static void instrumentComponentSuperClass(CtClass ct, ClassPool pool) throws NotFoundException, CannotCompileException {
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.Sigui", events = LoadEvent.DEFINE)
+    public void instrumentInitialization(CtClass ct) throws NotFoundException, CannotCompileException {
+        CtMethod method = ct.getDeclaredMethod("startInner");
+        method.insertBefore(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class, "com.github.wilgaboury.sigui.Sigui.class.getClassLoader()"));
+    }
+
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component", events = LoadEvent.DEFINE)
+    public void instrumentComponentSuperClass(CtClass ct, ClassPool pool) throws NotFoundException, CannotCompileException {
         CtClass trigger = pool.get("com.github.wilgaboury.jsignal.Trigger");
         CtField triggerField = new CtField(trigger, TRIGGER_FIELD, ct);
         ct.addField(triggerField, "com.github.wilgaboury.jsignal.ReactiveUtil.createTrigger()");
 
         for (CtConstructor constructor : ct.getDeclaredConstructors()) {
-            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class));
             constructor.insertAfter(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class,
                     "registerComponent", "$0", "java.lang.Object"));
         }
@@ -53,8 +62,19 @@ public class SiguiHotswapPlugin {
         }
     }
 
+
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.MetaNode", events = LoadEvent.DEFINE)
+    public void instrumentMetaNodeClass(CtClass ct) throws NotFoundException, CannotCompileException {
+        CtMethod method = ct.getDeclaredMethod("layoutEffectInner");
+        method.insertBefore(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class, "trackRelayoutTrigger"));
+    }
+
+    public void trackRelayoutTrigger() {
+        relayoutTrigger.track();
+    }
+
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.DEFINE)
-    public static void instrumentComponentClasses(CtClass ct) throws NotFoundException, CannotCompileException {
+    public void instrumentComponentClasses(CtClass ct) throws NotFoundException, CannotCompileException {
         if (!isChildClass(ct, "com.github.wilgaboury.experimental.Component"))
             return;
 
@@ -67,6 +87,8 @@ public class SiguiHotswapPlugin {
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
     public void onComponentRedefine(String name) {
+        scheduler.scheduleCommand(new TriggerRelayoutCommand());
+
         name = name.replace("/", ".");
         if (!componentInstances.containsKey(name))
             return;
@@ -74,6 +96,8 @@ public class SiguiHotswapPlugin {
         for (var component : componentInstances.getOrDefault(name, Collections.emptySet())) {
             scheduler.scheduleCommand(new ReloadComponentCommand(component));
         }
+
+        scheduler.scheduleCommand(new TriggerRelayoutCommand());
     }
 
     public static boolean isChildClass(CtClass ct, String name) {
@@ -103,7 +127,6 @@ public class SiguiHotswapPlugin {
         @Override
         public void executeCommand() {
             Sigui.invokeLater(() -> {
-                System.out.println("what da");
                 Object trigger = ReflectionHelper.get(component, TRIGGER_FIELD);
                 ReflectionHelper.invoke(trigger, "trigger");
             });
@@ -121,6 +144,23 @@ public class SiguiHotswapPlugin {
         @Override
         public int hashCode() {
             return this.component.hashCode();
+        }
+    }
+
+    public class TriggerRelayoutCommand extends MergeableCommand {
+        @Override
+        public void executeCommand() {
+            Sigui.invokeLater(relayoutTrigger::trigger);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            return object instanceof TriggerRelayoutCommand;
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
         }
     }
 }

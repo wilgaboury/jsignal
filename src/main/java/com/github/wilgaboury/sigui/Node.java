@@ -6,8 +6,8 @@ import io.github.humbleui.skija.Canvas;
  * The primary layout and rendering primitive of Sigui
  */
 public interface Node {
-    default Children children() {
-        return new Children.None();
+    default Nodes children() {
+        return new Nodes.None();
     }
 
     default void layout(long yoga) {}
@@ -36,17 +36,17 @@ public interface Node {
     }
 
     class Builder {
-        private Children children = new Children.None();
+        private Nodes nodes = new Nodes.None();
         private Layouter layout = (yoga) -> {};
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
 
-        public Children getChildren() {
-            return children;
+        public Nodes getChildren() {
+            return nodes;
         }
 
-        public Builder setChildren(Children children) {
-            this.children = children;
+        public Builder setChildren(Nodes nodes) {
+            this.nodes = nodes;
             return this;
         }
 
@@ -83,20 +83,20 @@ public interface Node {
     }
 
     class Composed implements Node {
-        private final Children children;
+        private final Nodes nodes;
         private final Layouter layout;
         private final Painter paint;
         private final Painter paintAfter;
 
         public Composed(Builder builder) {
-            this.children = builder.children;
+            this.nodes = builder.nodes;
             this.layout = builder.layout;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
         }
 
-        public Children children() {
-            return children;
+        public Nodes children() {
+            return nodes;
         }
 
         public void layout(long yoga) {
