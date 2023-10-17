@@ -61,25 +61,24 @@ public class TodoApp {
         private final Signal<Boolean> isBall = createSignal(false);
 
         @Override
-        public Node get() {
-            return Node.builder()
+        public Nodes render() {
+            return Nodes.single(Node.builder()
                     .setLayout(yoga -> {
                         // configure layout
                     })
                     .setPaint((canvas, yoga) -> {
                         // do painting
                     })
-                    .setChildren(Nodes.components(
-                            Nodes.nodes(Node.builder()
+                    .setChildren(Nodes.fixed(
+                            Node.builder()
                                     .setPaint((canvas, yoga) -> {
                                         // do painting
                                     })
                                     .setChildren(Nodes.none())
                                     .build()
-                            ),
-                            Nodes.forEach()
                     ))
-                    .build();
+                    .build()
+            );
         }
     }
 }

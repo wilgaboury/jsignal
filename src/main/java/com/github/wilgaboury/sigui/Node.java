@@ -5,48 +5,61 @@ import io.github.humbleui.skija.Canvas;
 /**
  * The primary layout and rendering primitive of Sigui
  */
-public interface Node {
-    default Nodes children() {
-        return new Nodes.None();
+public final class Node {
+    private final Nodes children;
+    private final Layouter layout;
+    private final Painter paint;
+    private final Painter paintAfter;
+
+    public Node(Builder builder) {
+        this.children = builder.children;
+        this.layout = builder.layout;
+        this.paint = builder.paint;
+        this.paintAfter = builder.paintAfter;
     }
 
-    default void layout(long yoga) {}
-
-    default void paint(Canvas canvas, long yoga) {
+    public Nodes children() {
+        return children;
     }
 
-    default void paintAfter(Canvas canvas, long yoga) {}
+    public void layout(long yoga) {
+        layout.layout(yoga);
+    }
+
+    public void paint(Canvas canvas, long yoga) {
+        paint.paint(canvas, yoga);
+    }
+
+    public void paintAfter(Canvas canvas, long yoga) {
+        paintAfter.paint(canvas, yoga);
+    }
 
     @FunctionalInterface
-    interface Layouter {
+    public interface Layouter {
         void layout(long yoga);
     }
 
     @FunctionalInterface
-    interface Painter {
+    public interface Painter {
         void paint(Canvas canvas, long yoga);
     }
 
-    static Node empty() {
-        return new Node() {};
-    }
-
-    static Builder builder() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    class Builder {
-        private Nodes nodes = new Nodes.None();
+    public static class Builder {
+        private Nodes children = new Nodes.None();
         private Layouter layout = (yoga) -> {};
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
 
         public Nodes getChildren() {
-            return nodes;
+            return children;
         }
 
         public Builder setChildren(Nodes nodes) {
-            this.nodes = nodes;
+            this.children = nodes;
             return this;
         }
 
@@ -78,37 +91,7 @@ public interface Node {
         }
 
         public Node build() {
-            return new Composed(this);
-        }
-    }
-
-    class Composed implements Node {
-        private final Nodes nodes;
-        private final Layouter layout;
-        private final Painter paint;
-        private final Painter paintAfter;
-
-        public Composed(Builder builder) {
-            this.nodes = builder.nodes;
-            this.layout = builder.layout;
-            this.paint = builder.paint;
-            this.paintAfter = builder.paintAfter;
-        }
-
-        public Nodes children() {
-            return nodes;
-        }
-
-        public void layout(long yoga) {
-            layout.layout(yoga);
-        }
-
-        public void paint(Canvas canvas, long yoga) {
-            paint.paint(canvas, yoga);
-        }
-
-        public void paintAfter(Canvas canvas, long yoga) {
-            paintAfter.paint(canvas, yoga);
+            return new Node(this);
         }
     }
 }

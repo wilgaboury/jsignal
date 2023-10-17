@@ -15,8 +15,7 @@ public sealed interface Nodes permits
         Nodes.None,
         Nodes.Single,
         Nodes.Fixed,
-        Nodes.Dynamic,
-        Nodes.Component
+        Nodes.Dynamic
 {
     static None none() {
         return new None();
@@ -34,7 +33,7 @@ public sealed interface Nodes permits
         return new Fixed(Arrays.stream(singles).map(Single::get).toList());
     }
 
-    static <T> Nodes.Dynamic compose(Nodes... children) {
+    static <T> Dynamic compose(Nodes... children) {
         return new Dynamic(ReactiveUtil.createComputed(() -> composeHelper(List.of(children))));
     }
 
@@ -46,23 +45,21 @@ public sealed interface Nodes permits
 
     static List<Computed<Node>> composeHelper(List<Nodes> children) {
         return children.stream()
-                .map(Nodes::flatten)
-                .map(Supplier::get)
+                .map(Nodes::normalize)
                 .flatMap(Collection::stream)
                 .toList();
     }
 
-    static Component component(com.github.wilgaboury.sigui.Component component) {
-        return new Component(ReactiveUtil.createComputed(component::render));
+    static Dynamic component(Component component) {
+        return new Dynamic(ReactiveUtil.createComputed(() -> normalize(component.render())));
     }
 
-    private static Computed<List<Computed<Node>>> flatten(Nodes child) {
+    private static List<Computed<Node>> normalize(Nodes child) {
         return switch (child) {
-            case None n -> Computed.constant(Collections.emptyList());
-            case Single s -> Computed.constant(List.of(Computed.constant(s.get())));
-            case Fixed f -> Computed.constant(f.get().stream().map(Computed::constant).toList());
-            case Dynamic d -> d.get();
-            case Component c -> flatten(c.get());
+            case None n -> Collections.emptyList();
+            case Single s -> List.of(Computed.constant(s.get()));
+            case Fixed f -> f.get().stream().map(Computed::constant).toList();
+            case Dynamic d -> d.get().get();
         };
     }
 
@@ -101,18 +98,6 @@ public sealed interface Nodes permits
 
         public Computed<List<Computed<Node>>> get() {
             return children;
-        }
-    }
-
-    final class Component implements Nodes {
-        private final Computed<Nodes> child;
-
-        public Component(Computed<Nodes> child) {
-            this.child = child;
-        }
-
-        public Nodes get() {
-            return child.get();
         }
     }
 }

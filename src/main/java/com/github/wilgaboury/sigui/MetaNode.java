@@ -71,7 +71,7 @@ public class MetaNode {
             case Nodes.None n -> {
                 return Computed.constant(Collections.emptyList());
             }
-            case Nodes.Nodes ns -> {
+            case Nodes.Fixed ns -> {
                 Ref<Integer> i = new Ref<>(0);
                 return Computed.constant(ns.getChildren().stream().map(n -> {
                     var meta = new MetaNode(this, n);
@@ -80,7 +80,7 @@ public class MetaNode {
                     return meta;
                 }).toList());
             }
-            case Nodes.Static s -> {
+            case Nodes.Dynamic s -> {
                 return Computed.constant(s.getChildren());
             }
             case Nodes.
