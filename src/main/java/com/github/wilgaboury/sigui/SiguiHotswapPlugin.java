@@ -17,7 +17,8 @@ import java.util.*;
 @Plugin(
         name = "SiguiHotswapPlugin",
         description = "Reactive java UI Plugin For Component Hot Swapping",
-        testedVersions = {}
+        testedVersions = {"1.4.1"},
+        expectedVersions = {"1.4.1"}
 )
 public class SiguiHotswapPlugin {
     private static final String TRIGGER_FIELD = "ha$trigger";
@@ -34,19 +35,20 @@ public class SiguiHotswapPlugin {
         relayoutTrigger = ReactiveUtil.createTrigger();
     }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.Sigui", events = LoadEvent.DEFINE)
-    public void instrumentInitialization(CtClass ct) throws NotFoundException, CannotCompileException {
-        CtMethod method = ct.getDeclaredMethod("startInner");
-        method.insertBefore(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class, "com.github.wilgaboury.sigui.Sigui.class.getClassLoader()"));
-    }
+//    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.Sigui")
+//    public static void instrumentInitialization(CtClass ct) throws NotFoundException, CannotCompileException {
+//        CtMethod method = ct.getDeclaredMethod("startInner");
+//        method.insertBefore(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class, "com.github.wilgaboury.sigui.Sigui.class.getClassLoader()"));
+//    }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.experimental.Component", events = LoadEvent.DEFINE)
-    public void instrumentComponentSuperClass(CtClass ct, ClassPool pool) throws NotFoundException, CannotCompileException {
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.Component")
+    public static void instrumentComponentSuperClass(CtClass ct, ClassPool pool) throws NotFoundException, CannotCompileException {
         CtClass trigger = pool.get("com.github.wilgaboury.jsignal.Trigger");
         CtField triggerField = new CtField(trigger, TRIGGER_FIELD, ct);
         ct.addField(triggerField, "com.github.wilgaboury.jsignal.ReactiveUtil.createTrigger()");
 
         for (CtConstructor constructor : ct.getDeclaredConstructors()) {
+            constructor.insertBeforeBody(PluginManagerInvoker.buildInitializePlugin(SiguiHotswapPlugin.class));
             constructor.insertAfter(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class,
                     "registerComponent", "$0", "java.lang.Object"));
         }
@@ -63,8 +65,8 @@ public class SiguiHotswapPlugin {
     }
 
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.MetaNode", events = LoadEvent.DEFINE)
-    public void instrumentMetaNodeClass(CtClass ct) throws NotFoundException, CannotCompileException {
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.MetaNode")
+    public static void instrumentMetaNodeClass(CtClass ct) throws NotFoundException, CannotCompileException {
         CtMethod method = ct.getDeclaredMethod("layoutEffectInner");
         method.insertBefore(PluginManagerInvoker.buildCallPluginMethod(SiguiHotswapPlugin.class, "trackRelayoutTrigger"));
     }
@@ -73,12 +75,12 @@ public class SiguiHotswapPlugin {
         relayoutTrigger.track();
     }
 
-    @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.DEFINE)
-    public void instrumentComponentClasses(CtClass ct) throws NotFoundException, CannotCompileException {
-        if (!isChildClass(ct, "com.github.wilgaboury.experimental.Component"))
+    @OnClassLoadEvent(classNameRegexp = ".*")
+    public static void instrumentComponentClasses(CtClass ct) throws NotFoundException, CannotCompileException {
+        if (!isChildClass(ct, "com.github.wilgaboury.sigui.Component"))
             return;
 
-        CtMethod ctMethod = ct.getDeclaredMethod("get");
+        CtMethod ctMethod = ct.getDeclaredMethod("render");
         ctMethod.insertBefore("{" +
                     "java.lang.Object trigger = org.hotswap.agent.util.ReflectionHelper.get($0,\"" + TRIGGER_FIELD + "\");" +
                     "org.hotswap.agent.util.ReflectionHelper.invoke(trigger, \"track\");" +
