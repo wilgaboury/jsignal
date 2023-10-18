@@ -3,11 +3,11 @@ package com.github.wilgaboury.examples.todo;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
+import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.*;
 import io.github.humbleui.jwm.Window;
 
-import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
@@ -23,38 +23,11 @@ public class TodoApp {
         Window window = Sigui.createWindow();
         window.setTitle("Todo List");
 
-        Signal<Boolean> isBall = createSignal(false);
+        var siguiWindow = SiguiWindow.create(window, App::new);
 
-//        var siguiWindow = SiguiWindow.create(window,
-//                () -> createProvider(TEST_CONTEXT.provide(0), () ->
-//                        Box.builder()
-//                                .events(() -> List.of(
-//                                        EventListener.onMouseClick(e -> isBall.accept(v -> !v))
-//                                ))
-//                                .style(() -> Style.builder()
-//                                        .background(isBall.get() ? EzColors.FUCHSIA_600 : EzColors.BLACK)
-//                                        .radius(50f)
-//                                        .border(15f)
-//                                        .borderColor(isBall.get() ? EzColors.GRAY_600 : EzColors.RED_100)
-//                                        .padding(new Insets(10, 10))
-//                                        .column()
-//                                        .center()
-//                                        .build()
-//                                )
-//                                .children(createComputed(() -> ballList(5, isBall)))
-//                )
-//        );
-
-//        Events.listen(siguiWindow.getRoot().getNode(), EventListener.onKeyDown(e -> {
-//            System.out.println(e.getEvent().getKey().getName());
-//        }));
-    }
-
-    public static List<Component> ballList(int num, Supplier<Boolean> isBall) {
-        System.out.println(useContext(TEST_CONTEXT));
-        return Stream.generate(() -> When.create(isBall, Circle::create, Rectangle::create))
-                .limit(num)
-                .toList();
+        Events.listen(siguiWindow.getRoot().getNode(), EventListener.onKeyDown(e -> {
+            System.out.println(e.getEvent().getKey().getName());
+        }));
     }
 
     public static class App extends Component {
@@ -62,23 +35,30 @@ public class TodoApp {
 
         @Override
         public Nodes render() {
-            return Nodes.single(Node.builder()
-                    .setLayout(yoga -> {
-                        // configure layout
-                    })
-                    .setPaint((canvas, yoga) -> {
-                        // do painting
-                    })
-                    .setChildren(Nodes.fixed(
-                            Node.builder()
-                                    .setPaint((canvas, yoga) -> {
-                                        // do painting
-                                    })
-                                    .setChildren(Nodes.none())
-                                    .build()
-                    ))
-                    .build()
-            );
+            return createProvider(TEST_CONTEXT.provide(0),
+                    () -> Nodes.single(Node.builder()
+                            .listen(EventListener.onMouseClick(e -> isBall.accept(v -> !v)))
+                            .setLayout(Flex.builder()
+                                    .center()
+                                    .border(4f)
+                                    .row()
+                                    .wrap()
+                                    .padding(new Insets(10, 10))
+                                    .build())
+                            .setPaint(BasicPainter.builder()
+                                    .background(EzColors.AMBER_300)
+                                    .radius(3f)
+                                    .border(4f)
+                                    .borderColor(4)
+                                    .build())
+                            .setChildren(Nodes.compose(
+                                    Stream.generate(() -> isBall.get() ? new Circle(25f) : new Circle(50f))
+                                            .map(Nodes::component)
+                                            .limit(6)
+                                            .toList()
+                            ))
+                            .build()
+            ));
         }
     }
 }

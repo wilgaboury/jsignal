@@ -67,43 +67,40 @@ public class MetaNode {
     }
 
     private Computed<List<MetaNode>> createChildren() {
-        switch (node.children()) {
-            case Nodes.Single s -> {
-                var meta = new MetaNode(this, s.get());
-                Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
-                return Computed.constant(List.of(meta));
-            }
-            case Nodes.Fixed f -> {
-                Ref<Integer> i = new Ref<>(0);
-                return Computed.constant(f.get().stream().map(n -> {
-                    var meta = new MetaNode(this, n);
-                    Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
-                    i.set(i.get() + 1);
-                    return meta;
-                }).toList());
-            }
-            case Nodes.Dynamic d -> {
-                return ReactiveList.createMapped(
-                        () -> d.get().stream()
-                                .map(Supplier::get)
-                                .filter(Objects::nonNull)
-                                .toList(),
-                        (child, idx) -> {
-                            var meta = new MetaNode(this, child);
-                            createEffect(on(idx, (cur, prev) -> {
-                                if (prev != null)
-                                    Yoga.YGNodeRemoveChild(yoga, meta.yoga);
-                                Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
+        var children = node.children();
 
-                                window.requestLayout();
-                            }));
-                            return meta;
-                        }
-                );
-            }
-            default -> {
-                return Computed.constant(Collections.emptyList());
-            }
+        if (children instanceof Nodes.Single s) {
+            var meta = new MetaNode(this, s.get());
+            Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
+            return Computed.constant(List.of(meta));
+        } else if (children instanceof Nodes.Fixed f) {
+            Ref<Integer> i = new Ref<>(0);
+            return Computed.constant(f.get().stream().map(n -> {
+                var meta = new MetaNode(this, n);
+                Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
+                i.set(i.get() + 1);
+                return meta;
+            }).toList());
+        } else if (children instanceof  Nodes.Dynamic d) {
+            return ReactiveList.createMapped(
+                    () -> d.get().stream()
+                            .map(Supplier::get)
+                            .filter(Objects::nonNull)
+                            .toList(),
+                    (child, idx) -> {
+                        var meta = new MetaNode(this, child);
+                        createEffect(on(idx, (cur, prev) -> {
+                            if (prev != null)
+                                Yoga.YGNodeRemoveChild(yoga, meta.yoga);
+                            Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
+
+                            window.requestLayout();
+                        }));
+                        return meta;
+                    }
+            );
+        } else {
+            return Computed.constant(Collections.emptyList());
         }
     }
 

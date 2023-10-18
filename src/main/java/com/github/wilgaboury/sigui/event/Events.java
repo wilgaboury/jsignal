@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigui.event;
 
-import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Node;
 

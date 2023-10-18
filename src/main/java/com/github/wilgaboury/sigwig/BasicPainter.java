@@ -1,27 +1,25 @@
 package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.YogaUtil;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.RRect;
-import org.lwjgl.util.yoga.Yoga;
 
-public class Style {
+public class BasicPainter implements Node.Painter {
     private final Float radius;
     private final Float border;
     private final Integer background;
     private final Integer borderColor;
 
-    public Style(Builder builder) {
+    public BasicPainter(Builder builder) {
         this.radius = builder.radius;
         this.border = builder.border;
         this.background = builder.background;
         this.borderColor = builder.borderColor;
     }
 
-    public void layout(long node) {
-    }
-
+    @Override
     public void paint(Canvas canvas, long yoga) {
         try (var paint = new Paint()) {
 
@@ -75,10 +73,9 @@ public class Style {
             return this;
         }
 
-        public Style build() {
-            return new Style(this);
+        public BasicPainter build() {
+            return new BasicPainter(this);
         }
     }
 
-    private record MaybePercent<T>(boolean isPercent, T value) {};
 }

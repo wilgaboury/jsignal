@@ -29,12 +29,20 @@ public sealed interface Nodes permits
         return new Fixed(List.of(nodes));
     }
 
+    static Fixed fixed(Collection<? extends Node> nodes) {
+        return new Fixed(nodes);
+    }
+
     static Fixed fixed(Single... singles) {
         return new Fixed(Arrays.stream(singles).map(Single::get).toList());
     }
 
     static <T> Dynamic compose(Nodes... children) {
         return new Dynamic(ReactiveUtil.createComputed(() -> composeHelper(List.of(children))));
+    }
+
+    static <T> Dynamic compose(Collection<? extends Nodes> children) {
+        return new Dynamic(ReactiveUtil.createComputed(() -> composeHelper(children)));
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
@@ -47,23 +55,31 @@ public sealed interface Nodes permits
         return new Dynamic(ReactiveUtil.createComputed(() -> normalize(component.render())));
     }
 
-    private static List<Computed<Node>> composeHelper(List<Nodes> children) {
+    private static List<? extends Computed<? extends Node>> composeHelper(Collection<? extends Nodes> children) {
         return children.stream()
                 .map(Nodes::normalize)
                 .flatMap(Collection::stream)
                 .toList();
     }
 
-    private static List<Computed<Node>> normalize(Nodes child) {
-        return switch (child) {
-            case None n -> Collections.emptyList();
-            case Single s -> List.of(Computed.constant(s.get()));
-            case Fixed f -> f.get().stream().map(Computed::constant).toList();
-            case Dynamic d -> d.get();
-        };
+    private static Collection<? extends Computed<? extends Node>> normalize(Nodes child) {
+        if (child instanceof None n) {
+            return Collections.emptyList();
+        } else if (child instanceof Single s) {
+            return List.of(Computed.constant(s.get()));
+        } else if (child instanceof Fixed f) {
+            return f.get().stream().map(Computed::constant).toList();
+        } else if (child instanceof Dynamic d) {
+            return d.get();
+        } else {
+            // exhaustive list
+            return null;
+        }
     }
 
-    record None() implements Nodes {}
+    final class None implements Nodes {
+        private None() {}
+    }
 
     final class Single implements Nodes {
         private final Node node;
@@ -78,25 +94,25 @@ public sealed interface Nodes permits
     }
 
     final class Fixed implements Nodes {
-        private final List<Node> children;
+        private final Collection<? extends Node> children;
 
-        private Fixed(List<Node> children) {
+        private Fixed(Collection<? extends Node> children) {
             this.children = children;
         }
 
-        public List<Node> get() {
+        public Collection<? extends Node> get() {
             return children;
         }
     }
 
     final class Dynamic implements Nodes {
-        private final Computed<List<Computed<Node>>> children;
+        private final Computed<? extends Collection<? extends Computed<? extends Node>>> children;
 
-        private Dynamic(Computed<List<Computed<Node>>> children) {
+        private Dynamic(Computed<? extends Collection<? extends Computed<? extends Node>>> children) {
             this.children = children;
         }
 
-        public List<Computed<Node>> get() {
+        public Collection<? extends Computed<? extends Node>> get() {
             return children.get();
         }
     }
