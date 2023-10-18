@@ -18,8 +18,6 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class MetaNode {
-    private static final java.lang.ref.Cleaner cleaner = java.lang.ref.Cleaner.create();
-
     private final SiguiWindow window;
 
     private final MetaNode parent;
@@ -55,9 +53,6 @@ public class MetaNode {
 
             window.requestLayout();
         });
-
-        final long yogaPass = yoga; // make sure not to capture this in cleaner
-        cleaner.register(this, () -> Sigui.invokeLater(() -> Yoga.YGNodeFree(yogaPass)));
     }
 
     private void layoutEffectInner() {

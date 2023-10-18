@@ -23,11 +23,20 @@ public class TodoApp {
         Window window = Sigui.createWindow();
         window.setTitle("Todo List");
 
+        createProvider(MY_CONTEXT.provide(5), TodoApp::someFunction);
+
         var siguiWindow = SiguiWindow.create(window, App::new);
 
         Events.listen(siguiWindow.getRoot().getNode(), EventListener.onKeyDown(e -> {
             System.out.println(e.getEvent().getKey().getName());
         }));
+    }
+
+    public static Context<Integer> MY_CONTEXT = createContext(0);
+
+    public static void someFunction() {
+        var contextValue = useContext(MY_CONTEXT);
+        System.out.println(contextValue);
     }
 
     public static class App extends Component {
@@ -40,21 +49,21 @@ public class TodoApp {
                             .listen(EventListener.onMouseClick(e -> isBall.accept(v -> !v)))
                             .setLayout(Flex.builder()
                                     .center()
-                                    .border(4f)
+                                    .border(10f)
                                     .row()
                                     .wrap()
                                     .padding(new Insets(10, 10))
                                     .build())
                             .setPaint(BasicPainter.builder()
                                     .background(EzColors.AMBER_300)
-                                    .radius(10f)
-                                    .border(4f)
+                                    .radius(50f)
+                                    .border(10f)
                                     .borderColor(EzColors.EMERALD_500)
                                     .build())
                             .setChildren(Nodes.compose(
                                     Stream.generate(() -> isBall.get() ? new Circle(25f) : new Circle(50f))
                                             .map(Nodes::component)
-                                            .limit(100)
+                                            .limit(2)
                                             .toList()
                             ))
                             .build()

@@ -22,24 +22,25 @@ public class BasicPainter implements Node.Painter {
     @Override
     public void paint(Canvas canvas, long yoga) {
         try (var paint = new Paint()) {
-
-            if (background != null) {
-                var rect = YogaUtil.paddingRect(yoga);
-                paint.setColor(background);
-                canvas.drawRect(rect, paint);
-            }
+            RRect borderOuter;
+            RRect borderInner = null;
 
             if (borderColor != null && border != null && border > 0) {
-                var outer = YogaUtil.borderRect(yoga).withRadii(radius == null ? 0 : radius);
-                var inner = outer.inflate(-border);
-                RRect innerRadius;
+                borderOuter = YogaUtil.borderRect(yoga).withRadii(radius == null ? 0 : radius);
+                var inner = borderOuter.inflate(-border);
                 if (inner instanceof RRect r) {
-                    innerRadius = r;
+                    borderInner = r;
                 } else {
-                    innerRadius = inner.withRadii(0);
+                    borderInner = inner.withRadii(0);
                 }
                 paint.setColor(borderColor);
-                canvas.drawDRRect(outer, innerRadius, paint);
+                canvas.drawDRRect(borderOuter, borderInner, paint);
+            }
+
+            if (background != null) {
+                var rect = borderInner != null ? borderInner : YogaUtil.paddingRect(yoga).withRadii(0);
+                paint.setColor(background);
+                canvas.drawRRect(rect, paint);
             }
         }
     }

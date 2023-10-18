@@ -254,9 +254,17 @@ public class ReactiveUtil {
         });
     }
 
+    public static void createProvider(Provider.Entry entry, Runnable inner) {
+        createProvider(entry, toSupplier(inner));
+    }
+
     public static <T> T createProvider(Provider.Entry entry, Supplier<T> inner) {
         var env = ReactiveEnv.getInstance().get();
         return env.provider(env.peekProvider().layer(entry), inner);
+    }
+
+    public static void createProvider(Iterable<Provider.Entry> entries, Runnable inner) {
+        createProvider(entries, toSupplier(inner));
     }
 
     public static <T> T createProvider(Iterable<Provider.Entry> entries, Supplier<T> inner) {
