@@ -51,7 +51,6 @@ public class TodoApp {
                                     .center()
                                     .border(10f)
                                     .row()
-                                    .wrap()
                                     .padding(new Insets(10, 10))
                                     .build())
                             .setPaint(BasicPainter.builder()
@@ -60,13 +59,17 @@ public class TodoApp {
                                     .border(10f)
                                     .borderColor(EzColors.EMERALD_500)
                                     .build())
-                            .setChildren(Nodes.compose(
-                                    Stream.generate(() -> isBall.get() ? new Circle(25f) : new Circle(50f))
-                                            .map(Nodes::component)
-                                            .limit(2)
-                                            .toList()
+                            .setChildren(Nodes.single(
+                                    Text.create(() -> "Hello World! This Is a Lot Longer Now")
                             ))
                             .build()
+//                            .setChildren(Nodes.compose(
+//                                    Stream.generate(() -> isBall.get() ? new Circle(25f) : new Circle(50f))
+//                                            .map(Nodes::component)
+//                                            .limit(2)
+//                                            .toList()
+//                            ))
+//                            .build()
             ));
         }
     }
