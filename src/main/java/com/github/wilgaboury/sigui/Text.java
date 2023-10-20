@@ -46,7 +46,7 @@ public class Text {
         return Node.builder()
                 .setLayout(yoga -> {
                     yogaRef.set(yoga);
-                    Yoga.YGNodeStyleSetMaxWidth(yoga, 100f);
+                    Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f);
 //                    Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                     Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
                         Paragraph p = para.layout(width);
@@ -61,7 +61,6 @@ public class Text {
 //                        TextLine line = TextLine.make("HELLO", new Font(typeface));
 //                        canvas.drawTextLine(line, 0, 0, paint);
 //                    }
-                    para.layout(500);
                     para.paint(canvas, 0, 0);
                 })
                 .build();
