@@ -7,8 +7,9 @@ import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.sigui.event.*;
+import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigwig.EzColors;
-import io.github.humbleui.jwm.Event;
+
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
@@ -107,7 +108,7 @@ public class SiguiWindow {
         window.requestFrame();
     }
 
-    void handleEvent(Event e) {
+    void handleEvent(io.github.humbleui.jwm.Event e) {
         if (e instanceof EventWindowCloseRequest) {
             close();
         } else if (e instanceof EventWindowClose) {
@@ -123,6 +124,10 @@ public class SiguiWindow {
             }
         } else if (e instanceof EventWindowResize) {
             requestLayout();
+        } else if (e instanceof EventMouseScroll ee) {
+            if (hovered != null) {
+                Events.fireBubble(new Event(EventType.SCROLL), hovered);
+            }
         } else if (e instanceof EventKey ee) {
             if (focus == null) {
                 if (root == null) {
@@ -145,7 +150,7 @@ public class SiguiWindow {
                     Events.fireBubble(new MouseEvent(EventType.MOUSE_DOWN), mouseDown);
 
                     var focusTemp = mouseDown;
-                    while (!focusTemp.getNode().getFocus() && focusTemp.getParent() != null) {
+                    while (!Events.hasListenerOfType(focusTemp.getNode(), EventType.FOCUS) && focusTemp.getParent() != null) {
                         focusTemp = focusTemp.getParent();
                     }
                     if (focusTemp != focus) {

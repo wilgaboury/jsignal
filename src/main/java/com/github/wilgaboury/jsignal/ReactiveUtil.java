@@ -303,6 +303,10 @@ public class ReactiveUtil {
         return cleaner;
     }
 
+    public static <T> Supplier<T> constantSupplier(T value) {
+        return () -> value;
+    }
+
     public static Supplier<Void> toSupplier(Runnable runnable) {
         return () -> {
             runnable.run();
@@ -339,5 +343,13 @@ public class ReactiveUtil {
 
     public static Runnable toRunnable(Function<Void, Void> consumer) {
         return () -> consumer.apply(null);
+    }
+
+    public static <T> T run(Supplier<T> supplier) {
+        return supplier.get();
+    }
+
+    public static void run(Runnable runnable) {
+        runnable.run();
     }
 }

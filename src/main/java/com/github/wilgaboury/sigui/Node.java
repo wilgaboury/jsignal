@@ -6,6 +6,7 @@ import io.github.humbleui.skija.Canvas;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -16,8 +17,7 @@ public interface Node {
         return Nodes.none();
     }
 
-    default boolean getFocus() {
-        return false;
+    default void ref(MetaNode node) {
     }
 
     default void layout(long yoga) {}
@@ -42,6 +42,7 @@ public interface Node {
 
     class Builder {
         private Nodes children = Nodes.none();
+        private Consumer<MetaNode> ref = n -> {};
         private Layouter layout = (yoga) -> {};
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};

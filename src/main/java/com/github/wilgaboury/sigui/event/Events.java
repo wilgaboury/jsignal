@@ -37,8 +37,23 @@ public class Events {
             types.remove(listener.getType());
     }
 
-    public static void unlistenAll(Node node, EventListener listener) {
+    public static void unlistenAll(Node node) {
+        var types = typesRegistry.remove(node);
+        for (var type : types) {
+            var nodes = registry.get(type);
+            if (nodes == null)
+                continue;
 
+            var listeners = nodes.get(node);
+            if (listeners == null)
+                continue;
+
+            listeners.clear();
+        }
+    }
+
+    public static boolean hasListenerOfType(Node node, EventType type) {
+        return registry.getOrDefault(type, Collections.emptyMap()).containsKey(node);
     }
 
     public static <T extends Event> void fireBubble(T event, MetaNode node) {

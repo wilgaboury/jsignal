@@ -12,4 +12,5 @@ public enum EventType {
     BLUR,
     KEY_DOWN,
     KEY_UP,
+    SCROLL,
 }

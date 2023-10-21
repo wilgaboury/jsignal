@@ -1,92 +1,102 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Ref;
-import com.github.wilgaboury.sigwig.EzColors;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.io.IOException;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
 public class Text {
-    private static final Typeface typeface;
-    private static final FontCollection fontCollection;
+    private static final Logger logger = Logger.getLogger(Text.class.getName());
+
+    public static Typeface INTER_REGULAR;
+
+    private static final String[] INTER_RESOURCE_LOCATIONS = new String[]{
+            "/fonts/Inter-Bold.ttf",
+            "/fonts/Inter-Italic.ttf",
+            "/fonts/Inter-Regular.ttf"
+    };
+    public static final TypefaceFontProvider INTER_FONT_MGR;
+    public static final FontCollection FONT_COLLECTION;
     static {
+        INTER_FONT_MGR = new TypefaceFontProvider();
         try {
-            typeface = Typeface.makeFromData(Data.makeFromBytes(
-                    Text.class.getResourceAsStream("/fonts/Inter-Regular.ttf")
-                            .readAllBytes()));
+            for (var loc : INTER_RESOURCE_LOCATIONS) {
+                try (var resource = Text.class.getResourceAsStream(loc)) {
+                    if (resource != null) {
+                        INTER_FONT_MGR.registerTypeface(Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes())));
+                    }
+                }
+            }
+
+            try (var resource = Text.class.getResourceAsStream("/fonts/Inter-Regular.ttf")) {
+                if (resource != null) {
+                    INTER_REGULAR = Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes()));
+                }
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.log(Level.SEVERE, "Failed to load Inter font");
         }
 
-        TypefaceFontProvider provider = new TypefaceFontProvider();
-        provider.registerTypeface(typeface);
-
-        fontCollection = new FontCollection();
-        fontCollection.setDefaultFontManager(provider);
-        fontCollection.setTestFontManager(provider);
-        fontCollection.setEnableFallback(false);
+        FONT_COLLECTION = new FontCollection();
+        FONT_COLLECTION.setDefaultFontManager(INTER_FONT_MGR);
+        FONT_COLLECTION.setTestFontManager(INTER_FONT_MGR);
+        FONT_COLLECTION.setEnableFallback(false);
     }
 
-    public static Node create(Supplier<String> textSignal) {
-        Paragraph para = createPara(untrack(textSignal));
-        var window = useContext(SiguiWindow.CONTEXT);
+    public static Paragraph basicPara(String text, int color, float size) {
+        TextStyle style = new TextStyle();
+        style.setColor(color);
+        style.setFontSize(size);
+        style.setFontFamily("Inter");
 
-        Ref<Long> yogaRef = new Ref<>();
+        ParagraphStyle paraStyle = new ParagraphStyle();
+        paraStyle.setTextStyle(style);
 
-        createEffect(onDefer(textSignal, (text) -> {
-            Yoga.YGNodeMarkDirty(yogaRef.get());
-            window.requestLayout();
-        }));
+        ParagraphBuilder builder = new ParagraphBuilder(paraStyle, FONT_COLLECTION);
+        builder.pushStyle(style);
+        builder.addText(text);
+        builder.popStyle();
 
+        return builder.build();
+    }
+
+    public static Node para(Supplier<Paragraph> para) {
         return Node.builder()
                 .setLayout(yoga -> {
-                    yogaRef.set(yoga);
                     Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f);
-//                    Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                     Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
-                        Paragraph p = para.layout(width);
+                        var p = para.get();
+                        p.layout(width);
+                        Yoga.YGNodeStyleSetMinWidth(yoga, p.getMinIntrinsicWidth());
                         __result.height(p.getHeight());
                         __result.width(p.getMaxIntrinsicWidth());
                     });
                 })
                 .setPaint((canvas, yoga) -> {
-//                    try (var paint = new Paint()) {
-//                        paint.setColor(EzColors.LIME_800);
-//                        canvas.drawCircle(0, 0, 5, paint);
-//                        TextLine line = TextLine.make("HELLO", new Font(typeface));
-//                        canvas.drawTextLine(line, 0, 0, paint);
-//                    }
-                    para.paint(canvas, 0, 0);
+                    para.get().paint(canvas, 0, 0);
                 })
                 .build();
     }
 
-
-    private static Paragraph createPara(String text) {
-        TextStyle style = defaultStyle();
-        ParagraphStyle paraStyle = new ParagraphStyle();
-        paraStyle.setTextStyle(style);
-        ParagraphBuilder builder = new ParagraphBuilder(paraStyle, fontCollection);
-        builder.pushStyle(style);
-        builder.addText(text);
-        builder.popStyle();
-        return builder.build();
-    }
-
-    private static TextStyle defaultStyle() {
-        TextStyle style = new TextStyle();
-        style.setColor(EzColors.BLACK);
-        style.setFontSize(20f);
-        style.setFontFamily("Inter");
-//        style.setTypeface(typeface);
-//        Paint paint = new Paint();
-//        paint.setColor(EzColors.CYAN_600);
-//        style.setForeground(paint);
-        return style;
+    public static Node line(Supplier<String> str, Supplier<Integer> color, Supplier<Font> font) {
+        var line = createComputed(() -> TextLine.make(str.get(), font.get()));
+        return Node.builder()
+                .setLayout(yoga -> {
+                    Yoga.YGNodeStyleSetWidth(yoga, line.get().getWidth());
+                    Yoga.YGNodeStyleSetHeight(yoga, line.get().getHeight());
+                })
+                .setPaint((canvas, yoga) -> {
+                    try (var paint = new Paint()) {
+                        paint.setColor(color.get());
+                        canvas.drawTextLine(line.get(), 0, -line.get().getAscent(), paint);
+                    }
+                })
+                .build();
     }
 }

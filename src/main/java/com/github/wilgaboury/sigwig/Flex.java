@@ -11,6 +11,7 @@ public class Flex implements Node.Layouter {
     private final Integer align;
     private final Integer direction;
     private final Integer wrap;
+    private final Float gap;
     private final MaybePercent<Float> height;
     private final MaybePercent<Float> width;
 
@@ -22,6 +23,7 @@ public class Flex implements Node.Layouter {
         this.align = builder.align;
         this.direction = builder.direction;
         this.wrap = builder.wrap;
+        this.gap = builder.gap;
         this.height = builder.height;
         this.width = builder.width;
     }
@@ -71,6 +73,10 @@ public class Flex implements Node.Layouter {
                 Yoga.YGNodeStyleSetHeight(yoga, width.value());
             }
         }
+
+        if (gap != null) {
+            Yoga.YGNodeStyleSetGap(yoga, Yoga.YGGutterAll, gap);
+        }
     }
 
     public static Builder builder() {
@@ -85,6 +91,7 @@ public class Flex implements Node.Layouter {
         private Integer align;
         private Integer direction;
         private Integer wrap;
+        private Float gap;
         private MaybePercent<Float> height;
         private MaybePercent<Float> width;
 
@@ -123,6 +130,11 @@ public class Flex implements Node.Layouter {
 
         public Builder wrap() {
             this.wrap = Yoga.YGWrapWrap;
+            return this;
+        }
+
+        public Builder gap(Float gap) {
+            this.gap = gap;
             return this;
         }
 

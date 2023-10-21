@@ -7,8 +7,7 @@ import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.Events;
 import com.github.wilgaboury.sigwig.*;
 import io.github.humbleui.jwm.Window;
-
-import java.util.stream.Stream;
+import io.github.humbleui.skija.Font;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
@@ -50,7 +49,7 @@ public class TodoApp {
                             .setLayout(Flex.builder()
                                     .center()
                                     .border(10f)
-                                    .row()
+                                    .column()
                                     .padding(new Insets(10, 10))
                                     .build())
                             .setPaint(BasicPainter.builder()
@@ -59,17 +58,21 @@ public class TodoApp {
                                     .border(10f)
                                     .borderColor(EzColors.EMERALD_500)
                                     .build())
-                            .setChildren(Nodes.single(
-                                    Text.create(() -> "Hello World! This Is a Lot Longer Now")
+                            .setChildren(Nodes.fixed(
+                                    Text.para(constantSupplier(
+                                            Text.basicPara("Yo, Tim how is the movie?", EzColors.CYAN_600, 25f)
+                                    )),
+                                    Text.line(constantSupplier("the moon shit or somthing"),
+                                            constantSupplier(EzColors.FUCHSIA_800),
+                                            constantSupplier(run(() -> {
+                                                Font font = new Font();
+                                                font.setTypeface(Text.INTER_REGULAR);
+                                                font.setSize(15f);
+                                                return font;
+                                            }))
+                                    )
                             ))
                             .build()
-//                            .setChildren(Nodes.compose(
-//                                    Stream.generate(() -> isBall.get() ? new Circle(25f) : new Circle(50f))
-//                                            .map(Nodes::component)
-//                                            .limit(2)
-//                                            .toList()
-//                            ))
-//                            .build()
             ));
         }
     }
