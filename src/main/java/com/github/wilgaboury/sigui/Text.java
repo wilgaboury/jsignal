@@ -15,6 +15,7 @@ public class Text {
     private static final Logger logger = Logger.getLogger(Text.class.getName());
 
     public static Typeface INTER_REGULAR;
+    public static Typeface INTER_BOLD;
 
     private static final String[] INTER_RESOURCE_LOCATIONS = new String[]{
             "/fonts/Inter-Bold.ttf",
@@ -37,6 +38,12 @@ public class Text {
             try (var resource = Text.class.getResourceAsStream("/fonts/Inter-Regular.ttf")) {
                 if (resource != null) {
                     INTER_REGULAR = Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes()));
+                }
+            }
+
+            try (var resource = Text.class.getResourceAsStream("/fonts/Inter-Bold.ttf")) {
+                if (resource != null) {
+                    INTER_BOLD = Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes()));
                 }
             }
         } catch (IOException e) {

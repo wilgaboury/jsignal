@@ -50,6 +50,7 @@ public class TodoApp {
                                     .center()
                                     .border(10f)
                                     .column()
+                                    .gap(20f)
                                     .padding(new Insets(10, 10))
                                     .build())
                             .setPaint(BasicPainter.builder()
@@ -58,11 +59,11 @@ public class TodoApp {
                                     .border(10f)
                                     .borderColor(EzColors.EMERALD_500)
                                     .build())
-                            .setChildren(Nodes.fixed(
-                                    Text.para(constantSupplier(
+                            .setChildren(Nodes.compose(
+                                    Nodes.single(Text.para(constantSupplier(
                                             Text.basicPara("Yo, Tim how is the movie?", EzColors.CYAN_600, 25f)
-                                    )),
-                                    Text.line(constantSupplier("the moon shit or somthing"),
+                                    ))),
+                                    Nodes.single(Text.line(constantSupplier("the moon shit or somthing"),
                                             constantSupplier(EzColors.FUCHSIA_800),
                                             constantSupplier(run(() -> {
                                                 Font font = new Font();
@@ -70,6 +71,12 @@ public class TodoApp {
                                                 font.setSize(15f);
                                                 return font;
                                             }))
+                                    )),
+                                    Nodes.component(Button.builder()
+                                            .setColor(EzColors.FUCHSIA_500)
+                                            .setSize(Button.Size.SM)
+                                            .setText("My Button!")
+                                            .build()
                                     )
                             ))
                             .build()
