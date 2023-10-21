@@ -1,7 +1,6 @@
 package com.github.wilgaboury.examples.todo;
 
 import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.Events;
@@ -39,13 +38,10 @@ public class TodoApp {
     }
 
     public static class App extends Component {
-        private final Signal<Boolean> isBall = createSignal(false);
-
         @Override
         public Nodes render() {
             return createProvider(TEST_CONTEXT.provide(0),
                     () -> Nodes.single(Node.builder()
-                            .listen(EventListener.onMouseClick(e -> isBall.accept(v -> !v)))
                             .setLayout(Flex.builder()
                                     .center()
                                     .border(10f)
@@ -74,8 +70,7 @@ public class TodoApp {
                                     )),
                                     Nodes.component(Button.builder()
                                             .setColor(EzColors.FUCHSIA_500)
-                                            .setSize(Button.Size.SM)
-                                            .setText("My Button!")
+                                            .setText("My Button")
                                             .build()
                                     )
                             ))

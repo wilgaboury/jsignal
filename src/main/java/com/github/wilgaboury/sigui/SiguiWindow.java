@@ -159,6 +159,7 @@ public class SiguiWindow {
                         Events.fire(new FocusEvent(EventType.FOCUS), focus);
                     }
                 } else {
+                    Events.fireBubble(new MouseEvent(EventType.MOUSE_UP), hovered);
                     if (mouseDown == hovered) {
                         Events.fireBubble(new MouseEvent(EventType.MOUSE_CLICK), hovered);
                     }

@@ -1,7 +1,5 @@
 package com.github.wilgaboury.sigwig;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
-
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
@@ -12,7 +10,12 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.ReactiveUtil.constantSupplier;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
+
 public class Button extends Component {
+    private final float PRESS_SCALE = 0.95f;
+
     private final Supplier<Integer> color;
     private final Supplier<String> text;
     private final Supplier<Size> size;
@@ -52,6 +55,7 @@ public class Button extends Component {
                                if (mouseDown.get()) {
                                    Sigui.invokeLater(action);
                                }
+                               Sigui.requestFrame();
                            })
                    )
                    .setLayout(this::layout)
@@ -101,9 +105,19 @@ public class Button extends Component {
     }
 
     private void paint(Canvas canvas, long yoga) {
+        var r = YogaUtil.boundingRect(yoga);
+
+        if (mouseDown.get()) {
+            canvas.scale(PRESS_SCALE, PRESS_SCALE);
+            canvas.translate(
+                    (r.getWidth() * (1f - PRESS_SCALE)) / 2f,
+                    (r.getHeight() * (1f - PRESS_SCALE)) / 2f
+            );
+        }
+
         try (var paint = new Paint()) {
             paint.setColor(mouseOver.get() ? ColorUtil.brighten(color.get(), 0.75f) : color.get());
-            canvas.drawRRect(YogaUtil.borderRect(yoga).withRadii(8), paint);
+            canvas.drawRRect(r.withRadii(8), paint);
         }
     }
 
