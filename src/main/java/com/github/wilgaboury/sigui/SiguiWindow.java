@@ -6,6 +6,7 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
+import com.github.wilgaboury.jsignal.SideEffect;
 import com.github.wilgaboury.sigui.event.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigwig.EzColors;
@@ -31,6 +32,8 @@ public class SiguiWindow {
     private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
     private Computed<MetaNode> root;
+
+    private SideEffect requestFrameEffect;
 
     private MetaNode mouseDown;
     private MetaNode hovered;
@@ -116,7 +119,7 @@ public class SiguiWindow {
                 App.terminate();
         } else if (e instanceof EventFrameSkija ee) {
             layout();
-            paint(ee.getSurface().getCanvas());
+            applySideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
 
             if (firstFrame) {
                 firstFrame = false;
@@ -224,6 +227,7 @@ public class SiguiWindow {
         var that = new SiguiWindow(window);
         that.root = createComputed(() -> {
             that.requestLayout();
+            that.requestFrameEffect = createSideEffect(that::requestFrame);
             return createProvider(List.of(
                     CONTEXT.provide(that),
                     CONTEXT_RAW.provide(that.window)

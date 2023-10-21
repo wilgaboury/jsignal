@@ -32,7 +32,6 @@ public class ReactiveEnvInner {
     private int batchCount;
     private final Map<Integer, EffectRef> batch;
 
-
     public ReactiveEnvInner() {
         effect = null;
         cleaner = null;
@@ -136,7 +135,7 @@ public class ReactiveEnvInner {
 
     public Effect createEffect(Runnable inner, boolean isSync) {
         Effect effect = new Effect(inner, peekProvider(), isSync);
-        peekCleaner().ifPresent(c -> c.add(effect::dispose)); // creates strong reference
+        onCleanup(effect::dispose); // creates strong reference
         effect.run();
         return effect;
     }

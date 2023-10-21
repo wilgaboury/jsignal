@@ -2,9 +2,11 @@ package com.github.wilgaboury.sigwig;
 
 import io.github.humbleui.skija.Color;
 
+import java.util.Random;
+
 public class ColorUtil {
     public static int contrastText(int color) {
-        return contrastText(color, EzColors.BLACK, EzColors.WHITE);
+        return contrastText(color, EzColors.BLACK, EzColors.NEUTRAL_200);
     }
 
     public static int contrastText(int color, int dark, int light) {

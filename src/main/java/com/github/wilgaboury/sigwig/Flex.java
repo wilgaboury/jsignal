@@ -58,19 +58,19 @@ public class Flex implements Node.Layouter {
             Yoga.YGNodeStyleSetFlexWrap(yoga, wrap);
         }
 
+        if (width != null) {
+            if (width.isPercent()) {
+                Yoga.YGNodeStyleSetWidthPercent(yoga, width.value());
+            } else {
+                Yoga.YGNodeStyleSetWidth(yoga, width.value());
+            }
+        }
+
         if (height != null) {
             if (height.isPercent()) {
                 Yoga.YGNodeStyleSetHeightPercent(yoga, height.value());
             } else {
                 Yoga.YGNodeStyleSetHeight(yoga, height.value());
-            }
-        }
-
-        if (width != null) {
-            if (width.isPercent()) {
-                Yoga.YGNodeStyleSetHeightPercent(yoga, width.value());
-            } else {
-                Yoga.YGNodeStyleSetHeight(yoga, width.value());
             }
         }
 
@@ -98,6 +98,10 @@ public class Flex implements Node.Layouter {
         public Builder center() {
             this.justify = Yoga.YGJustifyCenter;
             this.align = Yoga.YGAlignCenter;
+            return this;
+        }
+
+        public Builder stretch() {
             this.width = new MaybePercent<>(true, 100f);
             this.height = new MaybePercent<>(true, 100f);
             return this;
@@ -135,6 +139,26 @@ public class Flex implements Node.Layouter {
 
         public Builder gap(Float gap) {
             this.gap = gap;
+            return this;
+        }
+
+        public Builder height(float height) {
+            this.height = new MaybePercent<>(false, height);
+            return this;
+        }
+
+        public Builder width(float width) {
+            this.width = new MaybePercent<>(false, width);
+            return this;
+        }
+
+        public Builder heightPercent(float height) {
+            this.height = new MaybePercent<>(true, height);
+            return this;
+        }
+
+        public Builder widthPercent(float width) {
+            this.width = new MaybePercent<>(true, width);
             return this;
         }
 

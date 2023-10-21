@@ -1,5 +1,7 @@
-package com.github.wilgaboury.sigui;
+package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.sigui.Node;
+import com.github.wilgaboury.sigui.Nodes;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
 import org.lwjgl.util.yoga.Yoga;
@@ -9,7 +11,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Text {
     private static final Logger logger = Logger.getLogger(Text.class.getName());
@@ -91,8 +93,7 @@ public class Text {
                 .build();
     }
 
-    public static Node line(Supplier<String> str, Supplier<Integer> color, Supplier<Font> font) {
-        var line = createComputed(() -> TextLine.make(str.get(), font.get()));
+    public static Node line(Supplier<TextLine> line, Supplier<Integer> color) {
         return Node.builder()
                 .setLayout(yoga -> {
                     Yoga.YGNodeStyleSetWidth(yoga, line.get().getWidth());
@@ -105,5 +106,12 @@ public class Text {
                     }
                 })
                 .build();
+    }
+
+    public static TextLine basicTextLine(String string, float size) {
+        Font font = new Font();
+        font.setTypeface(Text.INTER_REGULAR);
+        font.setSize(size);
+        return TextLine.make(string, font);
     }
 }

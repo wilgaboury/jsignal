@@ -5,6 +5,7 @@ import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.ForkJoinPool;
@@ -120,6 +121,20 @@ public class ReactiveUtil {
 
     public static Effect createAsyncEffect(Runnable effect) {
         return ReactiveEnv.getInstance().get().createEffect(effect, false);
+    }
+
+    public static SideEffect createSideEffect(Runnable effect) {
+        SideEffect sideEffect = new SideEffect(effect);
+        onCleanup(sideEffect::dispose);
+        return sideEffect;
+    }
+
+    public static void applySideEffect(SideEffect effect, Runnable inner) {
+        applySideEffect(effect, toSupplier(inner));
+    }
+
+    public static <T> T applySideEffect(SideEffect effect, Supplier<T> inner) {
+        return ReactiveEnv.getInstance().get().effect(effect, inner);
     }
 
     public static void useExecutor(Executor executor, Runnable inner) {

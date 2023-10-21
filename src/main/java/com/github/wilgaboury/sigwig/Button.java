@@ -10,17 +10,14 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.constantSupplier;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Button extends Component {
-    private final float PRESS_SCALE = 0.95f;
-
     private final Supplier<Integer> color;
     private final Supplier<String> text;
     private final Supplier<Size> size;
     private final Runnable action;
-    //TODO: add icon support
+    private final Nodes icon;
 
     private final Signal<Boolean> mouseOver = createSignal(false);
     private final Signal<Boolean> mouseDown = createSignal(false);
@@ -30,42 +27,38 @@ public class Button extends Component {
         this.text = builder.text;
         this.size = builder.size;
         this.action = builder.action;
+        this.icon = builder.icon;
     }
 
     @Override
     public Nodes render() {
            return Nodes.single(Node.builder()
                    .listen(
-                           EventListener.onMouseOver(e -> {
-                               mouseOver.accept(true);
-                               Sigui.requestFrame();
-                           }),
-                           EventListener.onMouseDown(e -> {
-                               mouseDown.accept(true);
-                               Sigui.requestFrame();
-                           }),
-                           EventListener.onMouseOut(e -> {
+                           EventListener.onMouseOver(e -> mouseOver.accept(true)),
+                           EventListener.onMouseDown(e -> mouseDown.accept(true)),
+                           EventListener.onMouseOut(e -> batch(() -> {
                                mouseDown.accept(false);
                                mouseOver.accept(false);
-                               Sigui.requestFrame();
-                           }),
+                           })),
                            EventListener.onMouseUp(e -> {
-                                mouseDown.accept(false);
-
-                               if (mouseDown.get()) {
+                               var prev = mouseDown.get();
+                               mouseDown.accept(false);
+                               if (prev) {
                                    Sigui.invokeLater(action);
                                }
-                               Sigui.requestFrame();
                            })
                    )
                    .setLayout(this::layout)
                    .setPaint(this::paint)
-                   .setChildren(Nodes.single(
-                           Text.line(text, () -> ColorUtil.contrastText(color.get()), this::getFont)))
+                   .setChildren(Nodes.compose(
+                           icon,
+                           Nodes.single(Text.line(() -> Text.basicTextLine(text.get(), fontSize()), () -> ColorUtil.contrastText(color.get())))
+                   ))
                    .build());
     }
 
     private void layout(long yoga) {
+        Yoga.YGNodeStyleSetGap(yoga, Yoga.YGGutterAll, 8f);
         Yoga.YGNodeStyleSetJustifyContent(yoga, Yoga.YGJustifyCenter);
         Yoga.YGNodeStyleSetAlignItems(yoga, Yoga.YGAlignCenter);
 
@@ -89,13 +82,6 @@ public class Button extends Component {
         }
     }
 
-    private Font getFont() {
-        Font font = new Font();
-        font.setTypeface(Text.INTER_BOLD);
-        font.setSize(fontSize());
-        return font;
-    }
-
     private float fontSize() {
         return switch (this.size.get()) {
             case LG -> 18;
@@ -108,10 +94,12 @@ public class Button extends Component {
         var r = YogaUtil.boundingRect(yoga);
 
         if (mouseDown.get()) {
-            canvas.scale(PRESS_SCALE, PRESS_SCALE);
+            float pressScale = 0.95f;
+
+            canvas.scale(pressScale, pressScale);
             canvas.translate(
-                    (r.getWidth() * (1f - PRESS_SCALE)) / 2f,
-                    (r.getHeight() * (1f - PRESS_SCALE)) / 2f
+                    (r.getWidth() * (1f - pressScale)) / 2f,
+                    (r.getHeight() * (1f - pressScale)) / 2f
             );
         }
 
@@ -126,10 +114,11 @@ public class Button extends Component {
     }
 
     public static class Builder {
-        private Supplier<Integer> color;
-        private Supplier<String> text;
+        private Supplier<Integer> color = constantSupplier(EzColors.BLUE_400);
+        private Supplier<String> text = constantSupplier("");
         private Supplier<Size> size = constantSupplier(Size.MD);
-        private Runnable action;
+        private Runnable action = () -> {};
+        private Nodes icon = Nodes.none();
 
         public Builder setColor(Supplier<Integer> color) {
             this.color = color;
@@ -163,6 +152,11 @@ public class Button extends Component {
 
         public Builder setAction(Runnable action) {
             this.action = action;
+            return this;
+        }
+
+        public Builder setIcon(Nodes icon) {
+            this.icon = icon;
             return this;
         }
 
