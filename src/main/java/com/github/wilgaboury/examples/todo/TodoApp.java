@@ -59,13 +59,13 @@ public class TodoApp {
                             ),
                             Nodes.single(Node.builder()
                                     .setLayout(Flex.builder()
-                                            .width(100f)
-                                            .height(200f)
+                                            .width(400f)
+                                            .height(300f)
                                             .build()
                                     )
                                     .setChildren(Nodes.single(
                                             Image.builder()
-                                                    .setFit(Image.Fit.FILL)
+                                                    .setFit(Image.Fit.COVER)
                                                     .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
                                                     .build()
                                     ))

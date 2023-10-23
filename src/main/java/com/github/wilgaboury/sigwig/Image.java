@@ -50,6 +50,23 @@ public class Image {
                         canvas.scale(1f, scale);
                         canvas.translate(0, -size.getHeight()/2f);
                     }
+                } else if (fit == Fit.COVER) {
+                    var svgRatio = width/height;
+                    var viewRatio = size.getWidth()/size.getHeight();
+
+                    canvas.clipRect(size);
+
+                    if (viewRatio > svgRatio) {
+                        var scale = viewRatio/svgRatio;
+                        canvas.translate(size.getWidth()/2, size.getHeight()/2);
+                        canvas.scale(scale, scale);
+                        canvas.translate(-size.getWidth()/2, -size.getHeight()/2);
+                    } else if (viewRatio < svgRatio) {
+                        var scale = 1f/(viewRatio/svgRatio);
+                        canvas.translate(size.getWidth()/2f, size.getHeight()/2f);
+                        canvas.scale(scale, scale);
+                        canvas.translate(-size.getWidth()/2f, -size.getHeight()/2f);
+                    }
                 }
 
                 svg.setContainerSize(size.getWidth(), size.getHeight());
@@ -63,7 +80,7 @@ public class Image {
     public enum Fit {
         FILL,
         CONTAIN,
-//        COVER // TODO: implement
+        COVER
     }
 
     public static Builder builder() {
