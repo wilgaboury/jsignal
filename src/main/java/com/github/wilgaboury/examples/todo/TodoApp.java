@@ -45,26 +45,29 @@ public class TodoApp {
                             .build())
                     .setChildren(Nodes.compose(
                             Nodes.single(Text.para(constantSupplier(
-                                    Text.basicPara("Screw you guys I'm really going home!", EzColors.CYAN_600, 25f)
+                                    Text.basicPara("Screw you guys I'm really really really going home!", EzColors.CYAN_600, 25f)
                             ))),
-                            Nodes.single(Text.line(constantSupplier(Text.basicTextLine("slightly longer text line", 14f)),
+                            Nodes.single(Text.line(constantSupplier(Text.basicTextLine("little longer text line", 14f)),
                                     constantSupplier(EzColors.FUCHSIA_800)
                             )),
                             Nodes.component(Button.builder()
                                     .setColor(color)
-                                    .setText("My Button! (generates color)")
-                                    .setSize(Button.Size.LG)
+                                    .setText("My Button (changes color)!")
+                                    .setSize(Button.Size.MD)
                                     .setAction(() -> color.accept(random.nextInt()))
                                     .build()
                             ),
                             Nodes.single(Node.builder()
                                     .setLayout(Flex.builder()
-                                            .height(125f)
-                                            .width(125f)
+                                            .width(100f)
+                                            .height(200f)
                                             .build()
                                     )
                                     .setChildren(Nodes.single(
-                                            Image.create(constantSupplier(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8)))
+                                            Image.builder()
+                                                    .setFit(Image.Fit.FILL)
+                                                    .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
+                                                    .build()
                                     ))
                                     .build())
                     ))
