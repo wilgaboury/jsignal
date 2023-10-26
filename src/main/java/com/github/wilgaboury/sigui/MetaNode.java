@@ -9,6 +9,7 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
@@ -77,7 +78,7 @@ public class MetaNode {
             return Computed.constant(List.of(meta));
         } else if (children instanceof Nodes.Fixed f) {
             Ref<Integer> i = new Ref<>(0);
-            return Computed.constant(f.get().stream().map(n -> {
+            return Computed.constant(f.stream().map(n -> {
                 var meta = new MetaNode(this, n);
                 Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
                 i.set(i.get() + 1);
@@ -85,7 +86,7 @@ public class MetaNode {
             }).toList());
         } else if (children instanceof  Nodes.Dynamic d) {
             return ReactiveList.createMapped(
-                    () -> d.get().stream()
+                    () -> d.stream()
                             .filter(Objects::nonNull)
                             .toList(),
                     (child, idx) -> {
@@ -108,10 +109,10 @@ public class MetaNode {
     public MetaNode pick(float x, float y) {
         // TODO: optimize, only check elements that are visible, i.e. respect window and clipping
         if (Util.contains(YogaUtil.relRect(yoga), x, y)) {
-            float xNew = x - Yoga.YGNodeLayoutGetLeft(yoga);
-            float yNew = y - Yoga.YGNodeLayoutGetTop(yoga);
+            var offset = getNode().offset(yoga);
             for (var child : children.get()) {
-                MetaNode result = child.pick(xNew, yNew);
+                var p = Sigui.apply(offset, new Point(x, y));
+                MetaNode result = child.pick(p.getX(), p.getY());
                 if (result != null) {
                     return result;
                 }

@@ -25,6 +25,7 @@ public class TodoApp {
     public static class App extends Component {
         private final Random random = new Random();
         private final Signal<Integer> color = createSignal(random.nextInt());
+        private final Signal<Boolean> showFire = createSignal(false);
 
         @Override
         public Nodes render() {
@@ -52,10 +53,29 @@ public class TodoApp {
                             )),
                             Nodes.component(Button.builder()
                                     .setColor(color)
-                                    .setText("My Button (changes color)!")
+                                    .setText(this::buttonText)
                                     .setSize(Button.Size.LG)
-                                    .setAction(() -> color.accept(random.nextInt()))
+                                    .setAction(() ->  {
+                                        color.accept(random.nextInt());
+                                        showFire.accept(show -> !show);
+                                    })
                                     .build()
+                            ),
+                            Nodes.compute(() -> showFire.get()
+                                    ? Nodes.single(Node.builder()
+                                            .layout(Flex.builder()
+                                                    .width(100f)
+                                                    .height(50f)
+                                                    .build()
+                                            )
+                                            .children(Nodes.single(
+                                                    Image.builder()
+                                                            .setFit(Image.Fit.FILL)
+                                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
+                                                            .build()
+                                            ))
+                                            .build())
+                                    : Nodes.empty()
                             ),
                             Nodes.single(Node.builder()
                                     .layout(Flex.builder()
@@ -70,22 +90,13 @@ public class TodoApp {
                                                     .build()
                                     ))
                                     .build())
-//                            Nodes.single(Node.builder()
-//                                    .setLayout(Flex.builder()
-//                                            .width(100f)
-//                                            .height(50f)
-//                                            .build()
-//                                    )
-//                                    .setChildren(Nodes.single(
-//                                            Image.builder()
-//                                                    .setFit(Image.Fit.CONTAIN)
-//                                                    .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
-//                                                    .build()
-//                                    ))
-//                                    .build())
                     ))
                     .build()
             )));
+        }
+
+        public String buttonText() {
+            return showFire.get() ? "Hide Fire" : "Show Fire";
         }
     }
 }

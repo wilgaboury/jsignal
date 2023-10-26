@@ -5,6 +5,8 @@ import io.github.humbleui.jwm.skija.LayerD3D12Skija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
+import io.github.humbleui.skija.Matrix33;
+import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.EnumMap;
@@ -74,5 +76,17 @@ public class Sigui {
             }
         }
         throw new RuntimeException(String.format("failed to initialize layer for platform %s", Platform.CURRENT));
+    }
+
+    public static Point apply(Matrix33 matrix, Point point) {
+        float[] vec = new float[]{point.getX(), point.getY(), 0};
+        float[] mat = matrix.getMat();
+        float[] ret = new float[]{
+                mat[0] * vec[0] + mat[1] * vec[1] + mat[2] * vec[2],
+                mat[3] * vec[0] + mat[4] * vec[1] + mat[5] * vec[2],
+                mat[6] * vec[0] + mat[7] * vec[1] + mat[8] * vec[2],
+        };
+        assert ret[2] == 0;
+        return new Point(ret[0], ret[1]);
     }
 }

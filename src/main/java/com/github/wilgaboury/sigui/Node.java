@@ -1,6 +1,8 @@
 package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Matrix33;
+import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Consumer;
 
@@ -9,12 +11,16 @@ import java.util.function.Consumer;
  */
 public interface Node {
     default Nodes children() {
-        return Nodes.none();
+        return Nodes.empty();
     }
 
     default void ref(MetaNode node) {}
 
     default void layout(long yoga) {}
+
+    default Matrix33 offset(long yoga) {
+        return defaultOffsetter(yoga);
+    }
 
     default void paint(Canvas canvas, long yoga) {}
 
@@ -24,10 +30,19 @@ public interface Node {
         return new Builder();
     }
 
+    static interface Offsetter {
+        Matrix33 offset(long yoga);
+    }
+
+    static Matrix33 defaultOffsetter(long yoga) {
+        return Matrix33.makeTranslate(Yoga.YGNodeLayoutGetLeft(yoga), Yoga.YGNodeLayoutGetTop(yoga));
+    }
+
     class Builder {
-        private Nodes children = Nodes.none();
+        private Nodes children = Nodes.empty();
         private Consumer<MetaNode> ref = n -> {};
         private Layouter layout = (yoga) -> {};
+        private Offsetter offsetter = Node::defaultOffsetter;
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
 
@@ -43,6 +58,11 @@ public interface Node {
         
         public Builder layout(Layouter layouter) {
             this.layout = layouter;
+            return this;
+        }
+
+        public Builder offset(Offsetter offsetter) {
+            this.offsetter = offsetter;
             return this;
         }
         

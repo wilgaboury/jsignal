@@ -12,13 +12,15 @@ import java.util.stream.Stream;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
 public sealed interface Nodes permits
-        Nodes.None,
+        Nodes.Empty,
         Nodes.Single,
         Nodes.Fixed,
         Nodes.Dynamic
 {
-    static None none() {
-        return new None();
+    Stream<? extends Node> stream();
+
+    static Empty empty() {
+        return new Empty();
     }
 
     static Single single(Node node) {
@@ -34,7 +36,7 @@ public sealed interface Nodes permits
     }
 
     static Fixed fixed(Single... singles) {
-        return new Fixed(Arrays.stream(singles).map(Single::get).toList());
+        return new Fixed(Arrays.stream(singles).flatMap(Single::stream).toList());
     }
 
     static <T> Dynamic compose(Nodes... children) {
@@ -51,35 +53,24 @@ public sealed interface Nodes permits
         return new Dynamic(composed);
     }
 
-    static Dynamic run(Supplier<Nodes> supplier) {
-        return new Dynamic(createComputed(() -> normalize(supplier.get()).toList()));
+    static Dynamic compute(Supplier<Nodes> supplier) {
+        return new Dynamic(createComputed(() -> supplier.get().stream().toList()));
     }
 
     static Dynamic component(Component component) {
-        return new Dynamic(createComputed(() -> normalize(component.render()).toList()));
+        return new Dynamic(createComputed(() -> component.render().stream().toList()));
     }
 
     private static Stream<? extends Node> composeHelper(Collection<? extends Nodes> children) {
-        return children.stream().flatMap(Nodes::normalize);
+        return children.stream().flatMap(Nodes::stream);
     }
 
-    private static Stream<? extends Node> normalize(Nodes child) {
-        if (child instanceof None n) {
+    final class Empty implements Nodes {
+        private Empty() {}
+
+        public Stream<? extends Node> stream() {
             return Stream.empty();
-        } else if (child instanceof Single s) {
-            return Stream.of(s.get());
-        } else if (child instanceof Fixed f) {
-            return f.get().stream();
-        } else if (child instanceof Dynamic d) {
-            return d.get().stream();
-        } else {
-            // exhaustive list
-            return null;
         }
-    }
-
-    final class None implements Nodes {
-        private None() {}
     }
 
     final class Single implements Nodes {
@@ -92,6 +83,10 @@ public sealed interface Nodes permits
         public Node get() {
             return node;
         }
+
+        public Stream<? extends Node> stream() {
+            return Stream.of(node);
+        }
     }
 
     final class Fixed implements Nodes {
@@ -101,8 +96,8 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
-        public Collection<? extends Node> get() {
-            return children;
+        public Stream<? extends Node> stream() {
+            return children.stream();
         }
     }
 
@@ -113,8 +108,8 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
-        public Collection<? extends Node> get() {
-            return children.get();
+        public Stream<? extends Node> stream() {
+            return children.get().stream();
         }
     }
 }

@@ -31,6 +31,7 @@ public class SiguiWindow {
     private final Window window;
     private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
+    private boolean shouldPaint = true;
     private Computed<MetaNode> root;
 
     private SideEffect requestFrameEffect;
@@ -65,15 +66,17 @@ public class SiguiWindow {
         if (!shouldLayout)
             return;
 
+        shouldLayout = false;
+
         var rect = window.getContentRect();
         Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
         absoluteTree = root.get().updateAbsoluteTree(absoluteTree);
         root.get().generateRenderOrder();
-
-        shouldLayout = false;
     }
 
     private void paint(Canvas canvas) {
+        shouldPaint = false;
+
         canvas.clear(EzColors.WHITE);
         int save = canvas.getSaveCount();
         try {
@@ -86,12 +89,11 @@ public class SiguiWindow {
     private void paintInner(Canvas canvas, MetaNode n) {
         var node = n.getNode();
         var yoga = n.getYoga();
-        var dx = Yoga.YGNodeLayoutGetLeft(yoga);
-        var dy = Yoga.YGNodeLayoutGetTop(yoga);
+        var offset = node.offset(yoga);
 
         var count = canvas.save();
         try {
-            canvas.translate(dx, dy);
+            canvas.concat(offset);
 
             node.paint(canvas, yoga);
             for (MetaNode child : n.getChildren()) {
@@ -108,6 +110,10 @@ public class SiguiWindow {
     }
 
     public void requestFrame() {
+        if (shouldPaint)
+            return;
+
+        shouldPaint = true;
         window.requestFrame();
     }
 
@@ -221,11 +227,8 @@ public class SiguiWindow {
     }
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {
-        LayerGLSkija layer = new LayerGLSkija();
-//        LayerD3D12Skija layer = new LayerD3D12Skija();
-
         window.setContentSize(400, 400);
-        window.setLayer(layer);
+        window.setLayer(Sigui.createLayer());
 
         var that = new SiguiWindow(window);
         that.root = createComputed(() -> {

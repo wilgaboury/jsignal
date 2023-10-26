@@ -117,7 +117,7 @@ public class Button extends Component {
         private Supplier<String> text = constantSupplier("");
         private Supplier<Size> size = constantSupplier(Size.MD);
         private Runnable action = () -> {};
-        private Nodes icon = Nodes.none();
+        private Nodes icon = Nodes.empty();
 
         public Builder setColor(Supplier<Integer> color) {
             this.color = color;
