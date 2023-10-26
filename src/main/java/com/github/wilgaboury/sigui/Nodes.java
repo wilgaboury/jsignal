@@ -40,16 +40,16 @@ public sealed interface Nodes permits
     }
 
     static <T> Dynamic compose(Nodes... children) {
-        return new Dynamic(createComputed(() -> composeHelper(List.of(children)).toList()));
+        return new Dynamic(createComputed(() -> Arrays.stream(children).flatMap(Nodes::stream).toList()));
     }
 
     static <T> Dynamic compose(Collection<? extends Nodes> children) {
-        return new Dynamic(createComputed(() -> composeHelper(children).toList()));
+        return new Dynamic(createComputed(() -> children.stream().flatMap(Nodes::stream).toList()));
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = ReactiveList.createMapped(list, map);
-        var composed = createComputed(() -> composeHelper(mapped.get()).toList());
+        var composed = createComputed(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
         return new Dynamic(composed);
     }
 
@@ -61,13 +61,10 @@ public sealed interface Nodes permits
         return new Dynamic(createComputed(() -> component.render().stream().toList()));
     }
 
-    private static Stream<? extends Node> composeHelper(Collection<? extends Nodes> children) {
-        return children.stream().flatMap(Nodes::stream);
-    }
-
     final class Empty implements Nodes {
         private Empty() {}
 
+        @Override
         public Stream<? extends Node> stream() {
             return Stream.empty();
         }
@@ -84,6 +81,7 @@ public sealed interface Nodes permits
             return node;
         }
 
+        @Override
         public Stream<? extends Node> stream() {
             return Stream.of(node);
         }
@@ -96,6 +94,11 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
+        public Collection<? extends Node> get() {
+            return children;
+        }
+
+        @Override
         public Stream<? extends Node> stream() {
             return children.stream();
         }
@@ -108,6 +111,11 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
+        public Supplier<? extends Collection<? extends Node>> get() {
+            return children;
+        }
+
+        @Override
         public Stream<? extends Node> stream() {
             return children.get().stream();
         }
