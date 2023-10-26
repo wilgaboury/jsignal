@@ -2,15 +2,14 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.event.EventListener;
 import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Font;
 import io.github.humbleui.skija.Paint;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.sigui.event.EventListener.*;
 
 public class Button extends Component {
     private final Supplier<Integer> color;
@@ -33,24 +32,24 @@ public class Button extends Component {
     @Override
     public Nodes render() {
            return Nodes.single(Node.builder()
-                   .listen(
-                           EventListener.onMouseOver(e -> mouseOver.accept(true)),
-                           EventListener.onMouseDown(e -> mouseDown.accept(true)),
-                           EventListener.onMouseOut(e -> batch(() -> {
+                   .ref(node -> node.listen(
+                           onMouseOver(e -> mouseOver.accept(true)),
+                           onMouseDown(e -> mouseDown.accept(true)),
+                           onMouseOut(e -> batch(() -> {
                                mouseDown.accept(false);
                                mouseOver.accept(false);
                            })),
-                           EventListener.onMouseUp(e -> {
+                           onMouseUp(e -> {
                                var prev = mouseDown.get();
                                mouseDown.accept(false);
                                if (prev) {
                                    Sigui.invokeLater(action);
                                }
                            })
-                   )
-                   .setLayout(this::layout)
-                   .setPaint(this::paint)
-                   .setChildren(Nodes.compose(
+                   ))
+                   .layout(this::layout)
+                   .paint(this::paint)
+                   .children(Nodes.compose(
                            icon,
                            Nodes.single(Text.line(() -> Text.basicTextLine(text.get(), fontSize()), () -> ColorUtil.contrastText(color.get())))
                    ))

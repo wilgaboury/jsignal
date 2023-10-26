@@ -35,9 +35,9 @@ public class SiguiWindow {
 
     private SideEffect requestFrameEffect;
 
-    private MetaNode mouseDown;
-    private MetaNode hovered;
-    private MetaNode focus;
+    private MetaNode mouseDown = null;
+    private MetaNode hovered = null;
+    private MetaNode focus = null;
 
     // hacky solution for stupid weird offset bug
     private boolean firstFrame = true;
@@ -129,7 +129,7 @@ public class SiguiWindow {
             requestLayout();
         } else if (e instanceof EventMouseScroll ee) {
             if (hovered != null) {
-                Events.fireBubble(new Event(EventType.SCROLL), hovered);
+                hovered.bubble(new Event(EventType.SCROLL));
             }
         } else if (e instanceof EventKey ee) {
             if (focus == null) {
@@ -141,30 +141,30 @@ public class SiguiWindow {
             }
 
             if (ee.isPressed()) {
-                Events.fireBubble(new KeyboardEvent(EventType.KEY_DOWN, ee), focus);
+                focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, ee));
             } else {
-                Events.fireBubble(new KeyboardEvent(EventType.KEY_UP, ee), focus);
+                focus.bubble(new KeyboardEvent(EventType.KEY_UP, ee));
             }
         } else if (e instanceof EventMouseButton ee) {
             if (hovered != null) {
                 if (ee.isPressed()) {
                     mouseDown = hovered;
 
-                    Events.fireBubble(new MouseEvent(EventType.MOUSE_DOWN), mouseDown);
+                    mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN));
 
                     var focusTemp = mouseDown;
-                    while (!Events.hasListenerOfType(focusTemp.getNode(), EventType.FOCUS) && focusTemp.getParent() != null) {
+                    while (!focusTemp.hasListener(EventType.FOCUS) && focusTemp.getParent() != null) {
                         focusTemp = focusTemp.getParent();
                     }
-                    if (focusTemp != focus) {
-                        Events.fire(new FocusEvent(EventType.BLUR), focus);
+                    if (focus != null && focusTemp != focus) {
+                        focus.fire(new FocusEvent(EventType.BLUR));
                         focus = focusTemp;
-                        Events.fire(new FocusEvent(EventType.FOCUS), focus);
+                        focus.fire(new FocusEvent(EventType.FOCUS));
                     }
                 } else {
-                    Events.fireBubble(new MouseEvent(EventType.MOUSE_UP), hovered);
+                    hovered.bubble(new MouseEvent(EventType.MOUSE_UP));
                     if (mouseDown == hovered) {
-                        Events.fireBubble(new MouseEvent(EventType.MOUSE_CLICK), hovered);
+                        hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK));
                     }
                 }
             }
@@ -175,21 +175,24 @@ public class SiguiWindow {
                 var newParents = newHovered == null ? null : newHovered.getParents();
 
                 if (hovered != null) {
-                    Events.fireBubble(new MouseEvent(EventType.MOUSE_OUT), hovered);
+                    hovered.bubble(new MouseEvent(EventType.MOUSE_OUT));
                     var node = hovered;
                     while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
-                        Events.fire(new MouseEvent(EventType.MOUSE_LEAVE), node);
+                        node.fire(new MouseEvent(EventType.MOUSE_LEAVE));
                         node = node.getParent();
                     }
                 }
 
                 if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
-                    Events.fire(new MouseEvent(EventType.MOUSE_IN), newHovered);
+                    newHovered.fire(new MouseEvent(EventType.MOUSE_IN));
                 }
 
                 hovered = newHovered;
             }
-            Events.fireBubble(new MouseEvent(EventType.MOUSE_OVER), hovered);
+
+            if (hovered != null) {
+                hovered.bubble(new MouseEvent(EventType.MOUSE_OVER));
+            }
         } else if (e instanceof EventWindowFocusOut) {
             hovered = null;
         }

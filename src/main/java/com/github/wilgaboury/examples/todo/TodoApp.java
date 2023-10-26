@@ -28,24 +28,24 @@ public class TodoApp {
 
         @Override
         public Nodes render() {
-            return Nodes.single(Node.builder()
-                    .setLayout(Flex.builder()
+            return Nodes.component(new Scroller(Nodes.single(Node.builder()
+                    .layout(Flex.builder()
                             .stretch()
                             .center()
                             .border(10f)
                             .column()
                             .gap(16f)
-                            .padding(new Insets(10, 10))
+                            .padding(new Insets(25))
                             .build())
-                    .setPaint(BasicPainter.builder()
+                    .paint(BasicPainter.builder()
                             .background(EzColors.AMBER_300)
                             .radius(50f)
                             .border(10f)
                             .borderColor(EzColors.EMERALD_500)
                             .build())
-                    .setChildren(Nodes.compose(
+                    .children(Nodes.compose(
                             Nodes.single(Text.para(constantSupplier(
-                                    Text.basicPara("Screw you guys I'm really really really going home!", EzColors.CYAN_600, 25f)
+                                    Text.basicPara("Screw you guys I'm going home!", EzColors.CYAN_600, 25f)
                             ))),
                             Nodes.single(Text.line(constantSupplier(Text.basicTextLine("little longer text line", 14f)),
                                     constantSupplier(EzColors.FUCHSIA_800)
@@ -53,26 +53,39 @@ public class TodoApp {
                             Nodes.component(Button.builder()
                                     .setColor(color)
                                     .setText("My Button (changes color)!")
-                                    .setSize(Button.Size.MD)
+                                    .setSize(Button.Size.LG)
                                     .setAction(() -> color.accept(random.nextInt()))
                                     .build()
                             ),
                             Nodes.single(Node.builder()
-                                    .setLayout(Flex.builder()
-                                            .width(400f)
-                                            .height(300f)
+                                    .layout(Flex.builder()
+                                            .width(200f)
+                                            .height(500f)
                                             .build()
                                     )
-                                    .setChildren(Nodes.single(
+                                    .children(Nodes.single(
                                             Image.builder()
-                                                    .setFit(Image.Fit.COVER)
+                                                    .setFit(Image.Fit.FILL)
                                                     .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
                                                     .build()
                                     ))
                                     .build())
+//                            Nodes.single(Node.builder()
+//                                    .setLayout(Flex.builder()
+//                                            .width(100f)
+//                                            .height(50f)
+//                                            .build()
+//                                    )
+//                                    .setChildren(Nodes.single(
+//                                            Image.builder()
+//                                                    .setFit(Image.Fit.CONTAIN)
+//                                                    .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
+//                                                    .build()
+//                                    ))
+//                                    .build())
                     ))
                     .build()
-            );
+            )));
         }
     }
 }

@@ -172,8 +172,8 @@ public class ReactiveUtil {
     public static Cleaner createCleaner(Runnable inner) {
         var env = ReactiveEnv.getInstance().get();
         var cleaner = new Cleaner();
-        env.cleaner(cleaner, toSupplier(inner));
         env.peekCleaner().ifPresent(c -> c.add(cleaner));
+        env.cleaner(cleaner, toSupplier(inner));
         return cleaner;
     }
 

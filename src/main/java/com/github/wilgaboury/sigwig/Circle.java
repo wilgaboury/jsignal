@@ -15,11 +15,11 @@ public class Circle extends Component{
 
     public Nodes render() {
         return Nodes.single(Node.builder()
-                .setLayout(yoga -> {
+                .layout(yoga -> {
                     Yoga.YGNodeStyleSetWidth(yoga, radius*2);
                     Yoga.YGNodeStyleSetHeight(yoga, radius*2);
                 })
-                .setPaint((canvas, yoga) -> {
+                .paint((canvas, yoga) -> {
                     try (var paint = new Paint()) {
                         paint.setColor(0x40FFFFFF);
                         canvas.drawCircle(radius, radius, radius, paint);

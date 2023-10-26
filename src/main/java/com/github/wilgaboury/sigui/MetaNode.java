@@ -5,15 +5,14 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 import com.github.davidmoten.rtree.internal.EntryDefault;
-import com.github.wilgaboury.jsignal.Computed;
-import com.github.wilgaboury.jsignal.Effect;
-import com.github.wilgaboury.jsignal.ReactiveList;
-import com.github.wilgaboury.jsignal.Ref;
+import com.github.wilgaboury.jsignal.*;
+import com.github.wilgaboury.sigui.event.Event;
+import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.event.EventType;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
@@ -26,7 +25,9 @@ public class MetaNode {
     private final long yoga;
     private final Computed<List<MetaNode>> children;
 
-    private final Effect layoutEffect;
+    private final Map<EventType, Collection<Consumer<?>>> listeners;
+
+    private final Cleaner cleaner;
 
     private Entry<MetaNode, Rectangle> absoluteEntry;
     private int renderOrder;
@@ -40,18 +41,24 @@ public class MetaNode {
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
 
+        this.listeners = new HashMap<>();
+
         this.absoluteEntry = null;
         this.renderOrder = 0;
 
-        this.layoutEffect = createEffect(this::layoutEffectInner);
+        cleaner = createCleaner(() -> {
+            onCleanup(() -> {
+                if (parent != null) {
+                    Yoga.YGNodeRemoveChild(parent.yoga, yoga);
+                }
+                Yoga.YGNodeFree(yoga);
 
-        onCleanup(() -> {
-            if (parent != null) {
-                Yoga.YGNodeRemoveChild(parent.yoga, yoga);
-            }
-            Yoga.YGNodeFree(yoga);
+                window.requestLayout();
+            });
 
-            window.requestLayout();
+            createEffect(this::layoutEffectInner);
+
+            node.ref(this);
         });
     }
 
@@ -79,7 +86,6 @@ public class MetaNode {
         } else if (children instanceof  Nodes.Dynamic d) {
             return ReactiveList.createMapped(
                     () -> d.get().stream()
-                            .map(Supplier::get)
                             .filter(Objects::nonNull)
                             .toList(),
                     (child, idx) -> {
@@ -142,7 +148,7 @@ public class MetaNode {
 
     void generateRenderOrder() {
         Ref<Integer> i = new Ref<>(0);
-        visitPre(n -> {
+        visitTreePre(n -> {
             n.renderOrder = i.get();
             i.set(i.get() + 1);
         });
@@ -178,29 +184,72 @@ public class MetaNode {
         return renderOrder;
     }
 
-    public void visit(Consumer<MetaNode> pre, Consumer<MetaNode> post) {
-        pre.accept(this);
+    public void visitTree(Consumer<MetaNode> preVisitor, Consumer<MetaNode> postVisitor) {
+        preVisitor.accept(this);
         for (var child : children.get()) {
-            child.visit(pre, post);
+            child.visitTree(preVisitor, postVisitor);
         }
-        post.accept(this);
+        postVisitor.accept(this);
     }
 
-    public void visitPre(Consumer<MetaNode> pre) {
-        visit(pre, (n) -> {});
+    public void visitTreePre(Consumer<MetaNode> visitor) {
+        visitTree(visitor, (n) -> {});
     }
 
-    public void visitPost(Consumer<MetaNode> post) {
-        visit((n) -> {}, post);
+    public void visitTreePost(Consumer<MetaNode> visitor) {
+        visitTree((n) -> {}, visitor);
+    }
+
+    public void visitParents(Consumer<MetaNode> visitor) {
+        MetaNode node = this;
+        while (node != null) {
+            visitor.accept(this);
+            node = node.parent;
+        }
+    }
+
+    public void listen(EventListener... addListeners) {
+        for (var listener : addListeners) {
+            var listeners = this.listeners.computeIfAbsent(listener.getType(), k -> new LinkedHashSet<>());
+            listeners.add(listener.getListener());
+            Runnable dispose = () -> listeners.remove(listener.getListener());
+            onCleanup(dispose);
+        }
+    }
+
+    public boolean hasListener(EventType type) {
+        var listeners = this.listeners.get(type);
+        return listeners != null && !listeners.isEmpty();
+    }
+
+    public <T extends Event> void fire(T event) {
+        for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
+            ((Consumer<T>)listener).accept(event);
+
+            if (!event.isImmediatePropagating())
+                return;
+        }
+    }
+
+    public <T extends Event> void bubble(T event) {
+        MetaNode node = this;
+        while (node != null) {
+            node.fire(event);
+
+            if (!event.isImmediatePropagating() || !event.isPropagating())
+                return;
+
+            node = node.parent;
+        }
     }
 
     public static MetaNode createRoot(Component component) {
         return new MetaNode(null, Node.builder()
-                .setLayout(yoga -> {
+                .layout(yoga -> {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                 })
-                .setChildren(Nodes.component(component))
+                .children(Nodes.component(component))
                 .build());
     }
 }

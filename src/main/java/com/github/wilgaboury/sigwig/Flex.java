@@ -1,9 +1,9 @@
 package com.github.wilgaboury.sigwig;
 
-import com.github.wilgaboury.sigui.Node;
+import com.github.wilgaboury.sigui.Layouter;
 import org.lwjgl.util.yoga.Yoga;
 
-public class Flex implements Node.Layouter {
+public class Flex implements Layouter {
     private final Insets margins;
     private final Float border;
     private final Insets padding;
@@ -14,6 +14,11 @@ public class Flex implements Node.Layouter {
     private final Float gap;
     private final MaybePercent<Float> height;
     private final MaybePercent<Float> width;
+    private final Boolean absolute;
+    private final MaybePercent<Float> top;
+    private final MaybePercent<Float> right;
+    private final MaybePercent<Float> bottom;
+    private final MaybePercent<Float> left;
 
     public Flex(Builder builder) {
         this.margins = builder.margins;
@@ -26,6 +31,11 @@ public class Flex implements Node.Layouter {
         this.gap = builder.gap;
         this.height = builder.height;
         this.width = builder.width;
+        this.absolute = builder.absolute;
+        this.top = builder.top;
+        this.right = builder.right;
+        this.bottom = builder.bottom;
+        this.left = builder.left;
     }
     
     @Override
@@ -77,6 +87,44 @@ public class Flex implements Node.Layouter {
         if (gap != null) {
             Yoga.YGNodeStyleSetGap(yoga, Yoga.YGGutterAll, gap);
         }
+
+        if (absolute != null && absolute) {
+            Yoga.YGNodeStyleSetPositionType(yoga, Yoga.YGPositionTypeAbsolute);
+        }
+
+        if (top != null) {
+            if (top.isPercent()) {
+                Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeTop, top.value());
+            } else {
+                Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeTop, top.value());
+            }
+        }
+
+        if (right != null) {
+            if (right.isPercent()) {
+                Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeRight, right.value());
+            } else {
+                Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeRight, right.value());
+            }
+        }
+
+        if (bottom != null) {
+            if (bottom.isPercent()) {
+                Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeBottom, bottom.value());
+            } else {
+                Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeBottom, bottom.value());
+            }
+        }
+
+        if (left != null) {
+            if (left.isPercent()) {
+                Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeLeft, left.value());
+            } else {
+                Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeLeft, left.value());
+            }
+        }
+
+        Yoga.YGNodeStyleSetOverflow(yoga, Yoga.YGOverflowScroll);
     }
 
     public static Builder builder() {
@@ -94,6 +142,11 @@ public class Flex implements Node.Layouter {
         private Float gap;
         private MaybePercent<Float> height;
         private MaybePercent<Float> width;
+        private Boolean absolute;
+        private MaybePercent<Float> top;
+        private MaybePercent<Float> right;
+        private MaybePercent<Float> bottom;
+        private MaybePercent<Float> left;
 
         public Builder center() {
             this.justify = Yoga.YGJustifyCenter;
@@ -159,6 +212,56 @@ public class Flex implements Node.Layouter {
 
         public Builder widthPercent(float width) {
             this.width = new MaybePercent<>(true, width);
+            return this;
+        }
+
+        public Builder absolute() {
+            this.absolute = true;
+            return this;
+        }
+
+        public Builder absolute(boolean absolute) {
+            this.absolute = absolute;
+            return this;
+        }
+
+        public Builder top(float top) {
+            this.top = new MaybePercent<>(false, top);
+            return this;
+        }
+
+        public Builder right(float right) {
+            this.right = new MaybePercent<>(false, right);
+            return this;
+        }
+
+        public Builder bottom(float bottom) {
+            this.bottom = new MaybePercent<>(false, bottom);
+            return this;
+        }
+
+        public Builder left(float left) {
+            this.left = new MaybePercent<>(false, left);
+            return this;
+        }
+
+        public Builder topPercent(float top) {
+            this.top = new MaybePercent<>(true, top);
+            return this;
+        }
+
+        public Builder rightPercent(float right) {
+            this.right = new MaybePercent<>(true, right);
+            return this;
+        }
+
+        public Builder bottomPercent(float bottom) {
+            this.bottom = new MaybePercent<>(true, bottom);
+            return this;
+        }
+
+        public Builder leftPercent(float left) {
+            this.left = new MaybePercent<>(true, left);
             return this;
         }
 

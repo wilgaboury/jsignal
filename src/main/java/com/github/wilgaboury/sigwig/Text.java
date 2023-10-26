@@ -1,7 +1,6 @@
 package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.sigui.Node;
-import com.github.wilgaboury.sigui.Nodes;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
 import org.lwjgl.util.yoga.Yoga;
@@ -10,8 +9,6 @@ import java.io.IOException;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Text {
     private static final Logger logger = Logger.getLogger(Text.class.getName());
@@ -77,7 +74,7 @@ public class Text {
 
     public static Node para(Supplier<Paragraph> para) {
         return Node.builder()
-                .setLayout(yoga -> {
+                .layout(yoga -> {
                     Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f);
                     Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
                         var p = para.get();
@@ -87,7 +84,7 @@ public class Text {
                         __result.width(p.getMaxIntrinsicWidth());
                     });
                 })
-                .setPaint((canvas, yoga) -> {
+                .paint((canvas, yoga) -> {
                     para.get().paint(canvas, 0, 0);
                 })
                 .build();
@@ -95,11 +92,11 @@ public class Text {
 
     public static Node line(Supplier<TextLine> line, Supplier<Integer> color) {
         return Node.builder()
-                .setLayout(yoga -> {
+                .layout(yoga -> {
                     Yoga.YGNodeStyleSetWidth(yoga, line.get().getWidth());
                     Yoga.YGNodeStyleSetHeight(yoga, line.get().getHeight());
                 })
-                .setPaint((canvas, yoga) -> {
+                .paint((canvas, yoga) -> {
                     try (var paint = new Paint()) {
                         paint.setColor(color.get());
                         canvas.drawTextLine(line.get(), 0, -line.get().getAscent(), paint);

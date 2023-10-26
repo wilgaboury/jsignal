@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.Node;
+import com.github.wilgaboury.sigui.Painter;
 import com.github.wilgaboury.sigui.YogaUtil;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Data;
@@ -17,17 +18,17 @@ public class Image {
     private static final Logger logger = Logger.getLogger(Image.class.getName());
 
     public static Node create(Supplier<Blob> blob, Supplier<Fit> fit) {
-        Computed<Node.Painter> painter = ReactiveUtil.createComputed(() -> painter(blob, fit));
+        Computed<Painter> painter = ReactiveUtil.createComputed(() -> painter(blob, fit));
         return Node.builder()
-                .setLayout(Flex.builder().stretch().build())
-                .setPaint((canvas, yoga) -> painter.get().paint(canvas, yoga))
+                .layout(Flex.builder().stretch().build())
+                .paint((canvas, yoga) -> painter.get().paint(canvas, yoga))
                 .build();
     }
 
-    private static Node.Painter painter(Supplier<Blob> blobSupplier, Supplier<Fit> fitSupplier) {
+    private static Painter painter(Supplier<Blob> blobSupplier, Supplier<Fit> fitSupplier) {
         var blob = blobSupplier.get();
         var fit = fitSupplier.get();
-        if (blob.getMime().equals(MediaType.SVG_UTF_8)) {
+        if (blob.getMime().is(MediaType.SVG_UTF_8)) {
             var svg = new SVGDOM(Data.makeFromBytes(blob.getData()));
             var dim = viewBox(svg);
             var width = dim.getX();
@@ -72,6 +73,13 @@ public class Image {
                 svg.setContainerSize(size.getWidth(), size.getHeight());
                 svg.render(canvas);
             };
+        } else if (blob.getMime().is(MediaType.ANY_IMAGE_TYPE)) {
+            blob.getData();
+            var img = io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.getData());
+            return (canvas, yoga) -> {
+                canvas.drawImage(img, 0, 0);
+            };
+
         }
         logger.log(Level.WARNING, "Unrecognized image type: %s", blob.getMime());
         return (canvas, yoga) -> {};

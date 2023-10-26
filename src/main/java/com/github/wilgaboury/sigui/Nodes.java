@@ -1,15 +1,15 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ReactiveList;
-import com.github.wilgaboury.jsignal.ReactiveUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
 public sealed interface Nodes permits
         Nodes.None,
@@ -38,39 +38,40 @@ public sealed interface Nodes permits
     }
 
     static <T> Dynamic compose(Nodes... children) {
-        return new Dynamic(ReactiveUtil.createComputed(() -> composeHelper(List.of(children))));
+        return new Dynamic(createComputed(() -> composeHelper(List.of(children)).toList()));
     }
 
     static <T> Dynamic compose(Collection<? extends Nodes> children) {
-        return new Dynamic(ReactiveUtil.createComputed(() -> composeHelper(children)));
+        return new Dynamic(createComputed(() -> composeHelper(children).toList()));
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = ReactiveList.createMapped(list, map);
-        var composed = ReactiveUtil.createComputed(() -> composeHelper(mapped.get()));
+        var composed = createComputed(() -> composeHelper(mapped.get()).toList());
         return new Dynamic(composed);
     }
 
+    static Dynamic run(Supplier<Nodes> supplier) {
+        return new Dynamic(createComputed(() -> normalize(supplier.get()).toList()));
+    }
+
     static Dynamic component(Component component) {
-        return new Dynamic(ReactiveUtil.createComputed(() -> normalize(component.render())));
+        return new Dynamic(createComputed(() -> normalize(component.render()).toList()));
     }
 
-    private static List<? extends Computed<? extends Node>> composeHelper(Collection<? extends Nodes> children) {
-        return children.stream()
-                .map(Nodes::normalize)
-                .flatMap(Collection::stream)
-                .toList();
+    private static Stream<? extends Node> composeHelper(Collection<? extends Nodes> children) {
+        return children.stream().flatMap(Nodes::normalize);
     }
 
-    private static Collection<? extends Computed<? extends Node>> normalize(Nodes child) {
+    private static Stream<? extends Node> normalize(Nodes child) {
         if (child instanceof None n) {
-            return Collections.emptyList();
+            return Stream.empty();
         } else if (child instanceof Single s) {
-            return List.of(Computed.constant(s.get()));
+            return Stream.of(s.get());
         } else if (child instanceof Fixed f) {
-            return f.get().stream().map(Computed::constant).toList();
+            return f.get().stream();
         } else if (child instanceof Dynamic d) {
-            return d.get();
+            return d.get().stream();
         } else {
             // exhaustive list
             return null;
@@ -106,13 +107,13 @@ public sealed interface Nodes permits
     }
 
     final class Dynamic implements Nodes {
-        private final Computed<? extends Collection<? extends Computed<? extends Node>>> children;
+        private final Supplier<? extends Collection<? extends Node>> children;
 
-        private Dynamic(Computed<? extends Collection<? extends Computed<? extends Node>>> children) {
+        private Dynamic(Supplier<? extends Collection<? extends Node>>  children) {
             this.children = children;
         }
 
-        public Collection<? extends Computed<? extends Node>> get() {
+        public Collection<? extends Node> get() {
             return children.get();
         }
     }

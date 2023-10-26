@@ -1,12 +1,12 @@
 package com.github.wilgaboury.sigwig;
 
-import com.github.wilgaboury.sigui.Node;
+import com.github.wilgaboury.sigui.Painter;
 import com.github.wilgaboury.sigui.YogaUtil;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.RRect;
 
-public class BasicPainter implements Node.Painter {
+public class BasicPainter implements Painter {
     private final Float radius;
     private final Float border;
     private final Integer background;

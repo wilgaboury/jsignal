@@ -1,13 +1,8 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.sigui.event.EventListener;
-import com.github.wilgaboury.sigui.event.Events;
 import io.github.humbleui.skija.Canvas;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -17,24 +12,13 @@ public interface Node {
         return Nodes.none();
     }
 
-    default void ref(MetaNode node) {
-    }
+    default void ref(MetaNode node) {}
 
     default void layout(long yoga) {}
 
     default void paint(Canvas canvas, long yoga) {}
 
     default void paintAfter(Canvas canvas, long yoga) {}
-
-    @FunctionalInterface
-    interface Layouter {
-        void layout(long yoga);
-    }
-
-    @FunctionalInterface
-    interface Painter {
-        void paint(Canvas canvas, long yoga);
-    }
 
     static Builder builder() {
         return new Builder();
@@ -46,89 +30,58 @@ public interface Node {
         private Layouter layout = (yoga) -> {};
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
-        private Supplier<Boolean> focus = () -> false;
-        private List<EventListener> listeners = Collections.emptyList();
 
-        public Nodes getChildren() {
-            return children;
-        }
-
-        public Builder setChildren(Nodes nodes) {
+        public Builder children(Nodes nodes) {
             this.children = nodes;
             return this;
         }
 
-        public Layouter getLayout() {
-            return layout;
+        public Builder ref(Consumer<MetaNode> ref) {
+            this.ref = ref;
+            return this;
         }
-
-        public Builder setLayout(Layouter layouter) {
+        
+        public Builder layout(Layouter layouter) {
             this.layout = layouter;
             return this;
         }
-
-        public Painter getPaint() {
-            return paint;
-        }
-
-        public Builder setPaint(Painter paint) {
+        
+        public Builder paint(Painter paint) {
             this.paint = paint;
             return this;
         }
-
-        public Painter getPaintAfter() {
-            return paintAfter;
-        }
-
-        public Builder setPaintAfter(Painter paintAfter) {
+        
+        public Builder paintAfter(Painter paintAfter) {
             this.paintAfter = paintAfter;
             return this;
         }
 
-        public Supplier<Boolean> getFocus() {
-            return focus;
-        }
-
-        public Builder setFocus(Supplier<Boolean> focus) {
-            this.focus = focus;
-            return this;
-        }
-
-        public Builder listen(EventListener... listeners) {
-            this.listeners = List.of(listeners);
-            return this;
-        }
-
         public Node build() {
-            var node = new Composed(this);
-            for (EventListener listener : listeners) {
-                Events.listen(node ,listener);
-            }
-            return node;
+            return new Composed(this);
         }
     }
 
     class Composed implements Node {
         private final Nodes children;
+        private final Consumer<MetaNode> ref;
         private final Layouter layout;
         private final Painter paint;
         private final Painter paintAfter;
-        private final Supplier<Boolean> focus;
 
         public Composed(Builder builder) {
             this.children = builder.children;
+            this.ref = builder.ref;
             this.layout = builder.layout;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
-            this.focus = builder.focus;
         }
 
         public Nodes children() {
             return children;
         }
 
-        public boolean getFocus() {
-            return focus.get();
+        public void ref(MetaNode node) {
+            ref.accept(node);
         }
 
         public void layout(long yoga) {
