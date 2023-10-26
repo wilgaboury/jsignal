@@ -37,7 +37,7 @@ public class Signal<T> implements SignalLike<T> {
     @Override
     public void track() {
         assertThread();
-        ReactiveEnvInner env = ReactiveEnv.getInstance().get();
+        ReactiveEnv env = ReactiveEnvFactory.get();
         env.peekEffect().ifPresent(effect -> {
             assert threadId == null ||
                     (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))

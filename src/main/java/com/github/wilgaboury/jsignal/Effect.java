@@ -47,7 +47,7 @@ public class Effect implements EffectLike {
 
     @Override
     public void run() {
-        ReactiveEnvInner env = ReactiveEnv.getInstance().get();
+        ReactiveEnv env = ReactiveEnvFactory.get();
         maybeSynchronize(() -> {
             if (isDisposed())
                 return;

@@ -5,7 +5,6 @@ import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.ForkJoinPool;
@@ -116,11 +115,11 @@ public class ReactiveUtil {
     }
 
     public static Effect createEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, true);
+        return ReactiveEnvFactory.get().createEffect(effect, true);
     }
 
     public static Effect createAsyncEffect(Runnable effect) {
-        return ReactiveEnv.getInstance().get().createEffect(effect, false);
+        return ReactiveEnvFactory.get().createEffect(effect, false);
     }
 
     public static SideEffect createSideEffect(Runnable effect) {
@@ -134,15 +133,15 @@ public class ReactiveUtil {
     }
 
     public static <T> T applySideEffect(SideEffect effect, Supplier<T> inner) {
-        return ReactiveEnv.getInstance().get().effect(effect, inner);
+        return ReactiveEnvFactory.get().effect(effect, inner);
     }
 
     public static void useExecutor(Executor executor, Runnable inner) {
-        ReactiveEnv.getInstance().get().executor(executor, toSupplier(inner));
+        ReactiveEnvFactory.get().executor(executor, toSupplier(inner));
     }
 
     public static <T> T useExecutor(Executor executor, Supplier<T> inner) {
-        return ReactiveEnv.getInstance().get().executor(executor, inner);
+        return ReactiveEnvFactory.get().executor(executor, inner);
     }
 
     public static void useAsyncExecutor(Runnable inner) {
@@ -170,7 +169,7 @@ public class ReactiveUtil {
     }
 
     public static Cleaner createCleaner(Runnable inner) {
-        var env = ReactiveEnv.getInstance().get();
+        var env = ReactiveEnvFactory.get();
         var cleaner = new Cleaner();
         env.peekCleaner().ifPresent(c -> c.add(cleaner));
         env.cleaner(cleaner, toSupplier(inner));
@@ -178,17 +177,17 @@ public class ReactiveUtil {
     }
 
     public static <T> T createRootCleaner(Function<Cleaner, T> inner) {
-        var env = ReactiveEnv.getInstance().get();
+        var env = ReactiveEnvFactory.get();
         var cleaner = new Cleaner();
         return env.cleaner(cleaner, () -> inner.apply(cleaner));
     }
 
     public static void onCleanup(Runnable cleanup) {
-        ReactiveEnv.getInstance().get().onCleanup(cleanup);
+        ReactiveEnvFactory.get().onCleanup(cleanup);
     }
 
     public static void batch(Runnable inner) {
-        ReactiveEnv.getInstance().get().batch(toSupplier(inner));
+        ReactiveEnvFactory.get().batch(toSupplier(inner));
     }
 
     public static void track(Iterable<? extends Trackable> deps) {
@@ -202,7 +201,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T untrack(Supplier<T> signal) {
-        return ReactiveEnv.getInstance().get().effect(null, signal);
+        return ReactiveEnvFactory.get().effect(null, signal);
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
@@ -274,7 +273,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T createProvider(Provider.Entry entry, Supplier<T> inner) {
-        var env = ReactiveEnv.getInstance().get();
+        var env = ReactiveEnvFactory.get();
         return env.provider(env.peekProvider().layer(entry), inner);
     }
 
@@ -283,7 +282,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T createProvider(Iterable<Provider.Entry> entries, Supplier<T> inner) {
-        var env = ReactiveEnv.getInstance().get();
+        var env = ReactiveEnvFactory.get();
         return env.provider(env.peekProvider().layer(entries), inner);
     }
 
@@ -292,15 +291,15 @@ public class ReactiveUtil {
     }
 
     public static <T> T useContext(Context<T> context) {
-        return ReactiveEnv.getInstance().get().peekProvider().use(context);
+        return ReactiveEnvFactory.get().peekProvider().use(context);
     }
 
     public static Provider saveContext() {
-        return ReactiveEnv.getInstance().get().peekProvider();
+        return ReactiveEnvFactory.get().peekProvider();
     }
 
     public static <T> T loadContext(Provider provider, Supplier<T> inner) {
-        return ReactiveEnv.getInstance().get().provider(provider, inner);
+        return ReactiveEnvFactory.get().provider(provider, inner);
     }
 
     public static <T> T captureContext(Supplier<T> inner) {
@@ -313,7 +312,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Cleaner createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
-        Cleaner cleaner = ReactiveEnv.getInstance().get().peekCleaner().orElseGet(createRootCleaner((val) -> null));
+        Cleaner cleaner = ReactiveEnvFactory.get().peekCleaner().orElseGet(createRootCleaner((val) -> null));
         publisher.subscribe(new SubscriberAdapter<T>(signal, cleaner));
         return cleaner;
     }

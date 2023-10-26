@@ -20,7 +20,7 @@ public class Effects implements Runnable {
 
     @Override
     public void run() {
-        var env = ReactiveEnv.getInstance().get();
+        var env = ReactiveEnvFactory.get();
 
         env.batch(ReactiveUtil.toSupplier(() -> {
             Iterator<EffectRef> itr = effects.values().iterator();
