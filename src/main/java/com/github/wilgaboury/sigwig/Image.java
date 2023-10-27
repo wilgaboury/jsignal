@@ -9,6 +9,7 @@ import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Data;
 import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
+import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -17,12 +18,58 @@ import java.util.logging.Logger;
 public class Image {
     private static final Logger logger = Logger.getLogger(Image.class.getName());
 
-    public static Node create(Supplier<Blob> blob, Supplier<Fit> fit) {
-        Computed<Painter> painter = ReactiveUtil.createComputed(() -> painter(blob, fit));
+    public static Node create(Builder builder) {
+        Computed<Painter> painter = ReactiveUtil.createComputed(() -> painter(builder.blob, builder.fit));
         return Node.builder()
-                .layout(Flex.builder().stretch().build())
+                .layout(yoga -> {
+                    var blob = builder.blob.get();
+                    if (blob.getMime().is(MediaType.SVG_UTF_8)) {
+                        layoutSvg(yoga, builder);
+                    }
+                })
                 .paint((canvas, yoga) -> painter.get().paint(canvas, yoga))
                 .build();
+    }
+
+    public static void layoutSvg(long yoga, Builder builder) {
+        var blob = builder.blob.get();
+        var imgWidth = builder.width.get();
+        var imgHeight = builder.height.get();
+
+        var svg = new SVGDOM(Data.makeFromBytes(blob.getData()));
+        var dim = viewBox(svg);
+        var svgWidth = dim.getX();
+        var svgHeight = dim.getY();
+
+        if (imgWidth != null) {
+            if (imgWidth.isPercent()) {
+                Yoga.YGNodeStyleSetWidthPercent(yoga, imgWidth.value());
+            } else {
+                Yoga.YGNodeStyleSetWidth(yoga, imgWidth.value());
+            }
+        }
+        if (imgHeight != null) {
+            if (imgHeight.isPercent()) {
+                Yoga.YGNodeStyleSetHeightPercent(yoga, imgHeight.value());
+            } else {
+                Yoga.YGNodeStyleSetHeight(yoga, imgHeight.value());
+            }
+        }
+
+        if (imgWidth == null && imgHeight != null) {
+            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
+                __result.width((svgWidth/svgHeight)*height);
+                __result.height(height);
+            });
+        } else if (imgHeight == null && imgWidth != null) {
+            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
+                __result.width(width);
+                __result.height((svgHeight/svgWidth)*width);
+            });
+        } else if (imgWidth == null && imgHeight == null) {
+            Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
+            Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
+        }
     }
 
     private static Painter painter(Supplier<Blob> blobSupplier, Supplier<Fit> fitSupplier) {
@@ -98,6 +145,8 @@ public class Image {
     public static class Builder {
         private Supplier<Blob> blob;
         private Supplier<Fit> fit = ReactiveUtil.constantSupplier(Fit.CONTAIN);
+        private Supplier<MaybePercent<Float>> height = () -> null;
+        private Supplier<MaybePercent<Float>> width = () -> null;
 
         public Builder setBlob(Supplier<Blob> blob) {
             this.blob = blob;
@@ -119,8 +168,28 @@ public class Image {
             return this;
         }
 
+        public Builder height(Supplier<Float> height) {
+            this.height = () -> new MaybePercent<>(false, height.get());
+            return this;
+        }
+
+        public Builder width(Supplier<Float> width) {
+            this.width = () -> new MaybePercent<>(false, width.get());
+            return this;
+        }
+
+        public Builder heightPercent(Supplier<Float> height) {
+            this.height = () -> new MaybePercent<>(true, height.get());
+            return this;
+        }
+
+        public Builder widthPercent(Supplier<Float> width) {
+            this.width = () -> new MaybePercent<>(true, width.get());
+            return this;
+        }
+
         public Node build() {
-            return create(blob, fit);
+            return create(this);
         }
     }
 

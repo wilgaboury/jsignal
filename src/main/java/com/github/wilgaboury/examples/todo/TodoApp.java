@@ -1,5 +1,6 @@
 package com.github.wilgaboury.examples.todo;
 
+import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
@@ -53,6 +54,7 @@ public class TodoApp {
                             )),
                             Nodes.component(Button.builder()
                                     .setColor(color)
+//                                    .setText("test")
                                     .setText(this::buttonText)
                                     .setSize(Button.Size.LG)
                                     .setAction(() ->  {
@@ -61,35 +63,33 @@ public class TodoApp {
                                     })
                                     .build()
                             ),
-                            Nodes.compute(() -> showFire.get()
-                                    ? Nodes.single(Node.builder()
-                                            .layout(Flex.builder()
-                                                    .width(100f)
-                                                    .height(50f)
-                                                    .build()
-                                            )
-                                            .children(Nodes.single(
-                                                    Image.builder()
-                                                            .setFit(Image.Fit.FILL)
-                                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
-                                                            .build()
-                                            ))
-                                            .build())
-                                    : Nodes.empty()
-                            ),
-                            Nodes.single(Node.builder()
-                                    .layout(Flex.builder()
-                                            .width(200f)
-                                            .height(500f)
-                                            .build()
-                                    )
-                                    .children(Nodes.single(
-                                            Image.builder()
-                                                    .setFit(Image.Fit.FILL)
-                                                    .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
-                                                    .build()
-                                    ))
-                                    .build())
+                            Nodes.single(Image.builder()
+                                    .setFit(Image.Fit.CONTAIN)
+                                    .width(ReactiveUtil.constantSupplier(200f))
+                                    .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
+                                    .build()
+                            )
+//                            Nodes.compute(() -> showFire.get()
+//                                    ? Nodes.single(Image.builder()
+//                                            .setFit(Image.Fit.FILL)
+//                                            .height(ReactiveUtil.constantSupplier(200f))
+//                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
+//                                            .build()
+//                                    )
+//                                    : Nodes.empty()
+//                            )
+//                            Nodes.single(Node.builder()
+//                                    .layout(Flex.builder()
+//                                            .width(200f)
+//                                            .height(200f)
+//                                            .build()
+//                                    )
+//                                    .paint(ImagePainter.builder()
+//                                            .setFit(ImagePainter.Fit.FILL)
+//                                            .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
+//                                            .build()
+//                                    )
+//                                    .build())
                     ))
                     .build()
             )));

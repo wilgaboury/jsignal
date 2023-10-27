@@ -72,21 +72,21 @@ public class MetaNode {
     private Computed<List<MetaNode>> createChildren() {
         var children = node.children();
 
-        if (children instanceof Nodes.Single s) {
-            var meta = new MetaNode(this, s.get());
+        if (children instanceof Nodes.Single single) {
+            var meta = new MetaNode(this, single.get());
             Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
             return Computed.constant(List.of(meta));
-        } else if (children instanceof Nodes.Fixed f) {
+        } else if (children instanceof Nodes.Multiple multiple) {
             Ref<Integer> i = new Ref<>(0);
-            return Computed.constant(f.stream().map(n -> {
+            return Computed.constant(multiple.stream().map(n -> {
                 var meta = new MetaNode(this, n);
                 Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
                 i.set(i.get() + 1);
                 return meta;
             }).toList());
-        } else if (children instanceof  Nodes.Dynamic d) {
+        } else if (children instanceof  Nodes.Dynamic dynamic) {
             return ReactiveList.createMapped(
-                    () -> d.stream()
+                    () -> dynamic.stream()
                             .filter(Objects::nonNull)
                             .toList(),
                     (child, idx) -> {

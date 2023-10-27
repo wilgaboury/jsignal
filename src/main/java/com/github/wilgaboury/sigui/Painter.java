@@ -11,4 +11,12 @@ public interface Painter {
     static Painter dynamic(Supplier<Painter> painter) {
         return (canvas, yoga) -> painter.get().paint(canvas, yoga);
     }
+
+    static Painter compose(Painter... painters) {
+        return (canvas, yoga) -> {
+            for (var painter : painters) {
+                painter.paint(canvas, yoga);
+            }
+        };
+    }
 }
