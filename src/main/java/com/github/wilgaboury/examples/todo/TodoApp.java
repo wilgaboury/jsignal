@@ -1,6 +1,5 @@
 package com.github.wilgaboury.examples.todo;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
@@ -13,6 +12,8 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.constantSupplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 
 public class TodoApp {
+    private static final String LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit.";
+
     public static void main(String[] args) {
         Sigui.start(TodoApp::runApp);
     }
@@ -47,14 +48,14 @@ public class TodoApp {
                             .build())
                     .children(Nodes.compose(
                             Nodes.single(Text.para(constantSupplier(
-                                    Text.basicPara("Screw you guys I'm going home!", EzColors.CYAN_600, 25f)
+                                    Text.basicPara(LOREM, EzColors.BLACK, 18f)
+//                                    Text.basicPara("Screw you guys I'm going home!", EzColors.CYAN_600, 25f)
                             ))),
                             Nodes.single(Text.line(constantSupplier(Text.basicTextLine("little longer text line", 14f)),
                                     constantSupplier(EzColors.FUCHSIA_800)
                             )),
                             Nodes.component(Button.builder()
                                     .setColor(color)
-//                                    .setText("test")
                                     .setText(this::buttonText)
                                     .setSize(Button.Size.LG)
                                     .setAction(() ->  {
@@ -63,40 +64,28 @@ public class TodoApp {
                                     })
                                     .build()
                             ),
+                            Nodes.compute(() -> showFire.get()
+                                            ? Nodes.single(Image.builder()
+                                            .setFit(Image.Fit.FILL)
+                                            .height(200f)
+                                            .widthPercent(100f)
+                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
+                                            .build()
+                                    )
+                                            : Nodes.empty()
+                            ),
                             Nodes.single(Image.builder()
-                                    .setFit(Image.Fit.CONTAIN)
-                                    .width(ReactiveUtil.constantSupplier(200f))
-                                    .setBlob(Blob.fromResource("/cartman.svg", MediaType.SVG_UTF_8))
+                                    .width(250f)
+                                    .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
                                     .build()
                             )
-//                            Nodes.compute(() -> showFire.get()
-//                                    ? Nodes.single(Image.builder()
-//                                            .setFit(Image.Fit.FILL)
-//                                            .height(ReactiveUtil.constantSupplier(200f))
-//                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
-//                                            .build()
-//                                    )
-//                                    : Nodes.empty()
-//                            )
-//                            Nodes.single(Node.builder()
-//                                    .layout(Flex.builder()
-//                                            .width(200f)
-//                                            .height(200f)
-//                                            .build()
-//                                    )
-//                                    .paint(ImagePainter.builder()
-//                                            .setFit(ImagePainter.Fit.FILL)
-//                                            .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
-//                                            .build()
-//                                    )
-//                                    .build())
                     ))
                     .build()
             )));
         }
 
         public String buttonText() {
-            return showFire.get() ? "Hide Fire" : "Show Fire";
+            return (showFire.get() ? "Hide Fire" : "Show Fire") + " (and changes color)";
         }
     }
 }

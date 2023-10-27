@@ -1,6 +1,9 @@
 package com.github.wilgaboury.sigui;
 
-import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.App;
+import io.github.humbleui.jwm.Layer;
+import io.github.humbleui.jwm.Platform;
+import io.github.humbleui.jwm.Window;
 import io.github.humbleui.jwm.skija.LayerD3D12Skija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
