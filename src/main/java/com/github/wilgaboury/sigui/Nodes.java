@@ -27,15 +27,15 @@ public sealed interface Nodes permits
         return new Single(node);
     }
 
-    static Multiple fixed(Node... nodes) {
+    static Multiple multiple(Node... nodes) {
         return new Multiple(List.of(nodes));
     }
 
-    static Multiple fixed(Collection<? extends Node> nodes) {
+    static Multiple multiple(Collection<? extends Node> nodes) {
         return new Multiple(nodes);
     }
 
-    static Multiple fixed(Single... singles) {
+    static Multiple multiple(Single... singles) {
         return new Multiple(Arrays.stream(singles).flatMap(Single::stream).toList());
     }
 

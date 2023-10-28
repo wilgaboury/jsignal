@@ -9,6 +9,7 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
@@ -25,6 +26,8 @@ public class MetaNode {
 
     private final long yoga;
     private final Computed<List<MetaNode>> children;
+    private final Computed<Boolean> thisHasOutsideBounds;
+    private final Computed<Boolean> hasOutsideBounds;
 
     private final Map<EventType, Collection<Consumer<?>>> listeners;
 
@@ -41,6 +44,10 @@ public class MetaNode {
 
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
+//        this.thisHasOutsideBounds = createComputed(());
+        this.hasOutsideBounds = createComputed(() ->
+                children.get().stream().anyMatch(child -> child.hasOutsideBounds.get())
+        );
 
         this.listeners = new HashMap<>();
 
@@ -65,7 +72,7 @@ public class MetaNode {
 
     private void layoutEffectInner() {
         Sigui.clearNodeStyle(yoga);
-        node.layout(yoga);
+        node.preLayout(yoga);
         window.requestLayout();
     }
 
@@ -106,21 +113,26 @@ public class MetaNode {
         }
     }
 
-    public MetaNode pick(float x, float y) {
-        // TODO: optimize, only check elements that are visible, i.e. respect window and clipping
-        if (Util.contains(YogaUtil.relRect(yoga), x, y)) {
-            var offset = getNode().offset(yoga);
-            for (var child : children.get()) {
-                var p = Sigui.apply(offset, new Point(x, y));
-                MetaNode result = child.pick(p.getX(), p.getY());
+    public MetaNode pick(Matrix33 transform, float x, float y) {
+        var newTransform = transform.makeConcat(getTransform());
+        if (hasOutsideBounds.get() || new RectTransformed(YogaUtil.boundingRect(yoga), newTransform).contains(new Point(x, y))) {
+            var children = this.children.get();
+            for (int i = children.size(); i > 0; i--) {
+                var child = children.get(i - 1);
+                MetaNode result = child.pick(newTransform, x, y);
                 if (result != null) {
                     return result;
                 }
             }
             return this;
         }
-
         return null;
+    }
+
+    public Matrix33 getTransform() {
+        float dx = Yoga.YGNodeLayoutGetLeft(yoga);
+        float dy = Yoga.YGNodeLayoutGetTop(yoga);
+        return Matrix33.makeTranslate(dx, dy).makeConcat(node.transform());
     }
 
     public RTree<MetaNode, Rectangle> updateAbsoluteTree(RTree<MetaNode, Rectangle> tree) {
@@ -163,7 +175,7 @@ public class MetaNode {
         return parent;
     }
 
-    public Collection<MetaNode> getParents() {
+;    public Collection<MetaNode> getParents() {
         var node = this.parent;
         var res = new LinkedHashSet<MetaNode>();
         while (node != null) {

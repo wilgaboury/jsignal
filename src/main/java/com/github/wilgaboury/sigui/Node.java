@@ -16,21 +16,23 @@ public interface Node {
 
     default void ref(MetaNode node) {}
 
-    default void layout(long yoga) {}
+    default void preLayout(long yoga) {}
 
-    default Matrix33 offset(long yoga) {
-        return defaultOffsetter(yoga);
+    default void postLayout(long yoga) {}
+
+    default void paint(Canvas canvas) {}
+
+    default void paintAfter(Canvas canvas) {}
+
+    default Matrix33 transform() {
+        return Matrix33.IDENTITY;
     }
-
-    default void paint(Canvas canvas, long yoga) {}
-
-    default void paintAfter(Canvas canvas, long yoga) {}
 
     static Builder builder() {
         return new Builder();
     }
 
-    static interface Offsetter {
+    interface Offsetter {
         Matrix33 offset(long yoga);
     }
 
@@ -85,6 +87,7 @@ public interface Node {
         private final Nodes children;
         private final Consumer<MetaNode> ref;
         private final Layouter layout;
+        private final Offsetter offsetter;
         private final Painter paint;
         private final Painter paintAfter;
 
@@ -92,6 +95,7 @@ public interface Node {
             this.children = builder.children;
             this.ref = builder.ref;
             this.layout = builder.layout;
+            this.offsetter = builder.offsetter;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
         }
@@ -104,8 +108,12 @@ public interface Node {
             ref.accept(node);
         }
 
-        public void layout(long yoga) {
+        public void preLayout(long yoga) {
             layout.layout(yoga);
+        }
+
+        public Matrix33 offset(long yoga) {
+            return offsetter.offset(yoga);
         }
 
         public void paint(Canvas canvas, long yoga) {

@@ -47,11 +47,9 @@ public class TodoApp {
                             .borderColor(EzColors.EMERALD_500)
                             .build())
                     .children(Nodes.compose(
-                            Nodes.single(Text.para(constantSupplier(
-                                    Text.basicPara(LOREM, EzColors.BLACK, 18f)
-//                                    Text.basicPara("Screw you guys I'm going home!", EzColors.CYAN_600, 25f)
-                            ))),
-                            Nodes.single(Text.line(constantSupplier(Text.basicTextLine("little longer text line", 14f)),
+                            Nodes.single(Text.para(Text.basicPara(LOREM, EzColors.BLACK, 18f))),
+                            Nodes.single(Text.line(
+                                    constantSupplier(Text.basicTextLine("small text line", 14f)),
                                     constantSupplier(EzColors.FUCHSIA_800)
                             )),
                             Nodes.component(Button.builder()
@@ -65,24 +63,24 @@ public class TodoApp {
                                     .build()
                             ),
                             Nodes.compute(() -> showFire.get()
-                                            ? Nodes.single(Image.builder()
-                                            .setFit(Image.Fit.FILL)
+                                    ? Nodes.single(Image.builder()
+                                            .fit(Image.Fit.FILL)
                                             .height(200f)
                                             .widthPercent(100f)
-                                            .setBlob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
+                                            .blob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
                                             .build()
                                     )
-                                            : Nodes.empty()
+                                    : Nodes.empty()
                             ),
                             Nodes.single(Image.builder()
                                     .width(250f)
-                                    .setBlob(Blob.fromResource("/peng.png", MediaType.PNG))
+                                    .blob(Blob.fromResource("/peng.png", MediaType.PNG))
                                     .build()
                             )
                     ))
                     .build()
             )));
-        }
+}
 
         public String buttonText() {
             return (showFire.get() ? "Hide Fire" : "Show Fire") + " (and changes color)";

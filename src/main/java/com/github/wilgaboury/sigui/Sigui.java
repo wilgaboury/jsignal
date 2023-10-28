@@ -10,6 +10,7 @@ import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.EnumMap;

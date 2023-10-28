@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.Node;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
@@ -70,6 +71,10 @@ public class Text {
         builder.popStyle();
 
         return builder.build();
+    }
+
+    public static Node para(Paragraph para) {
+        return para(ReactiveUtil.constantSupplier(para));
     }
 
     public static Node para(Supplier<Paragraph> para) {

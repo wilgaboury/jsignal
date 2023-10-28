@@ -123,8 +123,6 @@ public class Flex implements Layouter {
                 Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeLeft, left.value());
             }
         }
-
-        Yoga.YGNodeStyleSetOverflow(yoga, Yoga.YGOverflowScroll);
     }
 
     public static Builder builder() {

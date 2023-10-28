@@ -50,4 +50,8 @@ public class EventListener {
     public static EventListener onKeyDown(Consumer<KeyboardEvent> listener) {
         return new EventListener(EventType.KEY_DOWN, listener);
     }
+
+    public static EventListener onScroll(Consumer<ScrollEvent> listener) {
+        return new EventListener(EventType.SCROLL, listener);
+    }
 }

@@ -258,22 +258,22 @@ public class Image {
         private Supplier<MaybePercent<Float>> height = () -> null;
         private Supplier<MaybePercent<Float>> width = () -> null;
 
-        public Builder setBlob(Supplier<Blob> blob) {
+        public Builder blob(Supplier<Blob> blob) {
             this.blob = blob;
             return this;
         }
 
-        public Builder setBlob(Blob blob) {
+        public Builder blob(Blob blob) {
             this.blob = ReactiveUtil.constantSupplier(blob);
             return this;
         }
 
-        public Builder setFit(Supplier<Fit> fit) {
+        public Builder fit(Supplier<Fit> fit) {
             this.fit = fit;
             return this;
         }
 
-        public Builder setFit(Fit fit) {
+        public Builder fit(Fit fit) {
             this.fit = ReactiveUtil.constantSupplier(fit);
             return this;
         }

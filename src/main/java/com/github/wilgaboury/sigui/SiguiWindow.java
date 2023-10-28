@@ -135,7 +135,7 @@ public class SiguiWindow {
             requestLayout();
         } else if (e instanceof EventMouseScroll ee) {
             if (hovered != null) {
-                hovered.bubble(new Event(EventType.SCROLL));
+                hovered.bubble(new ScrollEvent(EventType.SCROLL, ee.getDeltaX(), ee.getDeltaY()));
             }
         } else if (e instanceof EventKey ee) {
             if (focus == null) {
