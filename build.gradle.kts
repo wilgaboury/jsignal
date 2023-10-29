@@ -7,8 +7,8 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
-//val skijaArtifact = "skija-windows-x64";
-val skijaArtifact = "skija-linux-x64";
+val skijaArtifact = "skija-windows-x64";
+//val skijaArtifact = "skija-linux-x64";
 val skijaVersion = "0.116.1";
 
 val lwjglVersion = "3.3.3"

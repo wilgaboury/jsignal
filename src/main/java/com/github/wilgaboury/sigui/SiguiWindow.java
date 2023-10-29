@@ -1,20 +1,15 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.davidmoten.rtree.Entry;
-import com.github.davidmoten.rtree.RTree;
-import com.github.davidmoten.rtree.geometry.Rectangle;
-import com.github.davidmoten.rtree.geometry.internal.PointFloat;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.SideEffect;
 import com.github.wilgaboury.sigui.event.*;
-import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigwig.EzColors;
-
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
-import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Matrix33;
+import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
@@ -29,7 +24,6 @@ public class SiguiWindow {
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
-    private RTree<MetaNode, Rectangle> absoluteTree;
     private boolean shouldLayout;
     private boolean shouldPaint = true;
     private Computed<MetaNode> root;
@@ -45,7 +39,6 @@ public class SiguiWindow {
 
     SiguiWindow(Window window) {
         this.window = window;
-        this.absoluteTree = RTree.create();
         this.shouldLayout = false;
     }
 
@@ -70,7 +63,7 @@ public class SiguiWindow {
 
         var rect = window.getContentRect();
         Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-        absoluteTree = root.get().updateAbsoluteTree(absoluteTree);
+        root.get().visitTreePre(n -> n.getLayout().update());
         root.get().generateRenderOrder();
     }
 
@@ -88,14 +81,12 @@ public class SiguiWindow {
 
     private void paintInner(Canvas canvas, MetaNode n) {
         var node = n.getNode();
-        var yoga = n.getYoga();
-        var offset = node.offset(yoga);
 
         var count = canvas.save();
         try {
-            canvas.concat(offset);
+            canvas.concat(n.getTransform());
 
-            node.paint(canvas, yoga);
+            node.paint(canvas, n.getLayout());
             for (MetaNode child : n.getChildren()) {
                 paintInner(canvas, child);
             }
@@ -175,7 +166,8 @@ public class SiguiWindow {
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
-            var newHovered = pick(ee.getX(), ee.getY());
+            // todo: convert from screen to paint space using scale
+            var newHovered = pick(new Point(ee.getX(), ee.getY()));
             if (hovered != newHovered) {
                 var parents = hovered == null ? null : hovered.getParents();
                 var newParents = newHovered == null ? null : newHovered.getParents();
@@ -204,26 +196,8 @@ public class SiguiWindow {
         }
     }
 
-    private MetaNode pick(int x, int y) {
-        MetaNode normal = root.get().pick(x, y);
-        List<MetaNode> absolute = absoluteTree.search(PointFloat.create(x, y))
-                .map(Entry::value)
-                .sorted((n1, n2) -> Integer.compare(n1.getRenderOrder(), n2.getRenderOrder()))
-                .toList()
-                .toBlocking()
-                .first();
-
-        if (normal == null && absolute.isEmpty()) {
-            return null;
-        } else if (normal == null) {
-            return absolute.get(0);
-        } else if (absolute.isEmpty()) {
-            return normal;
-        } else if (normal.getRenderOrder() > absolute.get(0).getRenderOrder()) {
-            return normal;
-        } else {
-            return absolute.get(0).pick(x, y);
-        }
+    private MetaNode pick(Point p) {
+        return root.get().pick(Matrix33.IDENTITY, p);
     }
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {

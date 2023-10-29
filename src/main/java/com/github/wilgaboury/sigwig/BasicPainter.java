@@ -1,7 +1,7 @@
 package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.sigui.BoxModel;
 import com.github.wilgaboury.sigui.Painter;
-import com.github.wilgaboury.sigui.YogaUtil;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.RRect;
@@ -20,13 +20,13 @@ public class BasicPainter implements Painter {
     }
 
     @Override
-    public void paint(Canvas canvas, long yoga) {
+    public void paint(Canvas canvas, BoxModel layout) {
         try (var paint = new Paint()) {
             RRect borderOuter;
             RRect borderInner = null;
 
             if (borderColor != null && border != null && border > 0) {
-                borderOuter = YogaUtil.borderRect(yoga).withRadii(radius == null ? 0 : radius);
+                borderOuter = layout.getBorderRect().withRadii(radius == null ? 0 : radius);
                 var inner = borderOuter.inflate(-border);
                 if (inner instanceof RRect r) {
                     borderInner = r;
@@ -38,7 +38,7 @@ public class BasicPainter implements Painter {
             }
 
             if (background != null) {
-                var rect = borderInner != null ? borderInner : YogaUtil.paddingRect(yoga).withRadii(0);
+                var rect = borderInner != null ? borderInner : layout.getPaddingRect().withRadii(0);
                 paint.setColor(background);
                 canvas.drawRRect(rect, paint);
             }

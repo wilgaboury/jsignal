@@ -2,9 +2,9 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
+import com.github.wilgaboury.sigui.BoxModel;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Painter;
-import com.github.wilgaboury.sigui.YogaUtil;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Data;
@@ -125,10 +125,10 @@ public class Image {
         if (blob.getMime().is(MediaType.SVG_UTF_8)) {
             var svg = getSvgDom(blob);
             var viewBox = viewBox(svg);
-            return (canvas, yoga) -> paintVector(canvas, yoga, svg, fit, viewBox.getX(), viewBox.getY());
+            return (canvas, layout) -> paintVector(canvas, layout, svg, fit, viewBox.getX(), viewBox.getY());
         } else if (blob.getMime().is(MediaType.ANY_IMAGE_TYPE)) {
             var img = getImageObject(blob);
-            return (canvas, yoga) -> paintRaster(canvas, yoga, img, fit);
+            return (canvas, layout) -> paintRaster(canvas, layout, img, fit);
 
         } else {
             logger.log(Level.WARNING, "Unrecognized image type: %s", blob.getMime());
@@ -138,96 +138,96 @@ public class Image {
 
     private static void paintVector(
             Canvas canvas,
-            long yoga,
+            BoxModel layout,
             SVGDOM svg,
             Fit fit,
             float imgHeight,
             float imgWidth
     ) {
-        var size = YogaUtil.boundingRect(yoga);
+        var size = layout.getSize();
 
         if (fit == Fit.FILL) {
             var svgRatio = imgWidth/imgHeight;
-            var viewRatio = size.getWidth()/size.getHeight();
+            var viewRatio = size.getX()/size.getY();
 
             if (viewRatio > svgRatio) {
                 var scale = viewRatio/svgRatio;
-                canvas.translate(size.getWidth()/2f, 0);
+                canvas.translate(size.getX()/2f, 0);
                 canvas.scale(scale, 1f);
-                canvas.translate(-size.getWidth()/2f, 0);
+                canvas.translate(-size.getX()/2f, 0);
             } else if (viewRatio < svgRatio) {
                 var scale = 1f/(viewRatio/svgRatio);
-                canvas.translate(0, size.getHeight()/2f);
+                canvas.translate(0, size.getY()/2f);
                 canvas.scale(1f, scale);
-                canvas.translate(0, -size.getHeight()/2f);
+                canvas.translate(0, -size.getY()/2f);
             }
         } else if (fit == Fit.COVER) {
             var svgRatio = imgWidth/imgHeight;
-            var viewRatio = size.getWidth()/size.getHeight();
+            var viewRatio = size.getX()/size.getY();
 
-            canvas.clipRect(size);
+            canvas.clipRect(Rect.makeWH(size));
 
             if (viewRatio > svgRatio) {
                 var scale = viewRatio/svgRatio;
-                canvas.translate(size.getWidth()/2, size.getHeight()/2);
+                canvas.translate(size.getX()/2, size.getY()/2);
                 canvas.scale(scale, scale);
-                canvas.translate(-size.getWidth()/2, -size.getHeight()/2);
+                canvas.translate(-size.getX()/2, -size.getY()/2);
             } else if (viewRatio < svgRatio) {
                 var scale = svgRatio/viewRatio;
-                canvas.translate(size.getWidth()/2f, size.getHeight()/2f);
+                canvas.translate(size.getX()/2f, size.getY()/2f);
                 canvas.scale(scale, scale);
-                canvas.translate(-size.getWidth()/2f, -size.getHeight()/2f);
+                canvas.translate(-size.getX()/2f, -size.getY()/2f);
             }
         }
 
-        svg.setContainerSize(size.getWidth(), size.getHeight());
+        svg.setContainerSize(size.getX(), size.getY());
         svg.render(canvas);
     }
 
     private static void paintRaster(
             Canvas canvas,
-            long yoga,
+            BoxModel layout,
             io.github.humbleui.skija.Image img,
             Fit fit
     ) {
-        var size = YogaUtil.boundingRect(yoga);
+        var size = layout.getSize();
 
         switch (fit) {
             case CONTAIN -> {
                 var imgRatio = (float)img.getWidth()/(float)img.getHeight();
-                var layoutRatio = size.getWidth()/size.getHeight();
+                var layoutRatio = size.getX()/size.getY();
 
                 if (imgRatio > layoutRatio) {
-                    var scale = size.getWidth()/(float)img.getWidth();
-                    canvas.translate(0, size.getHeight()/2 - (scale*img.getHeight())/2);
-                    drawImage(canvas, img, Rect.makeWH(size.getWidth(), scale*img.getHeight()));
+                    var scale = size.getX()/(float)img.getWidth();
+                    canvas.translate(0, size.getY()/2 - (scale*img.getHeight())/2);
+                    drawImage(canvas, img, Rect.makeWH(size.getX(), scale*img.getHeight()));
                 } else if (imgRatio < layoutRatio) {
-                    var scale = size.getHeight()/(float)img.getHeight();
-                    canvas.translate(size.getWidth()/2 - (scale*img.getWidth())/2, 0);
-                    drawImage(canvas, img, Rect.makeWH(scale*img.getWidth(), size.getHeight()));
+                    var scale = size.getY()/(float)img.getHeight();
+                    canvas.translate(size.getX()/2 - (scale*img.getWidth())/2, 0);
+                    drawImage(canvas, img, Rect.makeWH(scale*img.getWidth(), size.getY()));
                 } else {
-                    drawImage(canvas, img, size);
+                    drawImage(canvas, img, Rect.makeWH(size));
                 }
             }
             case FILL -> {
                 var imgRatio = (float)img.getWidth()/(float)img.getHeight();
-                var layoutRatio = size.getWidth()/size.getHeight();
+                var layoutRatio = size.getX()/size.getY();
 
-                canvas.clipRect(size);
+                canvas.clipRect(Rect.makeWH(size));
 
                 if (imgRatio > layoutRatio) {
-                    var scale = size.getHeight()/(float)img.getHeight();
-                    canvas.translate(size.getWidth()/2 - (scale*img.getWidth())/2, 0);
-                    drawImage(canvas, img, Rect.makeWH(scale*img.getWidth(), size.getHeight()));
+                    var scale = size.getY()/(float)img.getHeight();
+                    canvas.translate(size.getX()/2 - (scale*img.getWidth())/2, 0);
+                    drawImage(canvas, img, Rect.makeWH(scale*img.getWidth(), size.getY()));
                 } else if (imgRatio < layoutRatio) {
-                    var scale = size.getWidth()/(float)img.getWidth();
-                    canvas.translate(0, size.getHeight()/2 - (scale*img.getHeight())/2);
-                    drawImage(canvas, img, Rect.makeWH(size.getWidth(), scale*img.getHeight()));
+                    var scale = size.getX()/(float)img.getWidth();
+                    canvas.translate(0, size.getY()/2 - (scale*img.getHeight())/2);
+                    drawImage(canvas, img, Rect.makeWH(size.getX(), scale*img.getHeight()));
                 } else {
-                    drawImage(canvas, img, size);
+                    drawImage(canvas, img, Rect.makeWH(size));
                 }
             }
-            case COVER -> drawImage(canvas, img, size);
+            case COVER -> drawImage(canvas, img, Rect.makeWH(size));
         }
     }
 

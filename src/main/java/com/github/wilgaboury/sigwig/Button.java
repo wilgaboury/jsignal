@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
@@ -89,22 +90,22 @@ public class Button extends Component {
         };
     }
 
-    private void paint(Canvas canvas, long yoga) {
-        var r = YogaUtil.boundingRect(yoga);
+    private void paint(Canvas canvas, BoxModel layout) {
+        var size = layout.getSize();
 
         if (mouseDown.get()) {
             float pressScale = 0.95f;
 
             canvas.scale(pressScale, pressScale);
             canvas.translate(
-                    (r.getWidth() * (1f - pressScale)) / 2f,
-                    (r.getHeight() * (1f - pressScale)) / 2f
+                    (size.getX() * (1f - pressScale)) / 2f,
+                    (size.getY() * (1f - pressScale)) / 2f
             );
         }
 
         try (var paint = new Paint()) {
             paint.setColor(mouseOver.get() ? ColorUtil.brighten(color.get(), 0.75f) : color.get());
-            canvas.drawRRect(r.withRadii(8), paint);
+            canvas.drawRRect(Rect.makeWH(size).withRadii(8), paint);
         }
     }
 

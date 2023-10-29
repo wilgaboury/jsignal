@@ -19,10 +19,10 @@ public class RectTransformed {
 
     public RectTransformed(Rect rect, Matrix33 transform) {
         this(
-                Sigui.apply(transform, new Point(rect.getRight(), rect.getTop())),
-                Sigui.apply(transform, new Point(rect.getRight(), rect.getBottom())),
-                Sigui.apply(transform, new Point(rect.getLeft(), rect.getBottom())),
-                Sigui.apply(transform, new Point(rect.getLeft(), rect.getTop()))
+                Util.apply(transform, new Point(rect.getRight(), rect.getTop())),
+                Util.apply(transform, new Point(rect.getRight(), rect.getBottom())),
+                Util.apply(transform, new Point(rect.getLeft(), rect.getBottom())),
+                Util.apply(transform, new Point(rect.getLeft(), rect.getTop()))
         );
     }
 

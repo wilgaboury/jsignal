@@ -56,14 +56,14 @@ public class Scroller extends Component {
                                     innerYoga.set(yoga);
                                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                                 })
-                                .offset(yoga -> {
-                                    var def = Node.defaultOffsetter(yoga);
-                                    var height = Yoga.YGNodeLayoutGetHeight(outerYoga.get());
-                                    var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
-                                    // TODO: bypass
-                                    yOffset.accept(Math.min(0, Math.max(-max, yOffset.get())));
-                                    return def.makeConcat(Matrix33.makeTranslate(0, yOffset.get()));
-                                })
+//                                .offset(yoga -> {
+//                                    var def = Node.defaultOffsetter(yoga);
+//                                    var height = Yoga.YGNodeLayoutGetHeight(outerYoga.get());
+//                                    var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
+//                                    // TODO: bypass
+//                                    yOffset.accept(Math.min(0, Math.max(-max, yOffset.get())));
+//                                    return def.makeConcat(Matrix33.makeTranslate(0, yOffset.get()));
+//                                })
                                 .children(children)
                                 .build(),
                         Node.builder()
@@ -86,8 +86,8 @@ public class Scroller extends Component {
         );
     }
 
-    private void paintScrollBar(Canvas canvas, long yoga) {
-        Rect bounds = YogaUtil.boundingRect(yoga);
+    private void paintScrollBar(Canvas canvas, BoxModel layout) {
+        Rect bounds = Rect.makeWH(layout.getSize());
 
         try (var paint = new Paint()) {
             if (overBar.get()) {

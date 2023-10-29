@@ -1,11 +1,9 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.davidmoten.rtree.Entry;
-import com.github.davidmoten.rtree.RTree;
-import com.github.davidmoten.rtree.geometry.Rectangle;
-import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
-import com.github.davidmoten.rtree.internal.EntryDefault;
-import com.github.wilgaboury.jsignal.*;
+import com.github.wilgaboury.jsignal.Cleaner;
+import com.github.wilgaboury.jsignal.Computed;
+import com.github.wilgaboury.jsignal.ReactiveList;
+import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
@@ -26,14 +24,14 @@ public class MetaNode {
 
     private final long yoga;
     private final Computed<List<MetaNode>> children;
-    private final Computed<Boolean> thisHasOutsideBounds;
+    private final BoxModel layout;
+//    private final Computed<Boolean> thisHasOutsideBounds;
     private final Computed<Boolean> hasOutsideBounds;
 
     private final Map<EventType, Collection<Consumer<?>>> listeners;
 
     private final Cleaner cleaner;
 
-    private Entry<MetaNode, Rectangle> absoluteEntry;
     private int renderOrder;
 
     MetaNode(MetaNode parent, Node node) {
@@ -44,14 +42,15 @@ public class MetaNode {
 
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
+        this.layout = new BoxModel(yoga);
 //        this.thisHasOutsideBounds = createComputed(());
         this.hasOutsideBounds = createComputed(() ->
-                children.get().stream().anyMatch(child -> child.hasOutsideBounds.get())
+                false
+//                children.get().stream().anyMatch(child -> child.hasOutsideBounds.get())
         );
 
         this.listeners = new HashMap<>();
 
-        this.absoluteEntry = null;
         this.renderOrder = 0;
 
         cleaner = createCleaner(() -> {
@@ -72,7 +71,7 @@ public class MetaNode {
 
     private void layoutEffectInner() {
         Sigui.clearNodeStyle(yoga);
-        node.preLayout(yoga);
+        node.layout(yoga);
         window.requestLayout();
     }
 
@@ -113,13 +112,14 @@ public class MetaNode {
         }
     }
 
-    public MetaNode pick(Matrix33 transform, float x, float y) {
+    public MetaNode pick(Matrix33 transform, Point p) {
         var newTransform = transform.makeConcat(getTransform());
-        if (hasOutsideBounds.get() || new RectTransformed(YogaUtil.boundingRect(yoga), newTransform).contains(new Point(x, y))) {
+        var testPoint = Util.apply(Util.inverse(newTransform), p);
+        if (hasOutsideBounds.get() || node.hitTest(testPoint, layout)) {
             var children = this.children.get();
             for (int i = children.size(); i > 0; i--) {
                 var child = children.get(i - 1);
-                MetaNode result = child.pick(newTransform, x, y);
+                MetaNode result = child.pick(newTransform, p);
                 if (result != null) {
                     return result;
                 }
@@ -129,34 +129,13 @@ public class MetaNode {
         return null;
     }
 
+    public BoxModel getLayout() {
+        return layout;
+    }
+
     public Matrix33 getTransform() {
-        float dx = Yoga.YGNodeLayoutGetLeft(yoga);
-        float dy = Yoga.YGNodeLayoutGetTop(yoga);
-        return Matrix33.makeTranslate(dx, dy).makeConcat(node.transform());
-    }
-
-    public RTree<MetaNode, Rectangle> updateAbsoluteTree(RTree<MetaNode, Rectangle> tree) {
-        var result = tree;
-        if (absoluteEntry != null) {
-            final var entry = absoluteEntry;
-            result = tree.delete(entry);
-        }
-        // TODO: optimize, only add absolute positioned things that are outside their parent
-        if (Yoga.YGNodeStyleGetPositionType(yoga) == Yoga.YGPositionTypeAbsolute) {
-            final var entry = new EntryDefault<>(this, toAbsoluteRect());
-            absoluteEntry = entry;
-            result = tree.add(entry);
-        }
-        return result;
-    }
-
-    public Rectangle toAbsoluteRect() {
-        return RectangleFloat.create(
-                Yoga.YGNodeLayoutGetLeft(yoga),
-                Yoga.YGNodeLayoutGetTop(yoga),
-                Yoga.YGNodeLayoutGetRight(yoga),
-                Yoga.YGNodeLayoutGetBottom(yoga)
-        );
+        var offset = layout.getParentOffset();
+        return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(node.transform(layout));
     }
 
     void generateRenderOrder() {

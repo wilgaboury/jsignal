@@ -6,16 +6,16 @@ import java.util.function.Supplier;
 
 @FunctionalInterface
 public interface Painter {
-    void paint(Canvas canvas, long yoga);
+    void paint(Canvas canvas, BoxModel layout);
 
     static Painter dynamic(Supplier<Painter> painter) {
-        return (canvas, yoga) -> painter.get().paint(canvas, yoga);
+        return (canvas, layout) -> painter.get().paint(canvas, layout);
     }
 
-    static Painter compose(Painter... painters) {
-        return (canvas, yoga) -> {
+    static Painter composite(Painter... painters) {
+        return (canvas, layout) -> {
             for (var painter : painters) {
-                painter.paint(canvas, yoga);
+                painter.paint(canvas, layout);
             }
         };
     }

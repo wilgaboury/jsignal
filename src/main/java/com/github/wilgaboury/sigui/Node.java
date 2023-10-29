@@ -2,8 +2,11 @@ package com.github.wilgaboury.sigui;
 
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
+import io.github.humbleui.types.Point;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
+import javax.swing.*;
 import java.util.function.Consumer;
 
 /**
@@ -16,35 +19,29 @@ public interface Node {
 
     default void ref(MetaNode node) {}
 
-    default void preLayout(long yoga) {}
+    default void layout(long yoga) {}
 
-    default void postLayout(long yoga) {}
+    default void paint(Canvas canvas, BoxModel layout) {}
 
-    default void paint(Canvas canvas) {}
+    default void paintAfter(Canvas canvas, BoxModel layout) {}
 
-    default void paintAfter(Canvas canvas) {}
-
-    default Matrix33 transform() {
+    default Matrix33 transform(BoxModel layout) {
         return Matrix33.IDENTITY;
+    }
+
+    // coordinates are in "paint space" for ease of calculation
+    default boolean hitTest(Point p, BoxModel layout) {
+        return Util.contains(Rect.makeWH(layout.getSize()), p);
     }
 
     static Builder builder() {
         return new Builder();
     }
 
-    interface Offsetter {
-        Matrix33 offset(long yoga);
-    }
-
-    static Matrix33 defaultOffsetter(long yoga) {
-        return Matrix33.makeTranslate(Yoga.YGNodeLayoutGetLeft(yoga), Yoga.YGNodeLayoutGetTop(yoga));
-    }
-
     class Builder {
         private Nodes children = Nodes.empty();
         private Consumer<MetaNode> ref = n -> {};
         private Layouter layout = (yoga) -> {};
-        private Offsetter offsetter = Node::defaultOffsetter;
         private Painter paint = (canvas, yoga) -> {};
         private Painter paintAfter = (canvas, yoga) -> {};
 
@@ -60,11 +57,6 @@ public interface Node {
         
         public Builder layout(Layouter layouter) {
             this.layout = layouter;
-            return this;
-        }
-
-        public Builder offset(Offsetter offsetter) {
-            this.offsetter = offsetter;
             return this;
         }
         
@@ -87,7 +79,6 @@ public interface Node {
         private final Nodes children;
         private final Consumer<MetaNode> ref;
         private final Layouter layout;
-        private final Offsetter offsetter;
         private final Painter paint;
         private final Painter paintAfter;
 
@@ -95,33 +86,33 @@ public interface Node {
             this.children = builder.children;
             this.ref = builder.ref;
             this.layout = builder.layout;
-            this.offsetter = builder.offsetter;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
         }
 
+        @Override
         public Nodes children() {
             return children;
         }
 
+        @Override
         public void ref(MetaNode node) {
             ref.accept(node);
         }
 
-        public void preLayout(long yoga) {
+        @Override
+        public void layout(long yoga) {
             layout.layout(yoga);
         }
 
-        public Matrix33 offset(long yoga) {
-            return offsetter.offset(yoga);
+        @Override
+        public void paint(Canvas canvas, BoxModel layout) {
+            paint.paint(canvas, layout);
         }
 
-        public void paint(Canvas canvas, long yoga) {
-            paint.paint(canvas, yoga);
-        }
-
-        public void paintAfter(Canvas canvas, long yoga) {
-            paintAfter.paint(canvas, yoga);
+        @Override
+        public void paintAfter(Canvas canvas, BoxModel layout) {
+            paintAfter.paint(canvas, layout);
         }
     }
 }
