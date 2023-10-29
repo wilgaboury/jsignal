@@ -168,6 +168,18 @@ public class ReactiveUtil {
         return withExecutor(ForkJoinPool.commonPool(), inner);
     }
 
+    public static void withCleaner(Cleaner cleaner, Runnable inner) {
+        withCleaner(cleaner, toSupplier(inner));
+    }
+
+    public static <T> T withCleaner(Cleaner cleaner, Supplier<T> inner) {
+        return ReactiveEnvFactory.get().cleaner(cleaner, inner);
+    }
+
+    public static Cleaner createCleaner() {
+        return createCleaner(() -> {});
+    }
+
     public static Cleaner createCleaner(Runnable inner) {
         var env = ReactiveEnvFactory.get();
         var cleaner = new Cleaner();

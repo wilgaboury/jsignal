@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.Cleaner;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Trigger;
 import com.github.wilgaboury.sigwig.Insets;
@@ -7,8 +8,7 @@ import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createTrigger;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 /**
  * Tool to lazily create reactive layout measures
@@ -16,6 +16,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.createTrigger;
 public class BoxModel {
     private final long yoga;
     private final Trigger update;
+    private final Cleaner cleaner;
 
     private Computed<Point> size;
     private Computed<Rect> borderRect;
@@ -28,89 +29,90 @@ public class BoxModel {
     public BoxModel(long yoga) {
         this.yoga = yoga;
         this.update = createTrigger();
+        this.cleaner = createCleaner();
     }
 
     public Point getSize() {
         if (size == null) {
-            size = createComputed(() ->  {
+            size = withCleaner(cleaner, () -> createComputed(() ->  {
                 update.track();
                 return new Point(
                         Yoga.YGNodeLayoutGetWidth(yoga),
                         Yoga.YGNodeLayoutGetHeight(yoga)
                 );
-            });
+            }));
         }
         return size.get();
     }
 
     public Rect getBorderRect() {
         if (borderRect == null) {
-            borderRect = createComputed(() -> {
+            borderRect = withCleaner(cleaner, () -> createComputed(() -> {
                 var rect = Rect.makeWH(getSize());
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetMargin, yoga);
                 return insets.shink(rect);
-            });
+            }));
         }
         return borderRect.get();
     }
 
     public Rect getPaddingRect() {
         if (paddingRect == null) {
-            paddingRect = createComputed(() -> {
+            paddingRect = withCleaner(cleaner, () -> createComputed(() -> {
                 var rect = getBorderRect();
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetBorder, yoga);
                 return insets.shink(rect);
-            });
+            }));
         }
         return paddingRect.get();
     }
 
     public Rect getContentRect() {
         if (contentRect == null) {
-            contentRect = createComputed(() -> {
+            contentRect = withCleaner(cleaner, () -> createComputed(() -> {
                 var rect = getPaddingRect();
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetPadding, yoga);
                 return insets.shink(rect);
-            });
+            }));
         }
         return contentRect.get();
     }
 
     public Rect getBoundsRect() {
         if (boundsRect == null) {
-            boundsRect = createComputed(() -> {
+            boundsRect = withCleaner(cleaner, () -> createComputed(() -> {
                 update.track();
                 float top = Yoga.YGNodeLayoutGetTop(yoga);
                 float right = Yoga.YGNodeLayoutGetRight(yoga);
                 float bottom = Yoga.YGNodeLayoutGetBottom(yoga);
                 float left = Yoga.YGNodeLayoutGetLeft(yoga);
                 return Rect.makeLTRB(left, top, right, bottom);
-            });
+            }));
         }
         return boundsRect.get();
     }
 
     public Point getParentOffset() {
         if (parentOffset == null) {
-            parentOffset = createComputed(() -> {
+            parentOffset = withCleaner(cleaner, () -> createComputed(() -> {
                 update.track();
                 float left = Yoga.YGNodeLayoutGetLeft(yoga);
                 float top = Yoga.YGNodeLayoutGetTop(yoga);
                 return new Point(left, top);
-            });
+            }));
         }
         return parentOffset.get();
     }
 
     public boolean didOverflow() {
         if (didOverflow == null) {
-            didOverflow = createComputed(() -> {
+            didOverflow = withCleaner(cleaner, () -> createComputed(() -> {
                 update.track();
                 return Yoga.YGNodeLayoutGetHadOverflow(yoga);
-            });
+            }));
         }
         return didOverflow.get();
     }
