@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.BoxModel;
+import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Painter;
 import com.google.common.net.MediaType;
@@ -125,10 +126,10 @@ public class Image {
         if (blob.getMime().is(MediaType.SVG_UTF_8)) {
             var svg = getSvgDom(blob);
             var viewBox = viewBox(svg);
-            return (canvas, layout) -> paintVector(canvas, layout, svg, fit, viewBox.getX(), viewBox.getY());
+            return (canvas, node) -> paintVector(canvas, node, svg, fit, viewBox.getX(), viewBox.getY());
         } else if (blob.getMime().is(MediaType.ANY_IMAGE_TYPE)) {
             var img = getImageObject(blob);
-            return (canvas, layout) -> paintRaster(canvas, layout, img, fit);
+            return (canvas, node) -> paintRaster(canvas, node, img, fit);
 
         } else {
             logger.log(Level.WARNING, "Unrecognized image type: %s", blob.getMime());
@@ -138,13 +139,13 @@ public class Image {
 
     private static void paintVector(
             Canvas canvas,
-            BoxModel layout,
+            MetaNode node,
             SVGDOM svg,
             Fit fit,
             float imgHeight,
             float imgWidth
     ) {
-        var size = layout.getSize();
+        var size = node.getLayout().getSize();
 
         if (fit == Fit.FILL) {
             var svgRatio = imgWidth/imgHeight;
@@ -186,11 +187,11 @@ public class Image {
 
     private static void paintRaster(
             Canvas canvas,
-            BoxModel layout,
+            MetaNode node,
             io.github.humbleui.skija.Image img,
             Fit fit
     ) {
-        var size = layout.getSize();
+        var size = node.getLayout().getSize();
 
         switch (fit) {
             case CONTAIN -> {

@@ -20,27 +20,23 @@ public class Scroller extends Component {
     private final Signal<Float> yOffset;
 //    private final Signal<Float> xOffset;
     private final Signal<Boolean> overBar;
+    private final Ref<MetaNode> inner;
 
     public Scroller(Nodes children) {
         this.children = children;
         this.yOffset = createSignal(0f);
         this.overBar = createSignal(false);
+        this.inner = new Ref<>();
     }
 
     @Override
     public Nodes render() {
-        createEffect(() -> {
-            System.out.println(overBar);
-        });
-
-        Ref<BoxModel> outer = new Ref<>();
-        Ref<Long> innerYoga = new Ref<>();
 
         return Nodes.single(Node.builder()
                 .ref(node -> node.listen(
                         EventListener.onScroll(e -> {
-                            var height = Yoga.YGNodeLayoutGetHeight(node.getYoga());
-                            var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
+                            var height = node.getLayout().getSize().getY();
+                            var max = inner.get().getLayout().getSize().getY() - height;
                             yOffset.accept(v -> Math.min(0, Math.max(-max, v + e.getDeltaY())));
                         })
                 ))
@@ -49,19 +45,14 @@ public class Scroller extends Component {
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetOverflow(yoga, Yoga.YGOverflowScroll);
                 })
-                .transform(layout -> {
-                    outer.set(layout);
-                    return Matrix33.IDENTITY;
-                })
                 .children(Nodes.multiple(
                         Node.builder()
-                                .layout(yoga -> {
-                                    innerYoga.set(yoga);
-                                    Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
-                                })
-                                .transform(layout -> {
-                                    var height = outer.get().getSize().getY();
-                                    var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
+                                .ref(inner::set)
+                                .layout(yoga -> Yoga.YGNodeStyleSetWidthPercent(yoga, 100f))
+                                .transform(node -> {
+
+                                    var height = node.getParent().getLayout().getSize().getY();
+                                    var max = node.getLayout().getSize().getY() - height;
                                     // TODO: bypass
                                     yOffset.accept(Math.min(0, Math.max(-max, yOffset.get())));
                                     return Matrix33.makeTranslate(0, yOffset.get());
@@ -74,7 +65,7 @@ public class Scroller extends Component {
                                         onMouseOut(e -> overBar.accept(false))
                                 ))
                                 .layout(Flex.builder()
-                                        .width(20f)
+                                        .width(15f)
                                         .heightPercent(100f)
                                         .absolute()
                                         .top(0)
@@ -88,18 +79,22 @@ public class Scroller extends Component {
         );
     }
 
-    private void paintScrollBar(Canvas canvas, BoxModel layout) {
-        Rect bounds = Rect.makeWH(layout.getSize());
+    private void paintScrollBar(Canvas canvas, MetaNode node) {
+        var viewSize = node.getLayout().getSize();
+        var contentSize = inner.get().getLayout().getSize();
+
+        var bounds = Rect.makeWH(node.getLayout().getSize());
+
+        var yScale = viewSize.getY() / contentSize.getY();
 
         try (var paint = new Paint()) {
-            if (overBar.get()) {
-                paint.setColor(EzColors.BLACK);
-                canvas.drawRect(bounds, paint);
-            } else {
-                paint.setColor(EzColors.BLUE_300);
-                canvas.drawRect(bounds.withLeft(bounds.getLeft() + 10), paint);
-            }
-
+            paint.setColor(EzColors.BLACK);
+            canvas.drawRect(Rect.makeXYWH(
+                    0,
+                    yScale * -yOffset.get(),
+                    bounds.getWidth(),
+                    yScale * viewSize.getY()
+            ), paint);
         }
     }
 }

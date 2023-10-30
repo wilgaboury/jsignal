@@ -115,7 +115,7 @@ public class MetaNode {
     public MetaNode pick(Matrix33 transform, Point p) {
         var newTransform = transform.makeConcat(getTransform());
         var testPoint = Util.apply(Util.inverse(newTransform), p);
-        if (hasOutsideBounds.get() || node.hitTest(testPoint, layout)) {
+        if (hasOutsideBounds.get() || node.hitTest(testPoint, this)) {
             var children = this.children.get();
             for (int i = children.size(); i > 0; i--) {
                 var child = children.get(i - 1);
@@ -135,7 +135,7 @@ public class MetaNode {
 
     public Matrix33 getTransform() {
         var offset = layout.getParentOffset();
-        return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(node.transform(layout));
+        return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(node.transform(this));
     }
 
     void generateRenderOrder() {

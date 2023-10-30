@@ -21,22 +21,22 @@ public interface Node {
 
     default void layout(long yoga) {}
 
-    default void paint(Canvas canvas, BoxModel layout) {}
+    default void paint(Canvas canvas, MetaNode node) {}
 
-    default void paintAfter(Canvas canvas, BoxModel layout) {}
+    default void paintAfter(Canvas canvas, MetaNode node) {}
 
-    default Matrix33 transform(BoxModel layout) {
+    default Matrix33 transform(MetaNode node) {
         return Matrix33.IDENTITY;
     }
 
     // coordinates are in "paint space" for ease of calculation
-    default boolean hitTest(Point p, BoxModel layout) {
-        return Util.contains(Rect.makeWH(layout.getSize()), p);
+    default boolean hitTest(Point p, MetaNode node) {
+        return Util.contains(Rect.makeWH(node.getLayout().getSize()), p);
     }
 
     @FunctionalInterface
     interface Transformer {
-        Matrix33 transform(BoxModel layout);
+        Matrix33 transform(MetaNode node);
     }
 
     static Builder builder() {
@@ -119,18 +119,18 @@ public interface Node {
         }
 
         @Override
-        public Matrix33 transform(BoxModel layout) {
-            return transformer.transform(layout);
+        public Matrix33 transform(MetaNode node) {
+            return transformer.transform(node);
         }
 
         @Override
-        public void paint(Canvas canvas, BoxModel layout) {
-            paint.paint(canvas, layout);
+        public void paint(Canvas canvas, MetaNode node) {
+            paint.paint(canvas, node);
         }
 
         @Override
-        public void paintAfter(Canvas canvas, BoxModel layout) {
-            paintAfter.paint(canvas, layout);
+        public void paintAfter(Canvas canvas, MetaNode node) {
+            paintAfter.paint(canvas, node);
         }
     }
 }

@@ -86,7 +86,7 @@ public class SiguiWindow {
         try {
             canvas.concat(n.getTransform());
 
-            node.paint(canvas, n.getLayout());
+            node.paint(canvas, n);
             for (MetaNode child : n.getChildren()) {
                 paintInner(canvas, child);
             }

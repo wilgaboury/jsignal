@@ -90,8 +90,8 @@ public class Button extends Component {
         };
     }
 
-    private void paint(Canvas canvas, BoxModel layout) {
-        var size = layout.getSize();
+    private void paint(Canvas canvas, MetaNode node) {
+        var size = node.getLayout().getSize();
 
         if (mouseDown.get()) {
             float pressScale = 0.95f;

@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.sigui.BoxModel;
+import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Painter;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
@@ -20,13 +21,13 @@ public class BasicPainter implements Painter {
     }
 
     @Override
-    public void paint(Canvas canvas, BoxModel layout) {
+    public void paint(Canvas canvas, MetaNode node) {
         try (var paint = new Paint()) {
             RRect borderOuter;
             RRect borderInner = null;
 
             if (borderColor != null && border != null && border > 0) {
-                borderOuter = layout.getBorderRect().withRadii(radius == null ? 0 : radius);
+                borderOuter = node.getLayout().getBorderRect().withRadii(radius == null ? 0 : radius);
                 var inner = borderOuter.inflate(-border);
                 if (inner instanceof RRect r) {
                     borderInner = r;
@@ -38,7 +39,7 @@ public class BasicPainter implements Painter {
             }
 
             if (background != null) {
-                var rect = borderInner != null ? borderInner : layout.getPaddingRect().withRadii(0);
+                var rect = borderInner != null ? borderInner : node.getLayout().getPaddingRect().withRadii(0);
                 paint.setColor(background);
                 canvas.drawRRect(rect, paint);
             }
