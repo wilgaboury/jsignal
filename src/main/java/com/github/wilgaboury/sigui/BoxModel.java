@@ -81,20 +81,6 @@ public class BoxModel {
         return contentRect.get();
     }
 
-    public Rect getBoundsRect() {
-        if (boundsRect == null) {
-            boundsRect = withCleaner(cleaner, () -> createComputed(() -> {
-                update.track();
-                float top = Yoga.YGNodeLayoutGetTop(yoga);
-                float right = Yoga.YGNodeLayoutGetRight(yoga);
-                float bottom = Yoga.YGNodeLayoutGetBottom(yoga);
-                float left = Yoga.YGNodeLayoutGetLeft(yoga);
-                return Rect.makeLTRB(left, top, right, bottom);
-            }));
-        }
-        return boundsRect.get();
-    }
-
     public Point getParentOffset() {
         if (parentOffset == null) {
             parentOffset = withCleaner(cleaner, () -> createComputed(() -> {

@@ -33,7 +33,7 @@ public class Scroller extends Component {
             System.out.println(overBar);
         });
 
-        Ref<Long> outerYoga = new Ref<>();
+        Ref<BoxModel> outer = new Ref<>();
         Ref<Long> innerYoga = new Ref<>();
 
         return Nodes.single(Node.builder()
@@ -45,10 +45,13 @@ public class Scroller extends Component {
                         })
                 ))
                 .layout(yoga -> {
-                    outerYoga.set(yoga);
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetOverflow(yoga, Yoga.YGOverflowScroll);
+                })
+                .transform(layout -> {
+                    outer.set(layout);
+                    return Matrix33.IDENTITY;
                 })
                 .children(Nodes.multiple(
                         Node.builder()
@@ -56,14 +59,13 @@ public class Scroller extends Component {
                                     innerYoga.set(yoga);
                                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                                 })
-//                                .offset(yoga -> {
-//                                    var def = Node.defaultOffsetter(yoga);
-//                                    var height = Yoga.YGNodeLayoutGetHeight(outerYoga.get());
-//                                    var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
-//                                    // TODO: bypass
-//                                    yOffset.accept(Math.min(0, Math.max(-max, yOffset.get())));
-//                                    return def.makeConcat(Matrix33.makeTranslate(0, yOffset.get()));
-//                                })
+                                .transform(layout -> {
+                                    var height = outer.get().getSize().getY();
+                                    var max = innerYoga.get() != null ? Yoga.YGNodeLayoutGetHeight(innerYoga.get()) - height: 0;
+                                    // TODO: bypass
+                                    yOffset.accept(Math.min(0, Math.max(-max, yOffset.get())));
+                                    return Matrix33.makeTranslate(0, yOffset.get());
+                                })
                                 .children(children)
                                 .build(),
                         Node.builder()

@@ -34,6 +34,11 @@ public interface Node {
         return Util.contains(Rect.makeWH(layout.getSize()), p);
     }
 
+    @FunctionalInterface
+    interface Transformer {
+        Matrix33 transform(BoxModel layout);
+    }
+
     static Builder builder() {
         return new Builder();
     }
@@ -41,9 +46,10 @@ public interface Node {
     class Builder {
         private Nodes children = Nodes.empty();
         private Consumer<MetaNode> ref = n -> {};
-        private Layouter layout = (yoga) -> {};
-        private Painter paint = (canvas, yoga) -> {};
-        private Painter paintAfter = (canvas, yoga) -> {};
+        private Layouter layout = (layout) -> {};
+        private Transformer transformer = (layout) -> Matrix33.IDENTITY;
+        private Painter paint = (canvas, layout) -> {};
+        private Painter paintAfter = (canvas, layout) -> {};
 
         public Builder children(Nodes nodes) {
             this.children = nodes;
@@ -57,6 +63,11 @@ public interface Node {
         
         public Builder layout(Layouter layouter) {
             this.layout = layouter;
+            return this;
+        }
+
+        public Builder transform(Transformer transformer) {
+            this.transformer = transformer;
             return this;
         }
         
@@ -79,6 +90,7 @@ public interface Node {
         private final Nodes children;
         private final Consumer<MetaNode> ref;
         private final Layouter layout;
+        private final Transformer transformer;
         private final Painter paint;
         private final Painter paintAfter;
 
@@ -86,6 +98,7 @@ public interface Node {
             this.children = builder.children;
             this.ref = builder.ref;
             this.layout = builder.layout;
+            this.transformer = builder.transformer;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
         }
@@ -103,6 +116,11 @@ public interface Node {
         @Override
         public void layout(long yoga) {
             layout.layout(yoga);
+        }
+
+        @Override
+        public Matrix33 transform(BoxModel layout) {
+            return transformer.transform(layout);
         }
 
         @Override

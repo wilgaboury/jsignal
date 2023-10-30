@@ -192,6 +192,9 @@ public class SiguiWindow {
                 hovered.bubble(new MouseEvent(EventType.MOUSE_OVER));
             }
         } else if (e instanceof EventWindowFocusOut) {
+            if (hovered != null) {
+                hovered.bubble(new MouseEvent(EventType.MOUSE_OUT));
+            }
             hovered = null;
         }
     }
