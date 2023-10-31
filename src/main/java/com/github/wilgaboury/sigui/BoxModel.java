@@ -34,7 +34,7 @@ public class BoxModel {
 
     public Point getSize() {
         if (size == null) {
-            size = withCleaner(cleaner, () -> createComputed(() ->  {
+            size = provideCleaner(cleaner, () -> createComputed(() ->  {
                 update.track();
                 return new Point(
                         Yoga.YGNodeLayoutGetWidth(yoga),
@@ -47,7 +47,7 @@ public class BoxModel {
 
     public Rect getBorderRect() {
         if (borderRect == null) {
-            borderRect = withCleaner(cleaner, () -> createComputed(() -> {
+            borderRect = provideCleaner(cleaner, () -> createComputed(() -> {
                 var rect = Rect.makeWH(getSize());
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetMargin, yoga);
@@ -59,7 +59,7 @@ public class BoxModel {
 
     public Rect getPaddingRect() {
         if (paddingRect == null) {
-            paddingRect = withCleaner(cleaner, () -> createComputed(() -> {
+            paddingRect = provideCleaner(cleaner, () -> createComputed(() -> {
                 var rect = getBorderRect();
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetBorder, yoga);
@@ -71,7 +71,7 @@ public class BoxModel {
 
     public Rect getContentRect() {
         if (contentRect == null) {
-            contentRect = withCleaner(cleaner, () -> createComputed(() -> {
+            contentRect = provideCleaner(cleaner, () -> createComputed(() -> {
                 var rect = getPaddingRect();
                 update.track();
                 var insets = Insets.from(Yoga::YGNodeLayoutGetPadding, yoga);
@@ -83,7 +83,7 @@ public class BoxModel {
 
     public Point getParentOffset() {
         if (parentOffset == null) {
-            parentOffset = withCleaner(cleaner, () -> createComputed(() -> {
+            parentOffset = provideCleaner(cleaner, () -> createComputed(() -> {
                 update.track();
                 float left = Yoga.YGNodeLayoutGetLeft(yoga);
                 float top = Yoga.YGNodeLayoutGetTop(yoga);
@@ -95,7 +95,7 @@ public class BoxModel {
 
     public boolean didOverflow() {
         if (didOverflow == null) {
-            didOverflow = withCleaner(cleaner, () -> createComputed(() -> {
+            didOverflow = provideCleaner(cleaner, () -> createComputed(() -> {
                 update.track();
                 return Yoga.YGNodeLayoutGetHadOverflow(yoga);
             }));

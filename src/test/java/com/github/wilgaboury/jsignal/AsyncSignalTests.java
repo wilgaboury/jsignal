@@ -17,7 +17,7 @@ public class AsyncSignalTests {
 
         AtomicSignal<Integer> bruh = createAtomicSignal(0);
         Effect effect = provide(myContext.with(5), () ->
-            createAsyncEffect(withAsyncExecutor(() -> {
+            createAsyncEffect(deferProvideAsyncExecutor(() -> {
                 var value = useContext(myContext);
 
                 System.out.println(bruh.get() + " " + value);

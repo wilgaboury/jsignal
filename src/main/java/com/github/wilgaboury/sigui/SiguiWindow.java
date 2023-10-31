@@ -117,7 +117,7 @@ public class SiguiWindow {
                 App.terminate();
         } else if (e instanceof EventFrameSkija ee) {
             layout();
-            applySideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
+            provideSideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
 
             if (firstFrame) {
                 firstFrame = false;

@@ -13,8 +13,10 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class MetaNode {
     private final SiguiWindow window;
@@ -23,7 +25,7 @@ public class MetaNode {
     private final Node node;
 
     private final long yoga;
-    private final Computed<List<MetaNode>> children;
+    private final Supplier<List<MetaNode>> children;
     private final BoxModel layout;
 //    private final Computed<Boolean> thisHasOutsideBounds;
     private final Computed<Boolean> hasOutsideBounds;
@@ -75,16 +77,16 @@ public class MetaNode {
         window.requestLayout();
     }
 
-    private Computed<List<MetaNode>> createChildren() {
+    private Supplier<List<MetaNode>> createChildren() {
         var children = node.children();
 
         if (children instanceof Nodes.Single single) {
             var meta = new MetaNode(this, single.get());
             Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
-            return Computed.constant(List.of(meta));
+            return constantSupplier(List.of(meta));
         } else if (children instanceof Nodes.Multiple multiple) {
             Ref<Integer> i = new Ref<>(0);
-            return Computed.constant(multiple.stream().map(n -> {
+            return constantSupplier(multiple.stream().map(n -> {
                 var meta = new MetaNode(this, n);
                 Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
                 i.set(i.get() + 1);
@@ -108,7 +110,7 @@ public class MetaNode {
                     }
             );
         } else {
-            return Computed.constant(Collections.emptyList());
+            return Collections::emptyList;
         }
     }
 

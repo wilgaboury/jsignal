@@ -4,7 +4,10 @@ import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.ForkJoinPool;
@@ -14,13 +17,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class ReactiveUtil {
-    private static final Logger logger = Logger.getLogger(ReactiveUtil.class.getName());
-
     public static final Context<Optional<EffectLike>> EFFECT = createContext(Optional.empty());
     public static final Context<Optional<Cleaner>> CLEANER = createContext(Optional.empty());
     public static final Context<Executor> EXECUTOR = createContext(Runnable::run);
@@ -82,10 +82,6 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
-    public static <T> EmptySignal<T> createEmptySignal() {
-        return new EmptySignal<>();
-    }
-
     public static Trigger createTrigger() {
         return new Trigger(createSignal(null, Equals::never));
     }
@@ -122,6 +118,10 @@ public class ReactiveUtil {
         return createAsyncComputed(createAtomicSignal(null), supplier);
     }
 
+    public static Optional<EffectLike> useEffect() {
+        return useContext(EFFECT);
+    }
+
     public static Effect createEffect(Runnable inner) {
         var effect = new Effect(inner, true);
         effect.run();
@@ -138,55 +138,59 @@ public class ReactiveUtil {
         return new SideEffect(inner);
     }
 
-    public static void applySideEffect(SideEffect effect, Runnable inner) {
-        applySideEffect(effect, toSupplier(inner));
+    public static void provideSideEffect(SideEffect effect, Runnable inner) {
+        provideSideEffect(effect, toSupplier(inner));
     }
 
-    public static <T> T applySideEffect(SideEffect effect, Supplier<T> inner) {
+    public static <T> T provideSideEffect(SideEffect effect, Supplier<T> inner) {
         return provide(EFFECT.with(Optional.of(effect)), inner);
     }
 
-    public static void useExecutor(Executor executor, Runnable inner) {
-        useExecutor(executor, toSupplier(inner));
+    public static Executor useExecutor() {
+        return useContext(EXECUTOR);
     }
 
-    public static <T> T useExecutor(Executor executor, Supplier<T> inner) {
+    public static void provideExecutor(Executor executor, Runnable inner) {
+        provideExecutor(executor, toSupplier(inner));
+    }
+
+    public static <T> T provideExecutor(Executor executor, Supplier<T> inner) {
         return provide(EXECUTOR.with(executor), inner);
     }
 
-    public static void useAsyncExecutor(Runnable inner) {
-        useExecutor(ForkJoinPool.commonPool(), inner);
+    public static void provideAsyncExecutor(Runnable inner) {
+        provideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static <T> T useAsyncExecutor(Supplier<T> inner) {
-        return useExecutor(ForkJoinPool.commonPool(), inner);
+    public static <T> T provideAsyncExecutor(Supplier<T> inner) {
+        return provideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static Runnable withExecutor(Executor executor, Runnable inner) {
-        return () -> useExecutor(executor, inner);
+    public static Runnable deferProvideExecutor(Executor executor, Runnable inner) {
+        return () -> provideExecutor(executor, inner);
     }
 
-    public static <T> Supplier<T> withExecutor(Executor executor, Supplier<T> inner) {
-        return () -> useExecutor(executor, inner);
+    public static <T> Supplier<T> deferProvideExecutor(Executor executor, Supplier<T> inner) {
+        return () -> provideExecutor(executor, inner);
     }
 
-    public static Runnable withAsyncExecutor(Runnable inner) {
-        return withExecutor(ForkJoinPool.commonPool(), inner);
+    public static Runnable deferProvideAsyncExecutor(Runnable inner) {
+        return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static <T> Supplier<T> withAsyncExecutor(Supplier<T> inner) {
-        return withExecutor(ForkJoinPool.commonPool(), inner);
-    }
-
-    public static void withCleaner(Cleaner cleaner, Runnable inner) {
-        withCleaner(cleaner, toSupplier(inner));
+    public static <T> Supplier<T> deferProvideAsyncExecutor(Supplier<T> inner) {
+        return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
     public static Cleaner useCleaner() {
         return useContext(CLEANER).orElse(null);
     }
 
-    public static <T> T withCleaner(Cleaner cleaner, Supplier<T> inner) {
+    public static void provideCleaner(Cleaner cleaner, Runnable inner) {
+        provideCleaner(cleaner, toSupplier(inner));
+    }
+
+    public static <T> T provideCleaner(Cleaner cleaner, Supplier<T> inner) {
         return provide(CLEANER.with(Optional.of(cleaner)), inner);
     }
 
@@ -220,6 +224,10 @@ public class ReactiveUtil {
         } else {
             inner.run();
         }
+    }
+
+    public static Optional<Map<Integer, EffectRef>> useBatch() {
+        return useContextLocal(BATCH);
     }
 
     public static void track(Iterable<? extends Trackable> deps) {

@@ -30,7 +30,7 @@ public class Server {
     }
 
     public Effect createServerStartEffect() {
-        return createAsyncEffect(withAsyncExecutor(() -> {
+        return createAsyncEffect(deferProvideAsyncExecutor(() -> {
             ServerSocket socket = createServerSocket();
             onCleanup(() -> {
                 logger.log(Level.INFO, "running socket cleanup");

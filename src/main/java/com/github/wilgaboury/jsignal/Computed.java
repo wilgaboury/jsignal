@@ -14,8 +14,4 @@ public class Computed<T> extends SignalDecorator<T> {
     public EffectLike getEffect() {
         return effect;
     }
-
-    public static <T> Computed<T> constant(T value) {
-        return new Computed<>(SignalLike.constant(value), new EmptyEffect());
-    }
 }

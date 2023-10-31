@@ -17,13 +17,13 @@ public class Provider {
         this.contexts = contexts;
     }
 
-    public Provider layer(Iterable<Entry> entries) {
+    public Provider add(Iterable<Entry> entries) {
         return new Provider(contexts.set(List.iterableList(entries)
                 .map(e -> P.p(e.getContext(), e.getValue()))
         ));
     }
 
-    public Provider layer(Entry... entries) {
+    public Provider add(Entry... entries) {
         return new Provider(contexts.set(List.arrayList(entries)
                 .map(e -> P.p(e.getContext(), e.getValue()))
         ));

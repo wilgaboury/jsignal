@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigwig;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.Node;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
@@ -10,6 +9,8 @@ import java.io.IOException;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.github.wilgaboury.jsignal.ReactiveUtil.constantSupplier;
 
 public class Text {
     private static final Logger logger = Logger.getLogger(Text.class.getName());
@@ -74,7 +75,7 @@ public class Text {
     }
 
     public static Node para(Paragraph para) {
-        return para(ReactiveUtil.constantSupplier(para));
+        return para(constantSupplier(para));
     }
 
     public static Node para(Supplier<Paragraph> para) {

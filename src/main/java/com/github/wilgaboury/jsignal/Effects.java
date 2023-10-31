@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
-import static com.github.wilgaboury.jsignal.Provide.*;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.batch;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.useBatch;
 
 public class Effects implements Runnable {
     private final Map<Integer, EffectRef> effects;
@@ -24,6 +24,8 @@ public class Effects implements Runnable {
     @Override
     public void run() {
         batch(() -> {
+            var batch = useBatch().get();
+
             Iterator<EffectRef> itr = effects.values().iterator();
             while (itr.hasNext()) {
                 EffectRef ref = itr.next();
@@ -32,7 +34,7 @@ public class Effects implements Runnable {
                 if (effect.isEmpty() || effect.get().isDisposed())
                     itr.remove();
                 else
-                    useContext(BATCH).get().put(ref.getId(), ref);
+                    batch.put(ref.getId(), ref);
             }
         });
     }

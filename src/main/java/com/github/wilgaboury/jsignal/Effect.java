@@ -59,7 +59,7 @@ public class Effect implements EffectLike {
                 return;
 
             batch(() ->
-                    provide(provider.layer(
+                    provide(provider.add(
                             CLEANER.with(Optional.of(cleanup)),
                             EFFECT.with(Optional.of(this))
                     ), () -> {

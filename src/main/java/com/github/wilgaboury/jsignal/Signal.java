@@ -40,11 +40,11 @@ public class Signal<T> implements SignalLike<T> {
     @Override
     public void track() {
         assertThread();
-        useContext(EFFECT).ifPresent(effect -> {
+        useEffect().ifPresent(effect -> {
             assert threadId == null ||
                     (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))
                     : "signal thread does not match effect thread";
-            effects.add(effect, useContext(EXECUTOR));
+            effects.add(effect, useExecutor());
         });
     }
 

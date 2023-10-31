@@ -42,7 +42,7 @@ public class Provide {
     }
 
     public static <T> T provideLocal(Iterable<Provider.Entry> entries, Supplier<T> inner, Finally fin) {
-        return provide(localProviders, localProviders.get().layer(entries), inner, fin);
+        return provide(localProviders, localProviders.get().add(entries), inner, fin);
     }
 
 
@@ -75,7 +75,7 @@ public class Provide {
     }
 
     public static <T> T provide(Iterable<Provider.Entry> entries, Supplier<T> inner, Finally fin) {
-        return provide(providers.get().layer(entries), inner, fin);
+        return provide(providers.get().add(entries), inner, fin);
     }
 
 

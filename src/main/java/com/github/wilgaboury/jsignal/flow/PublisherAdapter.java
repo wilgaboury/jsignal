@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createAsyncEffect;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.withAsyncExecutor;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.deferProvideAsyncExecutor;
 
 public class PublisherAdapter<T> implements Flow.Publisher<T> {
     private final SignalLike<T> signal;
@@ -34,7 +34,7 @@ public class PublisherAdapter<T> implements Flow.Publisher<T> {
 
         public Subscription(Flow.Subscriber<? super T> subscriber) {
             this.subscriber = subscriber;
-            this.effect = createAsyncEffect(withAsyncExecutor(this::publish));
+            this.effect = createAsyncEffect(deferProvideAsyncExecutor(this::publish));
             this.requestCount = 0L;
         }
 

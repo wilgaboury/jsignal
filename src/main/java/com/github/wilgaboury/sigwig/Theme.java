@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class Theme {
     public static final Context<Signal<Theme>> context = createContext(createSignal(Theme.builder().build()));
