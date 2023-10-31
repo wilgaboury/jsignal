@@ -21,6 +21,10 @@ public class EffectRef implements Runnable {
         return Optional.ofNullable(effect.get());
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void run() {
         getEffect().ifPresent(executor::execute);
     }

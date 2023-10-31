@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 
+import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class AsyncSignalTests {
@@ -15,7 +16,7 @@ public class AsyncSignalTests {
         Context<Integer> myContext = new Context<>(100);
 
         AtomicSignal<Integer> bruh = createAtomicSignal(0);
-        Effect effect = createProvider(myContext.provide(5), () ->
+        Effect effect = provide(myContext.with(5), () ->
             createAsyncEffect(withAsyncExecutor(() -> {
                 var value = useContext(myContext);
 

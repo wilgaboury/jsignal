@@ -2,8 +2,13 @@ package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.jsignal.Provide.currentProvider;
+import static com.github.wilgaboury.jsignal.Provide.provide;
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Effect implements EffectLike {
     private static final AtomicInteger nextId = new AtomicInteger(0);
@@ -15,13 +20,15 @@ public class Effect implements EffectLike {
     private final Long threadId;
     private boolean disposed;
 
-    Effect(Runnable effect, Provider provider, boolean isSync) {
+    Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
         this.effect = effect;
-        this.provider = provider;
-        this.cleanup = new Cleaner();
+        this.provider = currentProvider();
+        this.cleanup = createCleaner();
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
+
+        onCleanup(this::dispose);
     }
 
     public int getId() {
@@ -47,19 +54,18 @@ public class Effect implements EffectLike {
 
     @Override
     public void run() {
-        ReactiveEnv env = ReactiveEnvFactory.get();
         maybeSynchronize(() -> {
             if (isDisposed())
                 return;
 
-            env.batch(() ->
-                    env.cleaner(cleanup, ReactiveUtil.toSupplier(() ->
-                            env.provider(provider, () -> {
-                                cleanup.run();
-                                env.effect(this, ReactiveUtil.toSupplier(effect));
-                                return null;
-                            }))
-                    )
+            batch(() ->
+                    provide(provider.layer(
+                            CLEANER.with(Optional.of(cleanup)),
+                            EFFECT.with(Optional.of(this))
+                    ), () -> {
+                        cleanup.run();
+                        effect.run();
+                    })
             );
         });
     }

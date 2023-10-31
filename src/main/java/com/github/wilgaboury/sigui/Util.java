@@ -1,7 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.davidmoten.rtree.geometry.Rectangle;
-import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
@@ -30,29 +28,13 @@ public class Util {
                 - (mat[1] * (mat[3]*mat[8] - mat[5]*mat[6]))
                 + (mat[2] *(mat[3]*mat[7] - mat[4]*mat[6])));
 
-//        return new Matrix33(
-//                invDet * (mat[4]*mat[8] - mat[5]*mat[7]),
-//                -invDet * (mat[3]*mat[8] - mat[5]*mat[6]),
-//                invDet * (mat[3]*mat[7] - mat[4]*mat[6]),
-//
-//                -invDet * (mat[1]*mat[8] - mat[2]*mat[7]),
-//                invDet * (mat[0]*mat[8] - mat[2]*mat[6]),
-//                -invDet * (mat[0]*mat[7] - mat[1]*mat[6]),
-//
-//                invDet * (mat[1]*mat[5] - mat[2]*mat[4]),
-//                -invDet * (mat[0]*mat[5] - mat[2]*mat[3]),
-//                invDet * (mat[0]*mat[4] - mat[1]*mat[3])
-//        );
-
         return new Matrix33(
                 invDet * (mat[4]*mat[8] - mat[5]*mat[7]),
                 -invDet * (mat[1]*mat[8] - mat[2]*mat[7]),
                 invDet * (mat[1]*mat[5] - mat[2]*mat[4]),
-
                 -invDet * (mat[3]*mat[8] - mat[5]*mat[6]),
                 invDet * (mat[0]*mat[8] - mat[2]*mat[6]),
                 -invDet * (mat[0]*mat[5] - mat[2]*mat[3]),
-
                 invDet * (mat[3]*mat[7] - mat[4]*mat[6]),
                 -invDet * (mat[0]*mat[7] - mat[1]*mat[6]),
                 invDet * (mat[0]*mat[4] - mat[1]*mat[3])

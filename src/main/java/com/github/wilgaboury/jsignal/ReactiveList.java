@@ -29,11 +29,11 @@ public class ReactiveList {
         onCleanup(() -> cleaners.forEach(Runnable::run));
         return createComputed(on(list, (newItems) -> {
             return untrack(() -> {
-                Function<Integer, Function<Cleaner, U>> mapper = j -> cleaner -> {
-                    cleaners.set(j, cleaner);
+                Function<Integer, Supplier<U>> mapper = j -> {
+                    cleaners.set(j, useCleaner());
                     var sig = createSignal(j);
                     indexes.set(j, sig);
-                    return map.apply(newItems.get(j), sig);
+                    return () -> map.apply(newItems.get(j), sig);
                 };
 
                 expand(mapped, newItems.size());

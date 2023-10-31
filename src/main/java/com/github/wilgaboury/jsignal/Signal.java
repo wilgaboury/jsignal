@@ -10,6 +10,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.Provide.*;
+
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
@@ -37,12 +40,11 @@ public class Signal<T> implements SignalLike<T> {
     @Override
     public void track() {
         assertThread();
-        ReactiveEnv env = ReactiveEnvFactory.get();
-        env.peekEffect().ifPresent(effect -> {
+        useContext(EFFECT).ifPresent(effect -> {
             assert threadId == null ||
                     (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))
                     : "signal thread does not match effect thread";
-            effects.add(effect, env.peekExecutor());
+            effects.add(effect, useContext(EXECUTOR));
         });
     }
 

@@ -16,6 +16,8 @@ public class SideEffect implements EffectLike {
         this.id = Effect.nextId();
         this.effect = effect;
         this.disposed = new AtomicBoolean(false);
+
+        ReactiveUtil.onCleanup(this::dispose);
     }
 
     @Override

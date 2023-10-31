@@ -87,14 +87,16 @@ public class Scroller extends Component {
 
         var yScale = viewSize.getY() / contentSize.getY();
 
-        try (var paint = new Paint()) {
-            paint.setColor(EzColors.BLACK);
-            canvas.drawRect(Rect.makeXYWH(
-                    0,
-                    yScale * -yOffset.get(),
-                    bounds.getWidth(),
-                    yScale * viewSize.getY()
-            ), paint);
+        if (yScale < 1f) {
+            try (var paint = new Paint()) {
+                paint.setColor(EzColors.BLACK);
+                canvas.drawRect(Rect.makeXYWH(
+                        0,
+                        yScale * -yOffset.get(),
+                        bounds.getWidth(),
+                        yScale * viewSize.getY()
+                ), paint);
+            }
         }
     }
 }

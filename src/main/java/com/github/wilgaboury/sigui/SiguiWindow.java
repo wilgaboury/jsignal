@@ -15,6 +15,7 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class SiguiWindow {
@@ -211,9 +212,9 @@ public class SiguiWindow {
         that.root = createComputed(() -> {
             that.requestLayout();
             that.requestFrameEffect = createSideEffect(that::requestFrame);
-            return createProvider(List.of(
-                    CONTEXT.provide(that),
-                    CONTEXT_RAW.provide(that.window)
+            return provide(List.of(
+                    CONTEXT.with(that),
+                    CONTEXT_RAW.with(that.window)
                 ),
                 () -> MetaNode.createRoot(root.get())
             );
