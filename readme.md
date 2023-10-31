@@ -4,7 +4,7 @@ A reactive primitive for Java and with strong support for multithreading. This p
 
 ## Signals and Effects
 
-Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is analagous to a typical subscriber/listener, but with siginificantly better developer ergonomics.
+Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is essentially just the observer pattern, but with an added layer of indirection and siginificantly better developer ergonomics.
 
 ### Brief Example
 
