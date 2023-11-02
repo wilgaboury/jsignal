@@ -10,36 +10,60 @@ import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
+import java.util.Optional;
+
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
-import static com.github.wilgaboury.sigui.event.EventListener.onMouseOut;
-import static com.github.wilgaboury.sigui.event.EventListener.onMouseOver;
+import static com.github.wilgaboury.sigui.event.EventListener.*;
 
 public class Scroller extends Component {
     private final Nodes children;
 
     private final Signal<Float> yOffset;
-//    private final Signal<Float> xOffset;
-    private final Signal<Boolean> overBar;
+    private final Signal<Boolean> mouseDown;
+    private final Signal<Boolean> mouseOver;
     private final Ref<MetaNode> inner;
+    private final Signal<Float> yScale;
 
     public Scroller(Nodes children) {
         this.children = children;
         this.yOffset = createSignal(0f);
-        this.overBar = createSignal(false);
+        this.mouseOver = createSignal(false);
+        this.mouseDown = createSignal(false);
         this.inner = new Ref<>();
+        this.yScale = createSignal(0f);
     }
 
     @Override
     public Nodes render() {
+        var window = SiguiWindow.useWindow();
+
+        onMount(() -> {
+            createEffect(() -> {
+                if (mouseDown.get()) {
+                    createEffect(onDefer(window::getMousePosition, (cur, prev) -> {
+                        float dy = cur.getY() - prev.getY();
+                        yOffset.accept(y -> y - dy);
+                    }));
+                }
+            });
+        });
 
         return Nodes.single(Node.builder()
-                .ref(node -> node.listen(
-                        EventListener.onScroll(e -> {
-                            var height = node.getLayout().getSize().getY();
-                            var max = inner.get().getLayout().getSize().getY() - height;
-                            yOffset.accept(v -> Math.min(0, Math.max(-max, v + e.getDeltaY())));
-                        })
-                ))
+                .ref(node -> {
+                    createEffect(() -> {
+                        var viewSize = node.getLayout().getSize();
+                        var contentSize = inner.get().getLayout().getSize();
+                        yScale.accept(viewSize.getY() / contentSize.getY());
+                    });
+
+                    node.listen(
+                            EventListener.onScroll(e -> {
+                                var height = node.getLayout().getSize().getY();
+                                var max = inner.get().getLayout().getSize().getY() - height;
+                                yOffset.accept(v -> Math.min(0, Math.max(-max, v + e.getDeltaY())));
+                            })
+                    );
+                })
                 .layout(yoga -> {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
@@ -61,8 +85,10 @@ public class Scroller extends Component {
                                 .build(),
                         Node.builder()
                                 .ref(node -> node.listen(
-                                        onMouseOver(e -> overBar.accept(true)),
-                                        onMouseOut(e -> overBar.accept(false))
+                                        onMouseOver(e -> mouseOver.accept(true)),
+                                        onMouseOut(e -> mouseOver.accept(false)),
+                                        onMouseDown(e -> mouseDown.accept(true)),
+                                        onMouseUp(e -> mouseDown.accept(false))
                                 ))
                                 .layout(Flex.builder()
                                         .width(15f)
@@ -79,24 +105,26 @@ public class Scroller extends Component {
         );
     }
 
+    private Optional<Rect> barRect(MetaNode node) {
+        if (yScale.get() < 1f) {
+            var viewSize = node.getLayout().getSize();
+            var bounds = Rect.makeWH(node.getLayout().getSize());
+            return Optional.of(Rect.makeXYWH(
+                    0,
+                    yScale.get() * -yOffset.get(),
+                    bounds.getWidth(),
+                    yScale.get() * viewSize.getY()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private void paintScrollBar(Canvas canvas, MetaNode node) {
-        var viewSize = node.getLayout().getSize();
-        var contentSize = inner.get().getLayout().getSize();
-
-        var bounds = Rect.makeWH(node.getLayout().getSize());
-
-        var yScale = viewSize.getY() / contentSize.getY();
-
-        if (yScale < 1f) {
+        barRect(node).ifPresent(rect -> {
             try (var paint = new Paint()) {
                 paint.setColor(EzColors.BLACK);
-                canvas.drawRect(Rect.makeXYWH(
-                        0,
-                        yScale * -yOffset.get(),
-                        bounds.getWidth(),
-                        yScale * viewSize.getY()
-                ), paint);
+                canvas.drawRect(rect, paint);
             }
-        }
+        });
     }
 }

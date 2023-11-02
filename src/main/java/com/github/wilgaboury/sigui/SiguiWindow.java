@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigui;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.SideEffect;
+import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
 import com.github.wilgaboury.sigwig.EzColors;
 import io.github.humbleui.jwm.*;
@@ -19,8 +20,16 @@ import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class SiguiWindow {
-    public static final Context<SiguiWindow> CONTEXT = createContext(null);
-    public static final Context<Window> CONTEXT_RAW = createContext(null);
+    public static final Context<SiguiWindow> WINDOW = createContext(null);
+    public static final Context<Window> RAW_WINDOW = createContext(null);
+
+    public static SiguiWindow useWindow() {
+        return useContext(WINDOW);
+    }
+
+    public static Window useRawWindow () {
+        return useContext(RAW_WINDOW);
+    }
 
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
@@ -34,6 +43,8 @@ public class SiguiWindow {
     private MetaNode mouseDown = null;
     private MetaNode hovered = null;
     private MetaNode focus = null;
+
+    private final Signal<Point> mousePosition = createSignal(new Point(0, 0));
 
     // hacky solution for stupid weird offset bug
     private boolean firstFrame = true;
@@ -56,6 +67,10 @@ public class SiguiWindow {
         return root.get();
     }
 
+    public Point getMousePosition() {
+        return mousePosition.get();
+    }
+
     private void layout() {
         if (!shouldLayout)
             return;
@@ -64,7 +79,7 @@ public class SiguiWindow {
 
         var rect = window.getContentRect();
         Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-        root.get().visitTreePre(n -> n.getLayout().update());
+        batch(() -> root.get().visitTreePre(n -> n.getLayout().update()));
         root.get().generateRenderOrder();
     }
 
@@ -127,7 +142,7 @@ public class SiguiWindow {
             requestLayout();
         } else if (e instanceof EventMouseScroll ee) {
             if (hovered != null) {
-                hovered.bubble(new ScrollEvent(EventType.SCROLL, ee.getDeltaX(), ee.getDeltaY()));
+                hovered.bubble(new ScrollEvent(EventType.SCROLL, hovered, ee.getDeltaX(), ee.getDeltaY()));
             }
         } else if (e instanceof EventKey ee) {
             if (focus == null) {
@@ -139,62 +154,69 @@ public class SiguiWindow {
             }
 
             if (ee.isPressed()) {
-                focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, ee));
+                focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, focus, ee));
             } else {
-                focus.bubble(new KeyboardEvent(EventType.KEY_UP, ee));
+                focus.bubble(new KeyboardEvent(EventType.KEY_UP, focus, ee));
             }
         } else if (e instanceof EventMouseButton ee) {
             if (hovered != null) {
                 if (ee.isPressed()) {
                     mouseDown = hovered;
 
-                    mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN));
+                    mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown));
 
                     var focusTemp = mouseDown;
                     while (!focusTemp.hasListener(EventType.FOCUS) && focusTemp.getParent() != null) {
                         focusTemp = focusTemp.getParent();
                     }
                     if (focus != null && focusTemp != focus) {
-                        focus.fire(new FocusEvent(EventType.BLUR));
+                        focus.fire(new FocusEvent(EventType.BLUR, focus));
                         focus = focusTemp;
-                        focus.fire(new FocusEvent(EventType.FOCUS));
+                        focus.fire(new FocusEvent(EventType.FOCUS, focus));
                     }
                 } else {
-                    hovered.bubble(new MouseEvent(EventType.MOUSE_UP));
+                    hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+
+                    // todo: possibly check up tree instead of just target for click test
                     if (mouseDown == hovered) {
-                        hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK));
+                        hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
+                    } else {
+                        mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
                     }
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
             // todo: convert from screen to paint space using scale
-            var newHovered = pick(new Point(ee.getX(), ee.getY()));
+            var point = new Point(ee.getX(), ee.getY());
+            var newHovered = pick(point);
             if (hovered != newHovered) {
                 var parents = hovered == null ? null : hovered.getParents();
                 var newParents = newHovered == null ? null : newHovered.getParents();
 
                 if (hovered != null) {
-                    hovered.bubble(new MouseEvent(EventType.MOUSE_OUT));
+                    hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
                     var node = hovered;
                     while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
-                        node.fire(new MouseEvent(EventType.MOUSE_LEAVE));
+                        node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered));
                         node = node.getParent();
                     }
                 }
 
                 if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
-                    newHovered.fire(new MouseEvent(EventType.MOUSE_IN));
+                    newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered));
                 }
 
                 hovered = newHovered;
             }
 
             if (hovered != null) {
-                hovered.bubble(new MouseEvent(EventType.MOUSE_OVER));
+                hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered));
             }
+
+            mousePosition.accept(point);
         } else if (e instanceof EventWindowFocusOut) {
             if (hovered != null) {
-                hovered.bubble(new MouseEvent(EventType.MOUSE_OUT));
+                hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
             }
             hovered = null;
         }
@@ -213,8 +235,8 @@ public class SiguiWindow {
             that.requestLayout();
             that.requestFrameEffect = createSideEffect(that::requestFrame);
             return provide(List.of(
-                    CONTEXT.with(that),
-                    CONTEXT_RAW.with(that.window)
+                    WINDOW.with(that),
+                    RAW_WINDOW.with(that.window)
                 ),
                 () -> MetaNode.createRoot(root.get())
             );

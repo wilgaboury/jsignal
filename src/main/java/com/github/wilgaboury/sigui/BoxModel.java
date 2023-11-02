@@ -48,8 +48,8 @@ public class BoxModel {
     public Rect getBorderRect() {
         if (borderRect == null) {
             borderRect = provideCleaner(cleaner, () -> createComputed(() -> {
-                var rect = Rect.makeWH(getSize());
                 update.track();
+                var rect = Rect.makeWH(untrack(this::getSize));
                 var insets = Insets.from(Yoga::YGNodeLayoutGetMargin, yoga);
                 return insets.shink(rect);
             }));
@@ -60,8 +60,8 @@ public class BoxModel {
     public Rect getPaddingRect() {
         if (paddingRect == null) {
             paddingRect = provideCleaner(cleaner, () -> createComputed(() -> {
-                var rect = getBorderRect();
                 update.track();
+                var rect = untrack(this::getBorderRect);
                 var insets = Insets.from(Yoga::YGNodeLayoutGetBorder, yoga);
                 return insets.shink(rect);
             }));
@@ -72,8 +72,8 @@ public class BoxModel {
     public Rect getContentRect() {
         if (contentRect == null) {
             contentRect = provideCleaner(cleaner, () -> createComputed(() -> {
-                var rect = getPaddingRect();
                 update.track();
+                var rect = untrack(this::getPaddingRect);
                 var insets = Insets.from(Yoga::YGNodeLayoutGetPadding, yoga);
                 return insets.shink(rect);
             }));

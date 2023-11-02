@@ -37,7 +37,7 @@ public class MetaNode {
     private int renderOrder;
 
     MetaNode(MetaNode parent, Node node) {
-        this.window = useContext(SiguiWindow.CONTEXT);
+        this.window = useContext(SiguiWindow.WINDOW);
 
         this.parent = parent;
         this.node = node;
@@ -140,6 +140,14 @@ public class MetaNode {
         return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(node.transform(this));
     }
 
+    public Matrix33 getFullTransform() {
+        Ref<Matrix33> mat = new Ref<>(Matrix33.IDENTITY);
+        visitParents(n -> {
+            mat.set(n.getTransform().makeConcat(mat.get()));
+        });
+        return mat.get();
+    }
+
     void generateRenderOrder() {
         Ref<Integer> i = new Ref<>(0);
         visitTreePre(n -> {
@@ -220,7 +228,7 @@ public class MetaNode {
         for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
             ((Consumer<T>)listener).accept(event);
 
-            if (!event.isImmediatePropagating())
+            if (event.isImmediatePropagationStopped())
                 return;
         }
     }
@@ -230,7 +238,7 @@ public class MetaNode {
         while (node != null) {
             node.fire(event);
 
-            if (!event.isImmediatePropagating() || !event.isPropagating())
+            if (event.isImmediatePropagationStopped() || event.isPropagationStopped())
                 return;
 
             node = node.parent;

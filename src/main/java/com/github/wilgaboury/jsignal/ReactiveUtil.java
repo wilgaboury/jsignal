@@ -217,8 +217,8 @@ public class ReactiveUtil {
         if (useContextLocal(BATCH).isEmpty()) {
             provideLocal(BATCH.with(Optional.of(new LinkedHashMap<>())), inner, (cur, popped) -> {
                 var batch = popped.use(BATCH);
-                if (cur.use(BATCH).isEmpty() && batch.isPresent()) {
-                    batch.get().values().forEach(EffectRef::run);
+                if (cur.use(BATCH).isEmpty() && batch.isPresent() && !batch.get().isEmpty()) {
+                    batch(() -> batch.get().values().forEach(EffectRef::run));
                 }
             });
         } else {

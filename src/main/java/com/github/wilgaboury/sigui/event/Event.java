@@ -1,33 +1,41 @@
 package com.github.wilgaboury.sigui.event;
 
+import com.github.wilgaboury.sigui.MetaNode;
+
 public class Event {
     private final EventType type;
-    private boolean propagating;
-    private boolean immediatePropagating;
+    private final MetaNode target;
+    private boolean isPropagationStopped;
+    private boolean isImmediatePropagationStopped;
 
-    public Event(EventType type) {
+    public Event(EventType type, MetaNode target) {
         this.type = type;
-        this.propagating = true;
-        this.immediatePropagating = true;
+        this.target = target;
+        this.isPropagationStopped = false;
+        this.isImmediatePropagationStopped = false;
     }
 
     public EventType getType() {
         return type;
     }
 
-    public void stopPropagation() {
-        propagating = false;
+    public MetaNode getTarget() {
+        return target;
     }
 
-    public boolean isPropagating() {
-        return propagating;
+    public void stopPropagation() {
+        isPropagationStopped = true;
+    }
+
+    public boolean isPropagationStopped() {
+        return isPropagationStopped;
     }
 
     public void stopImmediatePropagation() {
-        immediatePropagating = false;
+        isImmediatePropagationStopped = true;
     }
 
-    public boolean isImmediatePropagating() {
-        return immediatePropagating;
+    public boolean isImmediatePropagationStopped() {
+        return isImmediatePropagationStopped;
     }
 }
