@@ -142,9 +142,7 @@ public class MetaNode {
 
     public Matrix33 getFullTransform() {
         Ref<Matrix33> mat = new Ref<>(Matrix33.IDENTITY);
-        visitParents(n -> {
-            mat.set(n.getTransform().makeConcat(mat.get()));
-        });
+        visitParents(n -> mat.set(n.getTransform().makeConcat(mat.get())));
         return mat.get();
     }
 
@@ -205,7 +203,7 @@ public class MetaNode {
     public void visitParents(Consumer<MetaNode> visitor) {
         MetaNode node = this;
         while (node != null) {
-            visitor.accept(this);
+            visitor.accept(node);
             node = node.parent;
         }
     }
