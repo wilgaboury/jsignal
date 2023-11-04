@@ -4,8 +4,6 @@ import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -24,8 +22,7 @@ public class ReactiveUtil {
     public static final Context<Optional<EffectLike>> EFFECT = createContext(Optional.empty());
     public static final Context<Optional<Cleaner>> CLEANER = createContext(Optional.empty());
     public static final Context<Executor> EXECUTOR = createContext(Runnable::run);
-
-    static final Context<Optional<Map<Integer, EffectRef>>> BATCH = createContext(Optional.empty());
+    public static final ThreadLocal<Batch> BATCH = ThreadLocal.withInitial(Batch::new);
 
     private ReactiveUtil() {
     }
@@ -213,21 +210,12 @@ public class ReactiveUtil {
         useContext(CLEANER).ifPresent(c -> c.add(cleanup));
     }
 
-    public static void batch(Runnable inner) {
-        if (useContextLocal(BATCH).isEmpty()) {
-            provideLocal(BATCH.with(Optional.of(new LinkedHashMap<>())), inner, (cur, popped) -> {
-                var batch = popped.use(BATCH);
-                if (cur.use(BATCH).isEmpty() && batch.isPresent() && !batch.get().isEmpty()) {
-                    batch(() -> batch.get().values().forEach(EffectRef::run));
-                }
-            });
-        } else {
-            inner.run();
-        }
+    public static Batch useBatch() {
+        return BATCH.get();
     }
 
-    public static Optional<Map<Integer, EffectRef>> useBatch() {
-        return useContextLocal(BATCH);
+    public static void batch(Runnable inner) {
+        BATCH.get().run(inner);
     }
 
     public static void track(Iterable<? extends Trackable> deps) {
