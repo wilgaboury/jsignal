@@ -179,8 +179,8 @@ public class ReactiveUtil {
         return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static Cleaner useCleaner() {
-        return useContext(CLEANER).orElse(null);
+    public static Optional<Cleaner> useCleaner() {
+        return useContext(CLEANER);
     }
 
     public static void provideCleaner(Cleaner cleaner, Runnable inner) {
@@ -197,7 +197,7 @@ public class ReactiveUtil {
 
     public static Cleaner createCleaner(Runnable inner) {
         var cleaner = new Cleaner();
-        useContext(CLEANER).ifPresent(c -> c.add(cleaner));
+        useCleaner().ifPresent(c -> c.add(cleaner));
         provide(CLEANER.with(Optional.of(cleaner)), inner);
         return cleaner;
     }

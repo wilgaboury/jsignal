@@ -58,15 +58,15 @@ public class Effect implements EffectLike {
             if (isDisposed())
                 return;
 
-            batch(() ->
-                    provide(provider.add(
-                            CLEANER.with(Optional.of(cleanup)),
-                            EFFECT.with(Optional.of(this))
-                    ), () -> {
-                        cleanup.run();
-                        effect.run();
-                    })
-            );
+            batch(() -> {
+                cleanup.run();
+                provide(provider.add(
+                        CLEANER.with(Optional.of(cleanup)),
+                        EFFECT.with(Optional.of(this))
+                ), () -> {
+                    effect.run();
+                });
+            });
         });
     }
 

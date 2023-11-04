@@ -2,10 +2,7 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.sigui.BoxModel;
-import com.github.wilgaboury.sigui.MetaNode;
-import com.github.wilgaboury.sigui.Node;
-import com.github.wilgaboury.sigui.Painter;
+import com.github.wilgaboury.sigui.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Data;
@@ -44,6 +41,9 @@ public class Image {
     public static Node create(Builder builder) {
         Computed<Painter> painter = ReactiveUtil.createComputed(() -> painter(builder.blob, builder.fit));
         return Node.builder()
+                .info(NodeInfo.builder()
+                        .setId("image")
+                        .build())
                 .layout(yoga -> {
                     var blob = builder.blob.get();
                     if (blob.getMime().is(MediaType.SVG_UTF_8)) {
