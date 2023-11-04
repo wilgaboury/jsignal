@@ -210,10 +210,6 @@ public class ReactiveUtil {
         useContext(CLEANER).ifPresent(c -> c.add(cleanup));
     }
 
-    public static Batch useBatch() {
-        return BATCH.get();
-    }
-
     public static void batch(Runnable inner) {
         BATCH.get().run(inner);
     }

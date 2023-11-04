@@ -22,7 +22,7 @@ public class Effects implements Runnable {
 
     @Override
     public void run() {
-        var batch = useBatch();
+        var batch = BATCH.get();
         batch.run(() -> {
             Iterator<EffectRef> itr = effects.values().iterator();
             while (itr.hasNext()) {

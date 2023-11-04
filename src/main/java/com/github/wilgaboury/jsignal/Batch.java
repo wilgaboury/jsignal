@@ -32,12 +32,12 @@ public class Batch {
         }
     }
 
-    public void add(int id, EffectRef ref) {
+    void add(int id, EffectRef ref) {
         assert depth > 0;
         front.put(id, ref);
     }
 
-    public void flip() {
+    private void flip() {
         var tmp = front;
         front = back;
         back = tmp;
