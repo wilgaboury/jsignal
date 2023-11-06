@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 import static com.github.wilgaboury.sigui.event.EventListener.*;
+import static com.github.wilgaboury.sigwig.ColorUtil.*;
 
 public class Button extends Component {
     private final Supplier<Integer> color;
@@ -104,9 +105,15 @@ public class Button extends Component {
         }
 
         try (var paint = new Paint()) {
-            paint.setColor(mouseOver.get() ? ColorUtil.brighten(color.get(), 0.75f) : color.get());
+            paint.setColor(mouseOver.get() ? hoverColor(color.get()) : color.get());
             canvas.drawRRect(Rect.makeWH(size).withRadii(8), paint);
         }
+    }
+
+    private int hoverColor(int color) {
+        var oklch = oklchFromOklab(oklabFromXyz(xyzFromSrgb(srgbFromRgb(color))));
+        oklch[0] = (float)Math.max(0f, Math.min(1f, oklch[0] + (oklch[0] < 0.5 ? 0.1 : -0.1)));
+        return rgbFromSrgb(srgbFromXyz(xyzFromOklab(oklabFromOklch(oklch))));
     }
 
     public static Builder builder() {

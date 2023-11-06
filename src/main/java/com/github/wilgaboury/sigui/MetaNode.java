@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
-import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class MetaNode {
     private final SiguiWindow window;
@@ -26,7 +25,7 @@ public class MetaNode {
 
     private final long yoga;
     private final Supplier<List<MetaNode>> children;
-    private final BoxModel layout;
+    private final Layout layout;
 //    private final Computed<Boolean> thisHasOutsideBounds;
     private final Computed<Boolean> hasOutsideBounds;
 
@@ -37,14 +36,14 @@ public class MetaNode {
     private int renderOrder;
 
     MetaNode(MetaNode parent, Node node) {
-        this.window = useContext(SiguiWindow.WINDOW);
+        this.window = SiguiWindow.useWindow();
 
         this.parent = parent;
         this.node = node;
 
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
-        this.layout = new BoxModel(yoga);
+        this.layout = new Layout(yoga);
 //        this.thisHasOutsideBounds = createComputed(());
         this.hasOutsideBounds = createComputed(() ->
                 false
@@ -116,7 +115,7 @@ public class MetaNode {
 
     public MetaNode pick(Matrix33 transform, Point p) {
         var newTransform = transform.makeConcat(getTransform());
-        var testPoint = Util.apply(Util.inverse(newTransform), p);
+        var testPoint = MathUtil.apply(MathUtil.inverse(newTransform), p);
         if (hasOutsideBounds.get() || node.hitTest(testPoint, this)) {
             var children = this.children.get();
             for (int i = children.size(); i > 0; i--) {
@@ -131,7 +130,7 @@ public class MetaNode {
         return null;
     }
 
-    public BoxModel getLayout() {
+    public Layout getLayout() {
         return layout;
     }
 

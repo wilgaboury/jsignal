@@ -44,7 +44,7 @@ public class Scroller extends Component {
             createEffect(() -> {
                 if (mouseDown.get()) {
                     createEffect(onDefer(window::getMousePosition, (pos) -> {
-                        var rel = Util.apply(Util.inverse(outer.get().getFullTransform()), window.getMousePosition());
+                        var rel = MathUtil.apply(MathUtil.inverse(outer.get().getFullTransform()), window.getMousePosition());
                         var newOffset = (rel.getY() - yMouseDownOffset)/untrack(yScale);
                         yOffset.accept(-newOffset);
                     }));
@@ -94,13 +94,13 @@ public class Scroller extends Component {
                                         onMouseOver(e -> mouseOver.accept(true)),
                                         onMouseOut(e -> mouseOver.accept(false)),
                                         onMouseDown(e -> {
-                                            var pos = Util.apply(Util.inverse(node.getFullTransform()), window.getMousePosition());
+                                            var pos = MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.getMousePosition());
                                             var maybeRect = barRect(node);
                                             if (maybeRect.isEmpty())
                                                 return;
 
                                             var rect = maybeRect.get();
-                                            if (Util.contains(rect, pos)) {
+                                            if (MathUtil.contains(rect, pos)) {
                                                 yMouseDownOffset = pos.getY() - rect.getTop();
                                                 mouseDown.accept(true);
                                             }

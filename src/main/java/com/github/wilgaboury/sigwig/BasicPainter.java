@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigwig;
 
-import com.github.wilgaboury.sigui.BoxModel;
 import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Painter;
 import io.github.humbleui.skija.Canvas;

@@ -1,10 +1,117 @@
 package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.sigui.MathUtil;
 import io.github.humbleui.skija.Color;
-
-import java.util.Random;
+import io.github.humbleui.skija.Matrix33;
 
 public class ColorUtil {
+    public static final Matrix33 SRGB_TO_XYZ = new Matrix33(
+            0.4124564f, 0.3575761f, 0.1804375f,
+            0.2126729f, 0.7151522f, 0.0721750f,
+            0.0193339f, 0.1191920f, 0.9503041f
+    );
+
+    public static final Matrix33 XYZ_TO_SRGB = new Matrix33(
+            3.2404542f, -1.5371385f, -0.4985314f,
+            -0.9692660f,  1.8760108f,  0.0415560f,
+            0.0556434f, -0.2040259f,  1.0572252f
+    );
+
+    public static final Matrix33 XYZ_TO_OKLMS = new Matrix33(
+            0.8189330101f, 0.3618667424f , -0.1288597137f,
+            0.0329845436f, 0.9293118715f, 0.0361456387f,
+            0.0482003018f, 0.2643662691f, 0.6338517070f
+    );
+
+    public static final Matrix33 OKLMS_TO_XYZ = MathUtil.inverse(XYZ_TO_OKLMS);
+
+    public static final Matrix33 OKLMS_PRIME_TO_OKLAB = new Matrix33(
+            0.2104542553f, 0.7936177850f, -0.0040720468f,
+            1.9779984951f, -2.4285922050f, 0.4505937099f,
+            0.0259040371f, 0.7827717662f, -0.8086757660f
+    );
+
+    public static final Matrix33 OKLAB_TO_OKLMS_PRIME = MathUtil.inverse(OKLMS_PRIME_TO_OKLAB);
+
+    // from https://bottosson.github.io/posts/colorwrong/
+    public static float transferFunc(float x)
+    {
+        if (x >= 0.0031308)
+            return (float)((1.055) * Math.pow(x, 1.0/2.4) - 0.055);
+        else
+            return 12.92f * x;
+    }
+
+    public static float transferFuncInv(float x) {
+        if (x >= 0.04045)
+            return (float)Math.pow((x + 0.055)/(1 + 0.055), 2.4);
+        else
+            return x / 12.92f;
+    }
+
+    public static float[] srgbFromRgb(int color) {
+        return new float[] {
+                transferFuncInv(Color.getR(color) / 255f),
+                transferFuncInv(Color.getG(color) / 255f),
+                transferFuncInv(Color.getB(color) / 255f),
+//                Color.getR(color) / 255f,
+//                Color.getG(color) / 255f,
+//                Color.getB(color) / 255f,
+        };
+    }
+
+    public static int rgbFromSrgb(float[] arr) {
+        assert arr.length == 3;
+        return Color.makeRGB(
+                Math.round(Math.max(0, Math.min(1, transferFunc(arr[0]))) * 255f),
+                Math.round(Math.max(0, Math.min(1, transferFunc(arr[1]))) * 255f),
+                Math.round(Math.max(0, Math.min(1, transferFunc(arr[2]))) * 255f)
+//                Math.round(Math.max(0, Math.min(1, arr[0])) * 255f),
+//                Math.round(Math.max(0, Math.min(1, arr[1])) * 255f),
+//                Math.round(Math.max(0, Math.min(1, arr[2])) * 255f)
+        );
+    }
+
+    public static float[] xyzFromSrgb(float[] arr) {
+        return MathUtil.apply(SRGB_TO_XYZ, arr);
+    }
+
+    public static float[] srgbFromXyz(float[] arr) {
+        return MathUtil.apply(XYZ_TO_SRGB, arr);
+    }
+
+    public static float[] oklabFromXyz(float[] arr) {
+        var lms = MathUtil.apply(XYZ_TO_OKLMS, arr);
+        lms[0] = (float) Math.pow(lms[0], 1f/3f);
+        lms[1] = (float) Math.pow(lms[1], 1f/3f);
+        lms[2] = (float) Math.pow(lms[2], 1f/3f);
+        return MathUtil.apply(OKLMS_PRIME_TO_OKLAB, lms);
+    }
+
+    public static float[] xyzFromOklab(float[] arr) {
+        var lms = MathUtil.apply(OKLAB_TO_OKLMS_PRIME, arr);
+        lms[0] = (float) Math.pow(lms[0], 3f);
+        lms[1] = (float) Math.pow(lms[1], 3f);
+        lms[2] = (float) Math.pow(lms[2], 3f);
+        return MathUtil.apply(OKLMS_TO_XYZ, lms);
+    }
+
+    public static float[] oklchFromOklab(float[] arr) {
+        return new float[]{
+                arr[0],
+                (float) Math.sqrt(Math.pow(arr[1], 2) + Math.pow(arr[2], 2)),
+                (float) Math.atan2(arr[2], arr[1])
+        };
+    }
+
+    public static float[] oklabFromOklch(float[] arr) {
+        return new float[]{
+                arr[0],
+                arr[1] * (float)Math.cos(arr[2]),
+                arr[1] * (float)Math.sin(arr[2])
+        };
+    }
+
     public static int contrastText(int color) {
         return contrastText(color, EzColors.BLACK, EzColors.NEUTRAL_200);
     }
@@ -20,9 +127,9 @@ public class ColorUtil {
     }
 
     public static int brighten(int color, float factor) {
-        var hsl = rgbToHsl(color);
-        hsl[2] = hsl[2] * factor;
-        return hslToRgb(hsl);
+        var oklch = oklchFromOklab(oklabFromXyz(xyzFromSrgb(srgbFromRgb(color))));
+        oklch[0] = oklch[0] * factor;
+        return rgbFromSrgb(srgbFromXyz(xyzFromOklab(oklabFromOklch(oklch))));
     }
 
     public static float[] rgbToHsl(int color)

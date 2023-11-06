@@ -20,15 +20,10 @@ import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class SiguiWindow {
-    public static final Context<SiguiWindow> WINDOW = createContext(null);
-    public static final Context<Window> RAW_WINDOW = createContext(null);
+    private static final Context<SiguiWindow> WINDOW = createContext(null);
 
     public static SiguiWindow useWindow() {
         return useContext(WINDOW);
-    }
-
-    public static Window useRawWindow () {
-        return useContext(RAW_WINDOW);
     }
 
     private static final Set<SiguiWindow> windows = new HashSet<>();
@@ -174,15 +169,18 @@ public class SiguiWindow {
                         focus = focusTemp;
                         focus.fire(new FocusEvent(EventType.FOCUS, focus));
                     }
-                } else {
+                }
+            }
+
+            if (!ee.isPressed()) {
+                if (hovered != null)
                     hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
 
-                    // todo: possibly check up tree instead of just target for click test
-                    if (mouseDown == hovered) {
-                        hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
-                    } else {
-                        mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
-                    }
+                // todo: possibly check up tree instead of just target for click test
+                if (hovered != null && mouseDown == hovered) {
+                    hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
+                } else {
+                    mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
@@ -234,12 +232,7 @@ public class SiguiWindow {
         that.root = createComputed(() -> {
             that.requestLayout();
             that.requestFrameEffect = createSideEffect(that::requestFrame);
-            return provide(List.of(
-                    WINDOW.with(that),
-                    RAW_WINDOW.with(that.window)
-                ),
-                () -> MetaNode.createRoot(root.get())
-            );
+            return provide(WINDOW.with(that), () -> MetaNode.createRoot(root.get()));
         });
         window.setEventListener(that::handleEvent);
         windows.add(that);

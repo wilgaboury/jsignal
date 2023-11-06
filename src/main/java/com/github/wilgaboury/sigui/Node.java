@@ -4,9 +4,7 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
-import org.lwjgl.util.yoga.Yoga;
 
-import javax.swing.*;
 import java.util.function.Consumer;
 
 /**
@@ -35,7 +33,7 @@ public interface Node {
 
     // coordinates are in "paint space" for ease of calculation
     default boolean hitTest(Point p, MetaNode node) {
-        return Util.contains(Rect.makeWH(node.getLayout().getSize()), p);
+        return MathUtil.contains(Rect.makeWH(node.getLayout().getSize()), p);
     }
 
     @FunctionalInterface

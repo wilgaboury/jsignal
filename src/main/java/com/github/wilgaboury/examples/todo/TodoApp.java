@@ -5,6 +5,7 @@ import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.jwm.Window;
+import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
@@ -26,7 +27,7 @@ public class TodoApp {
 
     public static class App extends Component {
         private final Random random = new Random();
-        private final Signal<Integer> color = createSignal(random.nextInt());
+        private final Signal<Integer> color = createSignal(Color.withA(EzColors.BLACK, 255));//random.nextInt(), 255));
         private final Signal<Boolean> showFire = createSignal(false);
 
         @Override
@@ -57,7 +58,7 @@ public class TodoApp {
                                     .setText(this::buttonText)
                                     .setSize(Button.Size.LG)
                                     .setAction(() ->  {
-                                        color.accept(random.nextInt());
+                                        color.accept(Color.withA(random.nextInt(), 255));
                                         showFire.accept(show -> !show);
                                     })
                                     .build()
@@ -80,9 +81,9 @@ public class TodoApp {
                     ))
                     .build()
             )));
-}
+        }
 
-        public String buttonText() {
+        private String buttonText() {
             return (showFire.get() ? "Hide Fire" : "Show Fire") + " (and changes color)";
         }
     }
