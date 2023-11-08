@@ -111,9 +111,13 @@ public class Button extends Component {
     }
 
     private int hoverColor(int color) {
-        var oklch = oklchFromOklab(oklabFromXyz(xyzFromSrgb(srgbFromRgb(color))));
-        oklch[0] = (float)Math.max(0f, Math.min(1f, oklch[0] + (oklch[0] < 0.5 ? 0.1 : -0.1)));
-        return rgbFromSrgb(srgbFromXyz(xyzFromOklab(oklabFromOklch(oklch))));
+//        var oklch = oklchFromOklab(oklabFromXyz(xyzFromSrgb(srgbFromRgb(color))));
+//        oklch[0] = (float)Math.max(0f, Math.min(1f, oklch[0] + (oklch[0] < 0.5 ? 0.1 : -0.1)));
+//        return rgbFromSrgb(srgbFromXyz(xyzFromOklab(oklabFromOklch(oklch))));
+
+        var hsl = hslFromRgb(color);
+        hsl[2] = (float)Math.max(0f, Math.min(100f, hsl[2] + (hsl[2] < 0.5 ? 10f : -10f)));
+        return rgbFromHsl(hsl);
     }
 
     public static Builder builder() {

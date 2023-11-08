@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
+import io.github.humbleui.jwm.Key;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
@@ -67,6 +68,13 @@ public class Scroller extends Component {
                                 var height = node.getLayout().getSize().getY();
                                 var max = inner.get().getLayout().getSize().getY() - height;
                                 yOffset.accept(v -> Math.min(0, Math.max(-max, v + e.getDeltaY())));
+                            }),
+                            EventListener.onKeyDown(e -> {
+                                if (e.getEvent().getKey() == Key.DOWN) {
+                                    yOffset.accept(y -> y - 100);
+                                } else if (e.getEvent().getKey() == Key.UP) {
+                                    yOffset.accept(y -> y + 100);
+                                }
                             })
                     );
                 })

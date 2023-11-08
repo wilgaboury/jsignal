@@ -45,4 +45,12 @@ public class MathUtil {
                 invDet * (mat[0]*mat[4] - mat[1]*mat[3])
         );
     }
+
+    public static Matrix33 diag(float[] vec) {
+        return new Matrix33(
+                vec[0], 0, 0,
+                0, vec[1], 0,
+                0, 0, vec[2]
+        );
+    }
 }

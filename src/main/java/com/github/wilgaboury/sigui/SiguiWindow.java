@@ -161,7 +161,10 @@ public class SiguiWindow {
                     mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown));
 
                     var focusTemp = mouseDown;
-                    while (!focusTemp.hasListener(EventType.FOCUS) && focusTemp.getParent() != null) {
+                    while (!focusTemp.hasListener(EventType.FOCUS)
+                            && !focusTemp.hasListener(EventType.KEY_DOWN)
+                            && !focusTemp.hasListener(EventType.KEY_UP)
+                            && focusTemp.getParent() != null) {
                         focusTemp = focusTemp.getParent();
                     }
                     if (focus != null && focusTemp != focus) {
