@@ -39,12 +39,12 @@ public sealed interface Nodes permits
         return new Multiple(Arrays.stream(singles).flatMap(Single::stream).toList());
     }
 
-    static <T> Dynamic compose(Nodes... children) {
+    static Dynamic compose(Nodes... children) {
         return new Dynamic(createComputed(() -> new Multiple(
                 Arrays.stream(children).flatMap(Nodes::stream).toList())));
     }
 
-    static <T> Dynamic compose(Collection<? extends Nodes> children) {
+    static Dynamic compose(Collection<? extends Nodes> children) {
         return new Dynamic(createComputed(() -> new Multiple(
                 children.stream().flatMap(Nodes::stream).toList())));
     }
