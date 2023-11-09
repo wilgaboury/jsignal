@@ -3,6 +3,7 @@ package com.github.wilgaboury.jsignal;
 import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class ReactiveUtil {
         return createAtomicSignal(value, Objects::deepEquals, Clone::identity);
     }
 
-    public static <T> AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals) {
+    public static <T>  AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals) {
         return createAtomicSignal(value, equals, Clone::identity);
     }
 
@@ -79,71 +80,71 @@ public class ReactiveUtil {
         return new AtomicSignal<>(value, equals, clone);
     }
 
-    public static Trigger createTrigger() {
+    public static @NotNull Trigger createTrigger() {
         return new Trigger(createSignal(null, Equals::never));
     }
 
-    public static Trigger createAsyncTrigger() {
+    public static @NotNull Trigger createAsyncTrigger() {
         return new Trigger(createAsyncSignal(null, Equals::never));
     }
 
-    public static <T> Computed<T> createComputed(Supplier<T> supplier) {
+    public static <T> @NotNull Computed<T> createComputed(@NotNull Supplier<T> supplier) {
         return createComputed(createSignal(null), supplier);
     }
 
-    public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
+    public static <T> @NotNull Computed<T> createComputed(@NotNull SignalLike<T> signal, @NotNull Supplier<T> supplier) {
         return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
     }
 
-    public static <T> Computed<T> createComputed(Function<T, T> inner) {
+    public static <T> @NotNull Computed<T> createComputed(@NotNull Function<T, T> inner) {
         return createComputed(createSignal(null), inner);
     }
 
-    public static <T> Computed<T> createComputed(SignalLike<T> signal, Function<T, T> inner) {
+    public static <T> @NotNull Computed<T> createComputed(@NotNull SignalLike<T> signal, @NotNull Function<T, T> inner) {
         return new Computed<>(signal, createEffect(() -> signal.accept(inner)));
     }
 
-    public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
+    public static <T> @NotNull Computed<T> createAsyncComputed(@NotNull SignalLike<T> signal, @NotNull Supplier<T> supplier) {
         return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
     }
 
-    public static <T> Computed<T> createAsyncComputed(Supplier<T> supplier) {
+    public static <T> @NotNull Computed<T> createAsyncComputed(@NotNull Supplier<T> supplier) {
         return createAsyncComputed(createAsyncSignal(null), supplier);
     }
 
-    public static <T> Computed<T> createAtomicComputed(Supplier<T> supplier) {
+    public static <T> @NotNull Computed<T> createAtomicComputed(@NotNull Supplier<T> supplier) {
         return createAsyncComputed(createAtomicSignal(null), supplier);
     }
 
-    public static Optional<EffectLike> useEffect() {
+    public static @NotNull Optional<@NotNull EffectLike> useEffect() {
         return useContext(EFFECT);
     }
 
-    public static Effect createEffect(Runnable inner) {
+    public static @NotNull Effect createEffect(@NotNull Runnable inner) {
         var effect = new Effect(inner, true);
         effect.run();
         return effect;
     }
 
-    public static Effect createAsyncEffect(Runnable inner) {
+    public static @NotNull Effect createAsyncEffect(@NotNull Runnable inner) {
         var effect = new Effect(inner, false);
         effect.run();
         return effect;
     }
 
-    public static SideEffect createSideEffect(Runnable inner) {
+    public static @NotNull SideEffect createSideEffect(@NotNull Runnable inner) {
         return new SideEffect(inner);
     }
 
-    public static void provideSideEffect(SideEffect effect, Runnable inner) {
+    public static void provideSideEffect(@NotNull SideEffect effect, @NotNull Runnable inner) {
         provideSideEffect(effect, toSupplier(inner));
     }
 
-    public static <T> T provideSideEffect(SideEffect effect, Supplier<T> inner) {
+    public static <T> T provideSideEffect(@NotNull SideEffect effect, @NotNull Supplier<T> inner) {
         return provide(EFFECT.with(Optional.of(effect)), inner);
     }
 
-    public static Executor useExecutor() {
+    public static @NotNull Executor useExecutor() {
         return useContext(EXECUTOR);
     }
 

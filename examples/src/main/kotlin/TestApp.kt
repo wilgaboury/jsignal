@@ -35,12 +35,12 @@ object TodoApp {
                             .gap(16f)
                             .padding(Insets(25f))
                             .build())
-                    .paint(BasicPainter.builder()
-                            .background(EzColors.AMBER_300)
-                            .radius(50f)
-                            .border(10f)
-                            .borderColor(EzColors.EMERALD_500)
-                            .build())
+                    .paint(BasicPainter(
+                            background = { EzColors.AMBER_300 },
+                            radius = { 50f },
+                            border = { 10f },
+                            borderColor = { EzColors.EMERALD_500 }
+                    ))
                     .children(Nodes.compose(
                             Nodes.single(Text.para(Text.basicPara(LOREM, EzColors.BLACK, 18f))),
                             Nodes.single(Text.line(
@@ -57,21 +57,23 @@ object TodoApp {
                                     }
                             )),
                             Nodes.compute {
-                                if (show.get()) Nodes.single(Image.builder()
-                                        .fit(Image.Fit.FILL)
-                                        .height(200f)
-                                        .widthPercent(100f)
-                                        .blob(Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8))
-                                        .build()
-                                ) else Nodes.empty()
+                                if (show.get()) {
+                                    Nodes.single(Image.create(
+                                            { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
+                                            fit = { Image.Fit.FILL },
+                                            width = { percent( 100f ) },
+                                            height = { pixel( 200f ) }
+                                    ))
+                                } else {
+                                    Nodes.empty()
+                                }
                             },
-                            Nodes.single(Image.builder()
-                                    .fit(Image.Fit.COVER)
-                                    .height(200f)
-                                    .width(100f)
-                                    .blob(Blob.fromResource("/peng.png", MediaType.PNG))
-                                    .build()
-                            )
+                            Nodes.single(Image.create(
+                                    { Blob.fromResource("/peng.png", MediaType.PNG) },
+                                    fit = { Image.Fit.COVER },
+                                    width = { pixel( 100f ) },
+                                    height = { pixel( 200f ) }
+                            ))
                     ))
                     .build()
             )))

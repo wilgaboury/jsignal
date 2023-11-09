@@ -20,7 +20,7 @@ public class Effect implements EffectLike {
     private final Long threadId;
     private boolean disposed;
 
-    Effect(Runnable effect, boolean isSync) {
+    public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
         this.effect = effect;
         this.provider = currentProvider();
@@ -63,9 +63,7 @@ public class Effect implements EffectLike {
                 provide(provider.add(
                         CLEANER.with(Optional.of(cleanup)),
                         EFFECT.with(Optional.of(this))
-                ), () -> {
-                    effect.run();
-                });
+                ), effect);
             });
         });
     }

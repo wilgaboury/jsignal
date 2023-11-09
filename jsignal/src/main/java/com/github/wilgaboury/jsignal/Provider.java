@@ -5,6 +5,7 @@ import fj.Hash;
 import fj.P;
 import fj.data.List;
 import fj.data.hamt.HashArrayMappedTrie;
+import org.jetbrains.annotations.NotNull;
 
 public class Provider {
     private final HashArrayMappedTrie<Context<?>, Object> contexts;
@@ -17,23 +18,23 @@ public class Provider {
         this.contexts = contexts;
     }
 
-    public Provider add(Iterable<Entry> entries) {
+    public @NotNull Provider add(@NotNull Iterable<@NotNull Entry> entries) {
         return new Provider(contexts.set(List.iterableList(entries)
                 .map(e -> P.p(e.getContext(), e.getValue()))
         ));
     }
 
-    public Provider add(Entry... entries) {
+    public @NotNull Provider add(@NotNull Entry... entries) {
         return new Provider(contexts.set(List.arrayList(entries)
                 .map(e -> P.p(e.getContext(), e.getValue()))
         ));
     }
 
-    public <T> T use(Context<T> context) {
+    public <T> T use(@NotNull Context<T> context) {
         return contexts.find(context).map(obj  -> (T)obj).orSome(context::getDefaultValue);
     }
 
-    static class Entry {
+    public static class Entry {
         private final Context<?> context;
         private final Object value;
 
