@@ -1,4 +1,4 @@
-package todo
+package todo.com.github.wilgaboury.sigwig.examples
 
 import com.github.wilgaboury.jsignal.ReactiveUtil.*
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
