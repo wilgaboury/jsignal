@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":jsignal"))
-    implementation(project(":sigui"))
+    implementation(project(":ktsignal"))
+    implementation(project(":ktsigui"))
     implementation(project(":sigwig"))
 }

@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":ktsigui"))
+    api(project(":sigui"))
 
     api("com.google.guava:guava:32.1.3-jre")
 }

@@ -1,86 +1,94 @@
 package todo
 
-import com.github.wilgaboury.jsignal.ReactiveUtil
+import com.github.wilgaboury.jsignal.ReactiveUtil.*
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
+import com.github.wilgaboury.ktsignal.supply
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigwig.*
 import com.google.common.net.MediaType
+import flex
 import io.github.humbleui.skija.Color
+import node
+import toNodes
 import java.util.*
 
 object TodoApp {
-    private const val LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
-    @JvmStatic
+    const val LOREM = "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
+
     fun main(args: Array<String>) {
         Sigui.start { runApp() }
     }
 
-    fun runApp() {
+    private fun runApp() {
         val window = Sigui.createWindow()
         window.setTitle("Test App")
         SiguiWindow.create(window) { App() }
     }
+}
 
-    class App : Component() {
-        private val random = Random()
-        private val color: SignalLike<Int> = ReactiveUtil.createSignal(Color.withA(EzColors.BLACK, 255)) //random.nextInt(), 255));
-        private val show: SignalLike<Boolean> = ReactiveUtil.createSignal(false)
-        override fun render(): Nodes {
-            return Nodes.component(Scroller(Nodes.single(Node.builder()
-                    .layout(Flex.builder()
-                            .stretch()
-                            .center()
-                            .border(10f)
-                            .column()
-                            .gap(16f)
-                            .padding(Insets(25f))
-                            .build())
-                    .paint(BasicPainter(
-                            background = { EzColors.AMBER_300 },
-                            radius = { 50f },
-                            border = { 10f },
-                            borderColor = { EzColors.EMERALD_500 }
-                    ))
-                    .children(Nodes.compose(
-                            Nodes.single(Text.para(Text.basicPara(LOREM, EzColors.BLACK, 18f))),
-                            Nodes.single(Text.line(
-                                    { Text.basicTextLine("change text line", 14f) },
-                                    { EzColors.FUCHSIA_800 }
-                            )),
-                            Nodes.component(Button(
-                                    color = { color.get() },
-                                    text = { buttonText() },
-                                    size = { Button.Size.LG },
-                                    action = {
-                                        color.accept(Color.withA(random.nextInt(), 255))
-                                        show.accept { show -> !show }
-                                    }
-                            )),
-                            Nodes.compute {
-                                if (show.get()) {
-                                    Nodes.single(Image.create(
-                                            { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
-                                            fit = { Image.Fit.FILL },
-                                            width = { percent( 100f ) },
-                                            height = { pixel( 200f ) }
-                                    ))
-                                } else {
-                                    Nodes.empty()
-                                }
-                            },
-                            Nodes.single(Image.create(
-                                    { Blob.fromResource("/peng.png", MediaType.PNG) },
-                                    fit = { Image.Fit.COVER },
-                                    width = { pixel( 100f ) },
-                                    height = { pixel( 200f ) }
-                            ))
-                    ))
-                    .build()
-            )))
-        }
+class App : Component() {
+    private val random = Random()
+    private val color: SignalLike<Int> = createSignal(Color.withA(EzColors.BLACK, 255)) //random.nextInt(), 255));
+    private val show: SignalLike<Boolean> = createSignal(false)
 
-        private fun buttonText(): String {
-            return (if (show.get()) "Hide Fire" else "Show Fire") + " (and changes color)"
+    override fun render(): Nodes {
+        return Scroller(node {
+            layout(flex {
+                stretch()
+                center()
+                border(10f)
+                column()
+                gap(16f)
+                padding(Insets(25f))
+            })
+            paint(BasicPainter(
+                    background = { EzColors.AMBER_300 },
+                    radius = { 50f },
+                    border = { 10f },
+                    borderColor = { EzColors.EMERALD_500 }
+            ))
+            children(Nodes.compose(
+                    Text.para(supply { Text.basicPara(TodoApp.LOREM, EzColors.BLACK, 12f) }),
+                    Text.line(
+                            supply { Text.basicTextLine("change text line", 20f) },
+                            { EzColors.FUCHSIA_800 }
+                    ),
+                    Button(
+                            color = { color.get() },
+                            text = this@App::buttonText,
+                            size = { Button.Size.LG },
+                            action = {
+                                color.accept(Color.withA(random.nextInt(), 255))
+                                show.accept { show -> !show }
+                            }
+                    ).toNodes(),
+                    maybeFireImage(),
+                    Image.create(
+                            supply { Blob.fromResource("/peng.png", MediaType.PNG) },
+                            fit = { Image.Fit.COVER },
+                            width = supply { pixel( 100f ) },
+                            height = supply { pixel( 200f ) }
+                    ).toNodes()
+            ))
+        }).toNodes()
+    }
+
+    private fun maybeFireImage(): Nodes {
+        return Nodes.compute {
+            if (show.get()) {
+                Nodes.single(Image.create(
+                        supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
+                        fit = { Image.Fit.CONTAIN },
+                        width = supply { percent( 100f ) },
+                        height = supply { pixel( 200f ) }
+                ))
+            } else {
+                Nodes.empty()
+            }
         }
+    }
+
+    private fun buttonText(): String {
+        return (if (show.get()) "Hide Fire" else "Show Fire") + " (and changes color)"
     }
 }

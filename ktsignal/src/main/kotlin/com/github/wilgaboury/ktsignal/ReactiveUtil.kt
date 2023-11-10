@@ -16,3 +16,10 @@ fun <T> createAtomicSignal(
         equals: (T, T) -> Boolean = Objects::deepEquals,
         clone: (T) -> T = { it }
 ): Signal<T> = AtomicSignal(value, equals, clone)
+
+fun <T> supply(v: T): () -> T = { v }
+
+fun <T> supply(fn: () -> T): () -> T {
+    val v = fn()
+    return { v }
+}

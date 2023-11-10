@@ -3,12 +3,15 @@ package com.github.wilgaboury.sigwig
 import com.github.wilgaboury.jsignal.ReactiveUtil.batch
 import com.github.wilgaboury.jsignal.ReactiveUtil.createSignal
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
-import com.github.wilgaboury.sigui.*
-import com.github.wilgaboury.sigui.event.EventListener
-import com.github.wilgaboury.sigui.event.MouseEvent
+import com.github.wilgaboury.sigui.Component
+import com.github.wilgaboury.sigui.MetaNode
+import com.github.wilgaboury.sigui.Nodes
+import com.github.wilgaboury.sigui.Sigui
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
+import listen
+import node
 import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min
@@ -20,38 +23,40 @@ class Button(
         val action: () -> Unit = {},
         val icon: Nodes = Nodes.empty()
 ) : Component() {
-
     private val mouseOver: SignalLike<Boolean> = createSignal(false)
     private val mouseDown: SignalLike<Boolean> = createSignal(false)
 
     override fun render(): Nodes {
-        return Nodes.single(Node.builder()
-                .ref { node: MetaNode ->
-                    node.listen(
-                            EventListener.onMouseOver { e: MouseEvent? -> mouseOver.accept(true) },
-                            EventListener.onMouseDown { e: MouseEvent? -> mouseDown.accept(true) },
-                            EventListener.onMouseOut { e: MouseEvent? ->
-                                batch {
-                                    mouseDown.accept(false)
-                                    mouseOver.accept(false)
-                                }
-                            },
-                            EventListener.onMouseUp { e: MouseEvent? ->
-                                val prev = mouseDown.get()
-                                mouseDown.accept(false)
-                                if (prev) {
-                                    Sigui.invokeLater(action)
-                                }
-                            }
-                    )
+        return node {
+            ref { n ->
+                n.listen {
+                    onMouseOver { mouseOver.accept(true) }
+                    onMouseDown { mouseDown.accept(true) }
+                    onMouseOut {
+                        batch {
+                            mouseDown.accept(false)
+                            mouseOver.accept(false)
+                        }
+                    }
+                    onMouseUp {
+                        val prev = mouseDown.get()
+                        mouseDown.accept(false)
+                        if (prev) {
+                            Sigui.invokeLater(action)
+                        }
+                    }
                 }
-                .layout { yoga: Long -> layout(yoga) }
-                .paint { canvas: Canvas, node: MetaNode -> paint(canvas, node) }
-                .children(Nodes.compose(
-                        icon,
-                        Nodes.single(Text.line({ Text.basicTextLine(text(), fontSize()) }) { ColorUtil.contrastText(color()) })
-                ))
-                .build())
+            }
+            layout(this@Button::layout)
+            paint(this@Button::paint)
+            children(Nodes.compose(
+                icon,
+                Text.line(
+                        { Text.basicTextLine(text(), fontSize()) },
+                        { ColorUtil.contrastText(color()) }
+                )
+            ))
+        }
     }
 
     private fun layout(yoga: Long) {

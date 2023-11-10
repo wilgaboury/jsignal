@@ -3,8 +3,11 @@ package com.github.wilgaboury.sigwig
 import com.github.wilgaboury.jsignal.ReactiveUtil
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Node
+import com.github.wilgaboury.sigui.Nodes
+import com.github.wilgaboury.sigui.Painter
 import io.github.humbleui.skija.*
 import io.github.humbleui.skija.paragraph.*
+import node
 import org.lwjgl.util.yoga.YGSize
 import org.lwjgl.util.yoga.Yoga
 import java.io.IOException
@@ -52,53 +55,55 @@ object Text {
         FONT_COLLECTION.setEnableFallback(false)
     }
 
-    fun basicPara(text: String?, color: Int, size: Float): Paragraph {
+    fun basicPara(text: String, color: Int, size: Float): Paragraph {
         val style = TextStyle()
         style.setColor(color)
         style.setFontSize(size)
         style.setFontFamily("Inter")
+
         val paraStyle = ParagraphStyle()
         paraStyle.setTextStyle(style)
+
         val builder = ParagraphBuilder(paraStyle, FONT_COLLECTION)
         builder.pushStyle(style)
         builder.addText(text)
         builder.popStyle()
+
         return builder.build()
     }
 
-    fun para(para: Paragraph): Node {
-        return para(ReactiveUtil.constantSupplier(para))
+    fun para(para: () -> Paragraph): Nodes.Single {
+        return node {
+            layout { yoga: Long ->
+                Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f)
+                Yoga.YGNodeSetMeasureFunc(yoga) { _, width, _, _, _, result ->
+                    val p = para()
+                    p.layout(width)
+                    Yoga.YGNodeStyleSetMinWidth(yoga, p.minIntrinsicWidth)
+
+                    result.height(p.height)
+                    result.width(p.maxIntrinsicWidth)
+                }
+            }
+            paint { canvas, _ ->
+                para().paint(canvas, 0f, 0f)
+            }
+        }
     }
 
-    fun para(para: Supplier<Paragraph>): Node {
-        return Node.builder()
-                .layout { yoga: Long ->
-                    Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f)
-                    Yoga.YGNodeSetMeasureFunc(yoga) { node: Long, width: Float, widthMode: Int, height: Float, heightMode: Int, __result: YGSize ->
-                        val p = para.get()
-                        p.layout(width)
-                        Yoga.YGNodeStyleSetMinWidth(yoga, p.minIntrinsicWidth)
-                        __result.height(p.height)
-                        __result.width(p.maxIntrinsicWidth)
-                    }
+    fun line(line: () -> TextLine, color:() -> Int): Nodes.Single {
+        return node {
+            layout { yoga: Long ->
+                Yoga.YGNodeStyleSetWidth(yoga, line().getWidth())
+                Yoga.YGNodeStyleSetHeight(yoga, line().getHeight())
+            }
+            paint { canvas: Canvas, yoga: MetaNode? ->
+                Paint().use { paint ->
+                    paint.setColor(color())
+                    canvas.drawTextLine(line(), 0f, -line().getAscent(), paint)
                 }
-                .paint { canvas: Canvas?, yoga: MetaNode? -> para.get().paint(canvas, 0f, 0f) }
-                .build()
-    }
-
-    fun line(line: Supplier<TextLine>, color: Supplier<Int?>): Node {
-        return Node.builder()
-                .layout { yoga: Long ->
-                    Yoga.YGNodeStyleSetWidth(yoga, line.get().getWidth())
-                    Yoga.YGNodeStyleSetHeight(yoga, line.get().getHeight())
-                }
-                .paint { canvas: Canvas, yoga: MetaNode? ->
-                    Paint().use { paint ->
-                        paint.setColor(color.get()!!)
-                        canvas.drawTextLine(line.get(), 0f, -line.get().getAscent(), paint)
-                    }
-                }
-                .build()
+            }
+        }
     }
 
     fun basicTextLine(string: String?, size: Float): TextLine {
