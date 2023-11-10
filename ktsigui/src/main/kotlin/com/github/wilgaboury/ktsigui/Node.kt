@@ -1,3 +1,5 @@
+package com.github.wilgaboury.ktsigui
+
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.EventListener
 import com.github.wilgaboury.sigui.event.KeyboardEvent

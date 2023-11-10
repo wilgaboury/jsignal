@@ -10,8 +10,8 @@ import com.github.wilgaboury.sigui.Sigui
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
-import listen
-import node
+import com.github.wilgaboury.ktsigui.listen
+import com.github.wilgaboury.ktsigui.node
 import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min

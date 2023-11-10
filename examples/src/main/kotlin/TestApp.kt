@@ -6,10 +6,10 @@ import com.github.wilgaboury.ktsignal.supply
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigwig.*
 import com.google.common.net.MediaType
-import flex
+import com.github.wilgaboury.ktsigui.flex
 import io.github.humbleui.skija.Color
-import node
-import toNodes
+import com.github.wilgaboury.ktsigui.node
+import com.github.wilgaboury.ktsigui.toNodes
 import java.util.*
 
 object TodoApp {
