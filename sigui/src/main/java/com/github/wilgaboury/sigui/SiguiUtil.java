@@ -16,8 +16,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Sigui {
-    private static final Logger logger = Logger.getLogger(Sigui.class.getName());
+public class SiguiUtil {
+    private static final Logger logger = Logger.getLogger(SiguiUtil.class.getName());
     private static long clearNodeStyle;
 
     public static void start(Runnable runnable) {
@@ -37,6 +37,10 @@ public class Sigui {
 
     public static void invokeLater(Runnable runnable) {
         App._nRunOnUIThread(runnable);
+    }
+
+    public static boolean onThread() {
+        return App._onUIThread();
     }
 
     public static Window createWindow() {

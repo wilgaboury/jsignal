@@ -6,7 +6,7 @@ import com.github.wilgaboury.jsignal.interfaces.SignalLike
 import com.github.wilgaboury.sigui.Component
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
-import com.github.wilgaboury.sigui.Sigui
+import com.github.wilgaboury.sigui.SiguiUtil
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
@@ -42,7 +42,7 @@ class Button(
                         val prev = mouseDown.get()
                         mouseDown.accept(false)
                         if (prev) {
-                            Sigui.invokeLater(action)
+                            SiguiUtil.invokeLater(action)
                         }
                     }
                 }

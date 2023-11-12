@@ -71,7 +71,7 @@ public class MetaNode {
     }
 
     private void layoutEffectInner() {
-        Sigui.clearNodeStyle(yoga);
+        SiguiUtil.clearNodeStyle(yoga);
         node.layout(yoga);
         window.requestLayout();
     }

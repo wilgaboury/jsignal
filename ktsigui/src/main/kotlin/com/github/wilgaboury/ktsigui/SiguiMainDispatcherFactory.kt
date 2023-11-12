@@ -1,18 +1,37 @@
 package com.github.wilgaboury.ktsigui
 
-import com.github.wilgaboury.sigui.Sigui
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.MainCoroutineDispatcher
+import com.github.wilgaboury.sigui.SiguiUtil
+import kotlinx.coroutines.*
 import kotlinx.coroutines.internal.MainDispatcherFactory
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
-// TODO: implement delay like kotlinx swing dispatcher
+@OptIn(InternalCoroutinesApi::class)
+internal object SiguiDispatcher : MainCoroutineDispatcher(), Delay {
+    private val schedule = Executors.newSingleThreadScheduledExecutor()
 
-internal object SiguiDispatcher : MainCoroutineDispatcher() {
     override val immediate: MainCoroutineDispatcher
         get() = this
 
-    override fun dispatch(context: CoroutineContext, block: Runnable): Unit = Sigui.invokeLater(block)
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean = !SiguiUtil.onThread()
+
+    override fun dispatch(context: CoroutineContext, block: Runnable): Unit = SiguiUtil.invokeLater(block)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
+        val fut = schedule.schedule({
+            with(continuation) {
+                resumeUndispatched(Unit)
+            }
+        }, timeMillis, TimeUnit.MILLISECONDS)
+        continuation.invokeOnCancellation { fut.cancel(false) }
+    }
+
+    override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
+        val fut = schedule.schedule(block, timeMillis, TimeUnit.MILLISECONDS)
+        return DisposableHandle { fut.cancel(false) }
+    }
 }
 
 @Suppress("unused")

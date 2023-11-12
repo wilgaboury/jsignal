@@ -12,15 +12,11 @@ import com.github.wilgaboury.ktsigui.node
 import com.github.wilgaboury.ktsigui.toNodes
 import java.util.*
 
-object TodoApp {
-    const val LOREM = "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
+const val LOREM = "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
 
-    fun main(args: Array<String>) {
-        Sigui.start { runApp() }
-    }
-
-    private fun runApp() {
-        val window = Sigui.createWindow()
+fun main(args: Array<String>) {
+    SiguiUtil.start {
+        val window = SiguiUtil.createWindow()
         window.setTitle("Test App")
         SiguiWindow.create(window) { App() }
     }
@@ -48,7 +44,7 @@ class App : Component() {
                     borderColor = { EzColors.EMERALD_500 }
             ))
             children(Nodes.compose(
-                    Text.para(supply { Text.basicPara(TodoApp.LOREM, EzColors.BLACK, 12f) }),
+                    Text.para(supply { Text.basicPara(LOREM, EzColors.BLACK, 12f) }),
                     Text.line(
                             supply { Text.basicTextLine("change text line", 20f) },
                             { EzColors.FUCHSIA_800 }

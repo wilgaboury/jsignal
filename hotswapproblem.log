@@ -6,7 +6,7 @@ HOTSWAP AGENT: 21:09:54.088 INFO (org.hotswap.agent.config.PluginRegistry) - Plu
 HOTSWAP AGENT: 21:09:54.190 INFO (org.hotswap.agent.config.PluginRegistry) - Discovered plugins: [Hotswapper, JdkPlugin, AnonymousClassPatch, ClassInitPlugin, WatchResources, Hibernate, HibernateJakarta, Hibernate3JPA, Hibernate3, Spring, Jersey1, Jersey2, Jetty, Tomcat, ZK, Logback, Log4j2, MyFaces, Mojarra, Omnifaces, ELResolver, WildFlyELResolver, OsgiEquinox, Owb, OwbJakarta, Proxy, WebObjects, Weld, WeldJakarta, JBossModules, ResteasyRegistry, Deltaspike, GlassFish, Weblogic, Vaadin, Wicket, CxfJAXRS, FreeMarker, Undertow, MyBatis, IBatis, JacksonPlugin, Idea, Thymeleaf, Velocity]
 Starting HotswapAgent '/home/wil/.jdks/jbr-17.0.8.1/lib/hotswap/hotswap-agent.jar'
 HOTSWAP AGENT: 21:09:54.250 INFO (org.hotswap.agent.config.PluginRegistry) - Discovered plugins: []
-Nov 07, 2023 9:09:54 PM com.github.wilgaboury.sigui.Sigui createLayer
+Nov 07, 2023 9:09:54 PM com.github.wilgaboury.sigui.SiguiUtil createLayer
 INFO: using layer type: LayerGLSkija
 Initializing sigui hotswap plugin
 HOTSWAP AGENT: 21:09:54.949 INFO (org.hotswap.agent.config.PluginRegistry) - Plugin 'com.github.wilgaboury.sigui.SiguiHotswapPlugin' initialized in ClassLoader 'jdk.internal.loader.ClassLoaders$AppClassLoader@14899482'.

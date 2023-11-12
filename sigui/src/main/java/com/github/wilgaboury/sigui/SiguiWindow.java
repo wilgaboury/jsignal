@@ -35,6 +35,7 @@ public class SiguiWindow {
     private boolean shouldPaint = true;
     private Computed<MetaNode> root;
 
+    private SideEffect translationEffect;
     private SideEffect requestFrameEffect;
 
     private MetaNode mouseDown = null;
@@ -97,6 +98,7 @@ public class SiguiWindow {
 
         var count = canvas.save();
         try {
+
             canvas.concat(n.getTransform());
 
             node.paint(canvas, n);
@@ -231,7 +233,7 @@ public class SiguiWindow {
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {
         window.setContentSize(400, 400);
-        window.setLayer(Sigui.createLayer());
+        window.setLayer(SiguiUtil.createLayer());
 
         var that = new SiguiWindow(window);
         that.root = createComputed(() -> {
@@ -242,7 +244,7 @@ public class SiguiWindow {
         window.setEventListener(that::handleEvent);
         windows.add(that);
 
-        Sigui.invokeLater(() -> window.setVisible(true));
+        SiguiUtil.invokeLater(() -> window.setVisible(true));
 
         return that;
     }

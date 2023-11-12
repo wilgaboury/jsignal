@@ -128,7 +128,7 @@ public class SiguiHotswapPlugin {
 
         @Override
         public void executeCommand() {
-            Sigui.invokeLater(() -> {
+            SiguiUtil.invokeLater(() -> {
                 Object trigger = ReflectionHelper.get(component, TRIGGER_FIELD);
                 ReflectionHelper.invoke(trigger, "trigger");
             });
@@ -152,7 +152,7 @@ public class SiguiHotswapPlugin {
     public class TriggerRelayoutCommand extends MergeableCommand {
         @Override
         public void executeCommand() {
-            Sigui.invokeLater(relayoutTrigger::trigger);
+            SiguiUtil.invokeLater(relayoutTrigger::trigger);
         }
 
         @Override
