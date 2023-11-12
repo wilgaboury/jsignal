@@ -32,11 +32,12 @@ public class SiguiWindow {
 
     private final Window window;
     private boolean shouldLayout;
-    private boolean shouldPaint = true;
+    private boolean shouldPaint;
+    private boolean shouldTranslateUpdate;
     private Computed<MetaNode> root;
 
-    private SideEffect translationEffect;
-    private SideEffect requestFrameEffect;
+    private final SideEffect translationEffect;
+    private final SideEffect requestFrameEffect;
 
     private MetaNode mouseDown = null;
     private MetaNode hovered = null;
@@ -50,6 +51,11 @@ public class SiguiWindow {
     SiguiWindow(Window window) {
         this.window = window;
         this.shouldLayout = false;
+        this.shouldPaint = false;
+        this.shouldTranslateUpdate = false;
+
+        this.translationEffect = createSideEffect(this::requestTranslationUpdate);
+        this.requestFrameEffect = createSideEffect(this::requestFrame);
     }
 
     public Window getWindow() {
@@ -98,8 +104,7 @@ public class SiguiWindow {
 
         var count = canvas.save();
         try {
-
-            canvas.concat(n.getTransform());
+            provideSideEffect(translationEffect, () -> canvas.concat(n.getTransform()));
 
             node.paint(canvas, n);
             for (MetaNode child : n.getChildren()) {
@@ -112,7 +117,8 @@ public class SiguiWindow {
 
     public void requestLayout() {
         shouldLayout = true;
-        window.requestFrame();
+        requestFrame();
+//        window.requestFrame();
     }
 
     public void requestFrame() {
@@ -123,14 +129,28 @@ public class SiguiWindow {
         window.requestFrame();
     }
 
+    public void requestTranslationUpdate() {
+        shouldTranslateUpdate = true;
+        requestFrame();
+    }
+
+    public void translationUpdate() {
+        if (!shouldTranslateUpdate)
+            return;
+
+        shouldTranslateUpdate = false;
+        handleMouseMove(mousePosition.get());
+    }
+
     void handleEvent(io.github.humbleui.jwm.Event e) {
         if (e instanceof EventWindowCloseRequest) {
             close();
         } else if (e instanceof EventWindowClose) {
-            if (windows.size() == 0)
+            if (windows.isEmpty())
                 App.terminate();
         } else if (e instanceof EventFrameSkija ee) {
             layout();
+            translationUpdate();
             provideSideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
 
             if (firstFrame) {
@@ -191,33 +211,8 @@ public class SiguiWindow {
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
-            // todo: convert from screen to paint space using scale
             var point = new Point(ee.getX(), ee.getY());
-            var newHovered = pick(point);
-            if (hovered != newHovered) {
-                var parents = hovered == null ? null : hovered.getParents();
-                var newParents = newHovered == null ? null : newHovered.getParents();
-
-                if (hovered != null) {
-                    hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
-                    var node = hovered;
-                    while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
-                        node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered));
-                        node = node.getParent();
-                    }
-                }
-
-                if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
-                    newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered));
-                }
-
-                hovered = newHovered;
-            }
-
-            if (hovered != null) {
-                hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered));
-            }
-
+            handleMouseMove(point);
             mousePosition.accept(point);
         } else if (e instanceof EventWindowFocusOut) {
             if (hovered != null) {
@@ -227,18 +222,44 @@ public class SiguiWindow {
         }
     }
 
+    private void handleMouseMove(Point point) {
+        // todo: convert from screen to paint space using scale
+        var newHovered = pick(point);
+        if (hovered != newHovered) {
+            var parents = hovered == null ? null : hovered.getParents();
+            var newParents = newHovered == null ? null : newHovered.getParents();
+
+            if (hovered != null) {
+                hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
+                var node = hovered;
+                while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
+                    node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered));
+                    node = node.getParent();
+                }
+            }
+
+            if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
+                newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered));
+            }
+
+            hovered = newHovered;
+        }
+
+        if (hovered != null) {
+            hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered));
+        }
+    }
+
     private MetaNode pick(Point p) {
         return root.get().pick(Matrix33.IDENTITY, p);
     }
 
     public static SiguiWindow create(Window window, Supplier<Component> root) {
-        window.setContentSize(400, 400);
         window.setLayer(SiguiUtil.createLayer());
 
         var that = new SiguiWindow(window);
         that.root = createComputed(() -> {
             that.requestLayout();
-            that.requestFrameEffect = createSideEffect(that::requestFrame);
             return provide(WINDOW.with(that), () -> MetaNode.createRoot(root.get()));
         });
         window.setEventListener(that::handleEvent);

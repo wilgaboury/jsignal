@@ -1,15 +1,15 @@
 package todo.com.github.wilgaboury.sigwig.examples
 
-import com.github.wilgaboury.jsignal.ReactiveUtil.*
+import com.github.wilgaboury.jsignal.ReactiveUtil.createSignal
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
 import com.github.wilgaboury.ktsignal.supply
+import com.github.wilgaboury.ktsigui.flex
+import com.github.wilgaboury.ktsigui.node
+import com.github.wilgaboury.ktsigui.toNodes
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigwig.*
 import com.google.common.net.MediaType
-import com.github.wilgaboury.ktsigui.flex
 import io.github.humbleui.skija.Color
-import com.github.wilgaboury.ktsigui.node
-import com.github.wilgaboury.ktsigui.toNodes
 import java.util.*
 
 const val LOREM = "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
@@ -18,6 +18,7 @@ fun main(args: Array<String>) {
     SiguiUtil.start {
         val window = SiguiUtil.createWindow()
         window.setTitle("Test App")
+        window.setContentSize(400, 400)
         SiguiWindow.create(window) { App() }
     }
 }
