@@ -1,4 +1,4 @@
-package com.github.wilgaboury.ktsigui
+package com.github.wilgaboury.ksigui
 
 import com.github.wilgaboury.sigui.SiguiUtil
 import kotlinx.coroutines.*

@@ -2,7 +2,7 @@ rootProject.name = "jsignal-parent"
 
 include("examples")
 include("jsignal")
-include("ktsignal")
+include("ksignal")
 include("sigui")
-include("ktsigui")
+include("ksigui")
 include("sigwig")

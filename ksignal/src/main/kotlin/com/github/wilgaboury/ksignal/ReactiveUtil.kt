@@ -1,4 +1,4 @@
-package com.github.wilgaboury.ktsignal
+package com.github.wilgaboury.ksignal
 
 import com.github.wilgaboury.jsignal.AtomicSignal
 import com.github.wilgaboury.jsignal.Signal

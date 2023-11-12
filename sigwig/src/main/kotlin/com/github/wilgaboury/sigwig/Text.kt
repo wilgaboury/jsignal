@@ -4,7 +4,7 @@ import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
 import io.github.humbleui.skija.*
 import io.github.humbleui.skija.paragraph.*
-import com.github.wilgaboury.ktsigui.node
+import com.github.wilgaboury.ksigui.node
 import org.lwjgl.util.yoga.Yoga
 import java.io.IOException
 import java.util.logging.Level

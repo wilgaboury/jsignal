@@ -2,10 +2,10 @@ package todo.com.github.wilgaboury.sigwig.examples
 
 import com.github.wilgaboury.jsignal.ReactiveUtil.createSignal
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
-import com.github.wilgaboury.ktsignal.supply
-import com.github.wilgaboury.ktsigui.flex
-import com.github.wilgaboury.ktsigui.node
-import com.github.wilgaboury.ktsigui.toNodes
+import com.github.wilgaboury.ksignal.supply
+import com.github.wilgaboury.ksigui.flex
+import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.toNodes
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigwig.*
 import com.google.common.net.MediaType

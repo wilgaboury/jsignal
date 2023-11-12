@@ -1,4 +1,4 @@
-package com.github.wilgaboury.ktsigui
+package com.github.wilgaboury.ksigui
 
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.EventListener
