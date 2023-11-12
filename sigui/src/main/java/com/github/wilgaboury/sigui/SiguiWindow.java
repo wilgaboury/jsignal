@@ -34,7 +34,7 @@ public class SiguiWindow {
     private boolean shouldLayout;
     private boolean shouldPaint;
     private boolean shouldTranslateUpdate;
-    private Computed<MetaNode> root;
+    private final Computed<MetaNode> root;
 
     private final SideEffect translationEffect;
     private final SideEffect requestFrameEffect;
@@ -45,10 +45,7 @@ public class SiguiWindow {
 
     private final Signal<Point> mousePosition = createSignal(new Point(0, 0));
 
-    // hacky solution for stupid weird offset bug
-    private boolean firstFrame = true;
-
-    SiguiWindow(Window window) {
+    public SiguiWindow(Window window, Supplier<Component> root) {
         this.window = window;
         this.shouldLayout = false;
         this.shouldPaint = false;
@@ -56,6 +53,18 @@ public class SiguiWindow {
 
         this.translationEffect = createSideEffect(this::requestTranslationUpdate);
         this.requestFrameEffect = createSideEffect(this::requestFrame);
+
+        var layer = SiguiUtil.createLayer();
+        window.setEventListener(this::handleEvent);
+        window.setLayer(layer);
+
+        SiguiUtil.invokeLater(() -> {
+            window.setVisible(true);
+            layer.frame(); // fixes display glitch
+        });
+        windows.add(this);
+
+        this.root = createComputed(() -> provide(WINDOW.with(this), () -> MetaNode.createRoot(root.get())));
     }
 
     public Window getWindow() {
@@ -118,7 +127,6 @@ public class SiguiWindow {
     public void requestLayout() {
         shouldLayout = true;
         requestFrame();
-//        window.requestFrame();
     }
 
     public void requestFrame() {
@@ -152,11 +160,6 @@ public class SiguiWindow {
             layout();
             translationUpdate();
             provideSideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
-
-            if (firstFrame) {
-                firstFrame = false;
-                window.requestFrame();
-            }
         } else if (e instanceof EventWindowResize) {
             requestLayout();
         } else if (e instanceof EventMouseScroll ee) {
@@ -252,22 +255,6 @@ public class SiguiWindow {
 
     private MetaNode pick(Point p) {
         return root.get().pick(Matrix33.IDENTITY, p);
-    }
-
-    public static SiguiWindow create(Window window, Supplier<Component> root) {
-        window.setLayer(SiguiUtil.createLayer());
-
-        var that = new SiguiWindow(window);
-        that.root = createComputed(() -> {
-            that.requestLayout();
-            return provide(WINDOW.with(that), () -> MetaNode.createRoot(root.get()));
-        });
-        window.setEventListener(that::handleEvent);
-        windows.add(that);
-
-        SiguiUtil.invokeLater(() -> window.setVisible(true));
-
-        return that;
     }
 
     public static Collection<SiguiWindow> getWindows() {

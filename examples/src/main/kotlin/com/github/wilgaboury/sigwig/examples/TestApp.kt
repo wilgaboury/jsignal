@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
         val window = SiguiUtil.createWindow()
         window.setTitle("Test App")
         window.setContentSize(400, 400)
-        SiguiWindow.create(window) { App() }
+        SiguiWindow(window) { App() }
     }
 }
 
