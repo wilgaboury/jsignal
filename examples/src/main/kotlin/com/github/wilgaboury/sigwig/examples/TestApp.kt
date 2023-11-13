@@ -1,7 +1,6 @@
-package todo.com.github.wilgaboury.sigwig.examples
+package com.github.wilgaboury.sigwig.examples
 
-import com.github.wilgaboury.jsignal.ReactiveUtil.createSignal
-import com.github.wilgaboury.jsignal.interfaces.SignalLike
+import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksignal.supply
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.node
@@ -25,8 +24,8 @@ fun main(args: Array<String>) {
 
 class App : Component() {
     private val random = Random()
-    private val color: SignalLike<Int> = createSignal(Color.withA(EzColors.BLACK, 255)) //random.nextInt(), 255));
-    private val show: SignalLike<Boolean> = createSignal(false)
+    private val color = createSignal(Color.withA(EzColors.BLACK, 255)) //random.nextInt(), 255));
+    private val show = createSignal(false)
 
     override fun render(): Nodes {
         return Scroller(node {

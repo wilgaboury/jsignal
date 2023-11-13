@@ -11,10 +11,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/examples" />
             <option value="$PROJECT_DIR$/jsignal" />
+            <option value="$PROJECT_DIR$/jsigui" />
             <option value="$PROJECT_DIR$/ksignal" />
             <option value="$PROJECT_DIR$/ksigui" />
-            <option value="$PROJECT_DIR$/sigui" />
-            <option value="$PROJECT_DIR$/sigwig" />
+            <option value="$PROJECT_DIR$/ksigwig" />
           </set>
         </option>
       </GradleProjectSettings>

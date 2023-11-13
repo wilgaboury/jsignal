@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-
+    api(project(":ksignal"))
     api(project(":ksigui"))
     api("com.google.guava:guava:32.1.3-jre")
 }

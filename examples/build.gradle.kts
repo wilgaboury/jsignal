@@ -10,5 +10,5 @@ repositories {
 dependencies {
     implementation(project(":ksignal"))
     implementation(project(":ksigui"))
-    implementation(project(":sigwig"))
+    implementation(project(":ksigwig"))
 }
