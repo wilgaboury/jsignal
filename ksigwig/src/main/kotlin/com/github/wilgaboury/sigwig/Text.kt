@@ -67,7 +67,7 @@ object Text {
         return builder.build()
     }
 
-    fun para(para: () -> Paragraph): Nodes.Single {
+    fun para(para: () -> Paragraph): Nodes.Static {
         return node {
             layout { yoga: Long ->
                 Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f)
@@ -86,7 +86,7 @@ object Text {
         }
     }
 
-    fun line(line: () -> TextLine, color:() -> Int): Nodes.Single {
+    fun line(line: () -> TextLine, color:() -> Int): Nodes.Static {
         return node {
             layout { yoga: Long ->
                 Yoga.YGNodeStyleSetWidth(yoga, line().getWidth())

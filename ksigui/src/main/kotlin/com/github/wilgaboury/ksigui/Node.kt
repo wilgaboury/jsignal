@@ -6,15 +6,15 @@ import com.github.wilgaboury.sigui.event.KeyboardEvent
 import com.github.wilgaboury.sigui.event.MouseEvent
 import com.github.wilgaboury.sigui.event.ScrollEvent
 
-fun node(extension: Node.Builder.() -> Unit): Nodes.Single {
+fun node(extension: Node.Builder.() -> Unit): Nodes.Static {
     val builder = Node.builder()
     builder.extension()
     return builder.build().toNodes()
 }
 
-fun Node.toNodes(): Nodes.Single = Nodes.single(this)
+fun Node.toNodes(): Nodes.Static = Nodes.single(this)
 
-fun Component.toNodes(): Nodes.Dynamic = Nodes.component(this)
+fun Component.toNodes(): Nodes = Nodes.component(this)
 
 class EventListenerBuilder(val node: MetaNode) {
     fun onMouseIn(listener: (MouseEvent) -> Unit) {

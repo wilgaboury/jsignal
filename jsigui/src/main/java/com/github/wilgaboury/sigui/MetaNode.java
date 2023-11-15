@@ -26,8 +26,6 @@ public class MetaNode {
     private final long yoga;
     private final Supplier<List<MetaNode>> children;
     private final Layout layout;
-//    private final Computed<Boolean> thisHasOutsideBounds;
-    private final Computed<Boolean> hasOutsideBounds;
 
     private final Map<EventType, Collection<Consumer<?>>> listeners;
 
@@ -44,11 +42,6 @@ public class MetaNode {
         this.yoga = Yoga.YGNodeNew();
         this.children = createChildren();
         this.layout = new Layout(yoga);
-//        this.thisHasOutsideBounds = createComputed(());
-        this.hasOutsideBounds = createComputed(() ->
-                false
-//                children.get().stream().anyMatch(child -> child.hasOutsideBounds.get())
-        );
 
         this.listeners = new HashMap<>();
 
@@ -79,11 +72,7 @@ public class MetaNode {
     private Supplier<List<MetaNode>> createChildren() {
         var children = node.children();
 
-        if (children instanceof Nodes.Single single) {
-            var meta = new MetaNode(this, single.get());
-            Yoga.YGNodeInsertChild(yoga, meta.yoga, 0);
-            return constantSupplier(List.of(meta));
-        } else if (children instanceof Nodes.Multiple multiple) {
+        if (children instanceof Nodes.Static multiple) {
             Ref<Integer> i = new Ref<>(0);
             return constantSupplier(multiple.stream().map(n -> {
                 var meta = new MetaNode(this, n);
@@ -116,7 +105,7 @@ public class MetaNode {
     public MetaNode pick(Matrix33 transform, Point p) {
         var newTransform = transform.makeConcat(getTransform());
         var testPoint = MathUtil.apply(MathUtil.inverse(newTransform), p);
-        if (hasOutsideBounds.get() || node.hitTest(testPoint, this)) {
+        if (node.hitTest(testPoint, this)) {
             var children = this.children.get();
             for (int i = children.size(); i > 0; i--) {
                 var child = children.get(i - 1);

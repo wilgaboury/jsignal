@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.ReactiveList;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -12,46 +13,47 @@ import java.util.stream.Stream;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
 public sealed interface Nodes permits
-        Nodes.Empty,
-        Nodes.Single,
-        Nodes.Multiple,
+        Nodes.Static,
         Nodes.Dynamic
 {
     Stream<? extends Node> stream();
 
-    static Empty empty() {
-        return new Empty();
+    static Static empty() {
+        return new Static(Collections.emptyList());
     }
 
-    static Single single(Node node) {
-        return new Single(node);
+    static Static single(Node node) {
+        return new Static(Collections.singletonList(node));
     }
 
-    static Multiple multiple(Node... nodes) {
-        return new Multiple(List.of(nodes));
+    static Static multiple(Node... nodes) {
+        return new Static(Arrays.asList(nodes));
     }
 
-    static Multiple multiple(Collection<? extends Node> nodes) {
-        return new Multiple(nodes);
+    static Static multiple(Static... nodes) {
+        return multiple(Arrays.asList(nodes));
     }
 
-    static Multiple multiple(Single... singles) {
-        return new Multiple(Arrays.stream(singles).flatMap(Single::stream).toList());
+    static Static multiple(Collection<Static> nodes) {
+        return new Static(nodes.stream().flatMap(Nodes::stream).toList());
     }
 
-    static Dynamic compose(Nodes... children) {
-        return new Dynamic(createComputed(() -> new Multiple(
-                Arrays.stream(children).flatMap(Nodes::stream).toList())));
+    static Nodes compose(Nodes... nodes) {
+        return compose(Arrays.asList(nodes));
     }
 
-    static Dynamic compose(Collection<? extends Nodes> children) {
-        return new Dynamic(createComputed(() -> new Multiple(
-                children.stream().flatMap(Nodes::stream).toList())));
+    static Nodes compose(Collection<? extends Nodes> nodes) {
+        if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
+            return new Dynamic(createComputed(() -> new Static(
+                    nodes.stream().flatMap(Nodes::stream).toList())));
+        } else {
+            return new Static(nodes.stream().flatMap(Nodes::stream).toList());
+        }
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = ReactiveList.createMapped(list, map);
-        var composed = createComputed(() -> new Multiple(
+        var composed = createComputed(() -> new Static(
                 mapped.get().stream().flatMap(Nodes::stream).toList()));
         return new Dynamic(composed);
     }
@@ -60,40 +62,15 @@ public sealed interface Nodes permits
         return new Dynamic(createComputed(supplier));
     }
 
-    static Dynamic component(Component component) {
-        return new Dynamic(createComputed(component::render));
+    static Nodes component(Component component) {
+        return component.render();
+//        return new Dynamic(createComputed(component::render));
     }
 
-    final class Empty implements Nodes {
-        private Empty() {}
-
-        @Override
-        public Stream<? extends Node> stream() {
-            return Stream.empty();
-        }
-    }
-
-    final class Single implements Nodes {
-        private final Node node;
-
-        private Single(Node node) {
-            this.node = node;
-        }
-
-        public Node get() {
-            return node;
-        }
-
-        @Override
-        public Stream<? extends Node> stream() {
-            return Stream.of(node);
-        }
-    }
-
-    final class Multiple implements Nodes {
+    final class Static implements Nodes {
         private final Collection<? extends Node> children;
 
-        private Multiple(Collection<? extends Node> children) {
+        private Static(Collection<? extends Node> children) {
             this.children = children;
         }
 
