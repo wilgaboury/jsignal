@@ -1,9 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Cleaner;
-import com.github.wilgaboury.jsignal.Computed;
-import com.github.wilgaboury.jsignal.ReactiveList;
-import com.github.wilgaboury.jsignal.Ref;
+import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
@@ -19,6 +16,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class MetaNode {
     private final SiguiWindow window;
+    private MutableProvider published;
 
     private final MetaNode parent;
     private final Node node;
@@ -35,6 +33,7 @@ public class MetaNode {
 
     MetaNode(MetaNode parent, Node node) {
         this.window = SiguiWindow.useWindow();
+        this.published = new MutableProvider();
 
         this.parent = parent;
         this.node = node;
@@ -49,6 +48,8 @@ public class MetaNode {
 
         cleaner = createCleaner(() -> {
             onCleanup(() -> {
+                window.getNodeRegistry().removeNode(this);
+
                 if (parent != null) {
                     Yoga.YGNodeRemoveChild(parent.yoga, yoga);
                 }
@@ -59,7 +60,7 @@ public class MetaNode {
 
             createEffect(this::layoutEffectInner);
 
-            node.ref(this);
+            node.reference(this);
         });
     }
 
@@ -100,6 +101,18 @@ public class MetaNode {
         } else {
             return Collections::emptyList;
         }
+    }
+
+    public void id(String id) {
+        window.getNodeRegistry().setId(this, id);
+    }
+
+    public void tags(String... tags) {
+        window.getNodeRegistry().setTags(this, Arrays.asList(tags));
+    }
+
+    public MutableProvider getPublished() {
+        return published;
     }
 
     public MetaNode pick(Matrix33 transform, Point p) {

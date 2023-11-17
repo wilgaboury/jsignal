@@ -6,6 +6,7 @@ import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.KeyboardEvent
 import com.github.wilgaboury.sigui.event.ScrollEvent
@@ -63,14 +64,14 @@ class Scroller(private val children: Nodes) : Component() {
         }
 
         return node {
-            ref { node: MetaNode ->
-                outer.set(node)
+            ref {
+                outer.set(this)
                 createEffect {
-                    val viewSize = node.layout.size
+                    val viewSize = this.layout.size
                     val contentSize = inner.get().layout.size
                     yScale.accept(viewSize.y / contentSize.y)
                 }
-                node.listen {
+                listen {
                     onScroll { e: ScrollEvent ->
                         val height = node.layout.size.y
                         val max = inner.get().layout.size.y - height
@@ -92,7 +93,7 @@ class Scroller(private val children: Nodes) : Component() {
             }
             children(Nodes.multiple(
                 node {
-                    ref { ref: MetaNode -> inner.set(ref) }
+                    ref { inner.set(this) }
                     layout { yoga: Long -> Yoga.YGNodeStyleSetWidthPercent(yoga, 100f) }
                     transform { node: MetaNode ->
                         val height = node.parent.layout.size.y
@@ -104,8 +105,8 @@ class Scroller(private val children: Nodes) : Component() {
                     children(children)
                 },
                 node {
-                    ref { node: MetaNode ->
-                        node.listen {
+                    ref {
+                        listen {
                             onMouseOver { xBarMouseOver.accept(true) }
                             onMouseOut { xBarMouseOver.accept(false) }
                             onMouseDown {
@@ -129,8 +130,8 @@ class Scroller(private val children: Nodes) : Component() {
                     paint { canvas: Canvas, node: MetaNode -> paintVertScrollBar(canvas, node) }
                 },
                 node {
-                    ref { node: MetaNode ->
-                        node.listen {
+                    ref {
+                        listen {
                             onMouseOver { yBarMouseOver.accept(true) }
                             onMouseOut { yBarMouseOver.accept(false) }
                             onMouseDown {

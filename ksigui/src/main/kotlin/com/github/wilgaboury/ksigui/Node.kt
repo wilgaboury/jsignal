@@ -1,10 +1,15 @@
 package com.github.wilgaboury.ksigui
 
+import com.github.wilgaboury.jsignal.Provider
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.EventListener
 import com.github.wilgaboury.sigui.event.KeyboardEvent
 import com.github.wilgaboury.sigui.event.MouseEvent
 import com.github.wilgaboury.sigui.event.ScrollEvent
+
+fun Node.Builder.ref(extension: MetaNode.() -> Unit) {
+    reference { it.extension() }
+}
 
 fun node(extension: Node.Builder.() -> Unit): Nodes.Static {
     val builder = Node.builder()
@@ -15,6 +20,20 @@ fun node(extension: Node.Builder.() -> Unit): Nodes.Static {
 fun Node.toNodes(): Nodes.Static = Nodes.single(this)
 
 fun Component.toNodes(): Nodes = Nodes.component(this)
+
+fun flex(extension: Flex.Builder.() -> Unit): Flex {
+    val builder = Flex.builder()
+    builder.extension()
+    return builder.build()
+}
+
+fun MetaNode.publish(vararg entries: Provider.Entry) {
+    published.add(*entries);
+}
+
+fun MetaNode.listen(extension: EventListenerBuilder.() -> Unit) {
+    EventListenerBuilder(this).extension()
+}
 
 class EventListenerBuilder(val node: MetaNode) {
     fun onMouseIn(listener: (MouseEvent) -> Unit) {
@@ -52,14 +71,4 @@ class EventListenerBuilder(val node: MetaNode) {
     fun onScroll(listener: (ScrollEvent) -> Unit) {
         node.listen(EventListener.onScroll(listener))
     }
-}
-
-fun MetaNode.listen(extension: EventListenerBuilder.() -> Unit) {
-    EventListenerBuilder(this).extension()
-}
-
-fun flex(extension: Flex.Builder.() -> Unit): Flex {
-    val builder = Flex.builder()
-    builder.extension()
-    return builder.build()
 }

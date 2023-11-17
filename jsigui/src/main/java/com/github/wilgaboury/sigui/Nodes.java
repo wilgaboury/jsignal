@@ -62,6 +62,7 @@ public sealed interface Nodes permits
         return new Dynamic(createComputed(supplier));
     }
 
+    // hot swap plugin hooks into this method to support reloading components
     static Nodes component(Component component) {
         return component.render();
 //        return new Dynamic(createComputed(component::render));

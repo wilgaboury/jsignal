@@ -31,13 +31,15 @@ public class SiguiWindow {
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
     private final Window window;
-    private boolean shouldLayout;
-    private boolean shouldPaint;
-    private boolean shouldTranslateUpdate;
     private final Computed<MetaNode> root;
+    private final NodeRegistry nodeRegistry;
 
     private final SideEffect translationEffect;
     private final SideEffect requestFrameEffect;
+
+    private boolean shouldLayout;
+    private boolean shouldPaint;
+    private boolean shouldTranslateUpdate;
 
     private MetaNode mouseDown = null;
     private MetaNode hovered = null;
@@ -47,6 +49,8 @@ public class SiguiWindow {
 
     public SiguiWindow(Window window, Supplier<Component> root) {
         this.window = window;
+        this.nodeRegistry = new NodeRegistry();
+
         this.shouldLayout = false;
         this.shouldPaint = false;
         this.shouldTranslateUpdate = false;
@@ -78,6 +82,10 @@ public class SiguiWindow {
 
     public MetaNode getRoot() {
         return root.get();
+    }
+
+    public NodeRegistry getNodeRegistry() {
+        return nodeRegistry;
     }
 
     public Point getMousePosition() {

@@ -12,6 +12,7 @@ import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.ref
 import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min
@@ -28,8 +29,9 @@ class Button(
 
     override fun render(): Nodes {
         return node {
-            ref { n ->
-                n.listen {
+            ref {
+                tags(Button::class.qualifiedName)
+                listen {
                     onMouseOver { mouseOver.accept(true) }
                     onMouseDown { mouseDown.accept(true) }
                     onMouseOut {

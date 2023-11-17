@@ -11,15 +11,11 @@ import java.util.function.Consumer;
  * The primary layout and rendering primitive of Sigui
  */
 public interface Node {
-    default NodeInfo info() {
-        return NodeInfo.builder().build();
-    }
-
     default Nodes children() {
         return Nodes.empty();
     }
 
-    default void ref(MetaNode node) {}
+    default void reference(MetaNode node) {}
 
     default void layout(long yoga) {}
 
@@ -46,26 +42,20 @@ public interface Node {
     }
 
     class Builder {
-        private NodeInfo info = NodeInfo.builder().build();
         private Nodes children = Nodes.empty();
-        private Consumer<MetaNode> ref = n -> {};
+        private Consumer<MetaNode> reference = n -> {};
         private Layouter layout = (layout) -> {};
         private Transformer transformer = (layout) -> Matrix33.IDENTITY;
         private Painter paint = (canvas, layout) -> {};
         private Painter paintAfter = (canvas, layout) -> {};
-
-        public Builder info(NodeInfo info) {
-            this.info = info;
-            return this;
-        }
 
         public Builder children(Nodes nodes) {
             this.children = nodes;
             return this;
         }
 
-        public Builder ref(Consumer<MetaNode> ref) {
-            this.ref = ref;
+        public Builder reference(Consumer<MetaNode> reference) {
+            this.reference = reference;
             return this;
         }
         
@@ -95,7 +85,6 @@ public interface Node {
     }
 
     class Composed implements Node {
-        private final NodeInfo info;
         private final Nodes children;
         private final Consumer<MetaNode> ref;
         private final Layouter layout;
@@ -104,18 +93,12 @@ public interface Node {
         private final Painter paintAfter;
 
         public Composed(Builder builder) {
-            this.info = builder.info;
             this.children = builder.children;
-            this.ref = builder.ref;
+            this.ref = builder.reference;
             this.layout = builder.layout;
             this.transformer = builder.transformer;
             this.paint = builder.paint;
             this.paintAfter = builder.paintAfter;
-        }
-
-        @Override
-        public NodeInfo info() {
-            return info;
         }
 
         @Override
@@ -124,7 +107,7 @@ public interface Node {
         }
 
         @Override
-        public void ref(MetaNode node) {
+        public void reference(MetaNode node) {
             ref.accept(node);
         }
 
