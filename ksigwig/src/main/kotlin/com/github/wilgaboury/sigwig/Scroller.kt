@@ -19,7 +19,7 @@ import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min
 
-class Scroller(private val children: Nodes) : Component() {
+class Scroller(private val children: () -> Nodes) : Component() {
     private val xOffset = createSignal(0f)
     private val yOffset = createSignal(0f)
 
@@ -102,7 +102,7 @@ class Scroller(private val children: Nodes) : Component() {
                         yOffset.accept(min(0f, max(-max, yOffset.get())))
                         Matrix33.makeTranslate(0f, yOffset.get())
                     }
-                    children(children)
+                    children(children())
                 },
                 node {
                     ref {

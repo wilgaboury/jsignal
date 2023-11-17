@@ -28,55 +28,57 @@ class App : Component() {
     private val show = createSignal(false)
 
     override fun render(): Nodes {
-        return Scroller(node {
-            layout(flex {
-                stretch()
-                center()
-                border(10f)
-                column()
-                gap(16f)
-                padding(Insets(25f))
-            })
-            paint(BasicPainter(
+        return Scroller {
+            node {
+                layout(flex {
+                    stretch()
+                    center()
+                    border(10f)
+                    column()
+                    gap(16f)
+                    padding(Insets(25f))
+                })
+                paint(BasicPainter(
                     background = { EzColors.AMBER_300 },
                     radius = { 50f },
                     border = { 10f },
                     borderColor = { EzColors.EMERALD_500 }
-            ))
-            children(Nodes.compose(
+                ))
+                children(Nodes.compose(
                     Text.para(supply { Text.basicPara(LOREM, EzColors.BLACK, 12f) }),
                     Text.line(
-                            supply { Text.basicTextLine("change text line", 20f) },
-                            { EzColors.FUCHSIA_800 }
+                        supply { Text.basicTextLine("change text line", 20f) },
+                        { EzColors.FUCHSIA_800 }
                     ),
                     Button(
-                            color = { color.get() },
-                            text = this@App::buttonText,
-                            size = { Button.Size.LG },
-                            action = {
-                                color.accept(Color.withA(random.nextInt(), 255))
-                                show.accept { show -> !show }
-                            }
+                        color = { color.get() },
+                        text = this@App::buttonText,
+                        size = { Button.Size.LG },
+                        action = {
+                            color.accept(Color.withA(random.nextInt(), 255))
+                            show.accept { show -> !show }
+                        }
                     ).toNodes(),
                     maybeFireImage(),
                     Image.create(
-                            supply { Blob.fromResource("/peng.png", MediaType.PNG) },
-                            fit = { Image.Fit.COVER },
-                            width = supply { pixel( 100f ) },
-                            height = supply { pixel( 200f ) }
+                        supply { Blob.fromResource("/peng.png", MediaType.PNG) },
+                        fit = { Image.Fit.COVER },
+                        width = supply { pixel(100f) },
+                        height = supply { pixel(200f) }
                     ).toNodes()
-            ))
-        }).toNodes()
+                ))
+            }
+        }.toNodes()
     }
 
     private fun maybeFireImage(): Nodes {
         return Nodes.compute {
             if (show.get()) {
                 Nodes.single(Image.create(
-                        supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
-                        fit = { Image.Fit.CONTAIN },
-                        width = supply { percent( 100f ) },
-                        height = supply { pixel( 200f ) }
+                    supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
+                    fit = { Image.Fit.CONTAIN },
+                    width = supply { percent( 100f ) },
+                    height = supply { pixel( 200f ) }
                 ))
             } else {
                 Nodes.empty()
