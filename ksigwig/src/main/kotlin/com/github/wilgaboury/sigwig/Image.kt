@@ -1,10 +1,8 @@
 package com.github.wilgaboury.sigwig
 
-import com.github.wilgaboury.jsignal.ReactiveUtil
-import com.github.wilgaboury.sigui.MetaNode
-import com.github.wilgaboury.sigui.Node
-import com.github.wilgaboury.sigui.NodeInfo
-import com.github.wilgaboury.sigui.Painter
+import com.github.wilgaboury.jsignal.ReactiveUtil.*
+import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.sigui.*
 import com.google.common.net.MediaType
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Data
@@ -20,57 +18,63 @@ import java.util.function.Supplier
 import java.util.logging.Level
 import java.util.logging.Logger
 
-object Image {
-    private val logger = Logger.getLogger(Image::class.java.getName())
-    private val SVG_DOMS = WeakHashMap<Blob, SVGDOM>()
-    private val IMAGE_OBJS = WeakHashMap<Blob, io.github.humbleui.skija.Image?>()
-    private fun getSvgDom(blob: Blob): SVGDOM {
-        return SVG_DOMS.computeIfAbsent(blob) { b: Blob -> SVGDOM(Data.makeFromBytes(b.data)) }
+class Image(
+    val blob: () -> Blob,
+    val fit: () -> Fit = { Fit.CONTAIN },
+    val width: () -> MaybePercent<Float>? = { null },
+    val height: () -> MaybePercent<Float>? = { null }
+) : Component() {
+    init {
+        val localWidth = untrack(width);
+        val localHeight = untrack(height);
+
+        assert(localWidth != null || localHeight != null);
     }
 
-    fun getImageObject(blob: Blob): io.github.humbleui.skija.Image {
-        return if (IMAGE_OBJS.containsKey(blob)) {
-            IMAGE_OBJS[blob]!!
-        } else {
-            val img = io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data)
-                    ?: error("could not parse image")
-            IMAGE_OBJS[blob] = img
-            img
+    private val painter = createComputed(Supplier {
+        painter(blob, fit)
+    })
+
+    companion object {
+        private val logger = Logger.getLogger(Image::class.java.getName())
+
+        private val SVG_DOMS = WeakHashMap<Blob, SVGDOM>()
+        private val IMAGE_OBJS = WeakHashMap<Blob, io.github.humbleui.skija.Image?>()
+
+        private fun getSvgDom(blob: Blob): SVGDOM {
+            return SVG_DOMS.computeIfAbsent(blob) { b: Blob -> SVGDOM(Data.makeFromBytes(b.data)) }
+        }
+
+        private fun getImageObject(blob: Blob): io.github.humbleui.skija.Image {
+            return if (IMAGE_OBJS.containsKey(blob)) {
+                IMAGE_OBJS[blob]!!
+            } else {
+                val img = io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data)
+                IMAGE_OBJS[blob] = img
+                img
+            }
         }
     }
 
-    fun create(
-            blob: () -> Blob,
-            fit: () -> Fit = { Fit.CONTAIN },
-            width: () -> MaybePercent<Float>? = { null },
-            height: () -> MaybePercent<Float>? = { null }
-    ): Node {
-        val localWidth = ReactiveUtil.untrack(width);
-        val localHeight = ReactiveUtil.untrack(height);
-
-        assert(localWidth != null || localHeight != null);
-
-        val painter = ReactiveUtil.createComputed(Supplier {
-            painter(blob, fit)
-        });
-        return Node.builder()
-                .layout { yoga: Long ->
-                    val localBlob = blob()
-                    if (localBlob.mime.`is`(MediaType.SVG_UTF_8)) {
-                        layoutVector(yoga, blob, width, height)
-                    } else if (localBlob.mime.`is`(MediaType.ANY_IMAGE_TYPE)) {
-                        layoutRaster(yoga, blob, width, height)
-                    } else {
-                        logger.log(Level.WARNING, "Unrecognized image type: %s", localBlob.mime)
-                        Yoga.YGNodeStyleSetWidthPercent(yoga, 100f)
-                        Yoga.YGNodeStyleSetHeightPercent(yoga, 100f)
-                    }
+    override fun render(): Nodes {
+        return node {
+            layout { yoga: Long ->
+                val localBlob = blob()
+                if (localBlob.mime.`is`(MediaType.SVG_UTF_8)) {
+                    layoutVector(yoga, blob, width, height)
+                } else if (localBlob.mime.`is`(MediaType.ANY_IMAGE_TYPE)) {
+                    layoutRaster(yoga, blob, width, height)
+                } else {
+                    logger.log(Level.WARNING, "Unrecognized image type: %s", localBlob.mime)
+                    Yoga.YGNodeStyleSetWidthPercent(yoga, 100f)
+                    Yoga.YGNodeStyleSetHeightPercent(yoga, 100f)
                 }
-                .paint { canvas: Canvas?, yoga: MetaNode? -> painter.get().paint(canvas, yoga) }
-                .build()
+            }
+            paint { canvas: Canvas?, yoga: MetaNode? -> painter.get().paint(canvas, yoga) }
+        }
     }
 
-    fun layoutVector(
+    private fun layoutVector(
             yoga: Long,
             getBlob: () -> Blob,
             getWidth: () -> MaybePercent<Float>?,
@@ -86,7 +90,7 @@ object Image {
         layoutImage(yoga, userWidth, userHeight, imgWidth, imgHeight)
     }
 
-    fun layoutRaster(
+    private fun layoutRaster(
             yoga: Long,
             getBlob: () -> Blob,
             getWidth: () -> MaybePercent<Float>?,
@@ -101,7 +105,7 @@ object Image {
         layoutImage(yoga, userWidth, userHeight, imgWidth.toFloat(), imgHeight.toFloat())
     }
 
-    fun layoutImage(
+    private fun layoutImage(
             yoga: Long,
             userWidth: MaybePercent<Float>?,
             userHeight: MaybePercent<Float>?,

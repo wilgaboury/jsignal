@@ -13,6 +13,7 @@ import io.github.humbleui.types.Rect
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
 import com.github.wilgaboury.ksigui.ref
+import com.github.wilgaboury.ksigui.toNodes
 import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min
@@ -53,10 +54,10 @@ class Button(
             paint(this@Button::paint)
             children(Nodes.compose(
                 icon,
-                Text.line(
-                        { Text.basicTextLine(text(), fontSize()) },
-                        { ColorUtil.contrastText(color()) }
-                )
+                Line(
+                    { Line.basic(text(), fontSize()) },
+                    { ColorUtil.contrastText(color()) }
+                ).toNodes()
             ))
         }
     }

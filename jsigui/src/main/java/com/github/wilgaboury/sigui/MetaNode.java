@@ -4,12 +4,13 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
-import io.github.humbleui.skija.Matrix33;
+import io.github.humbleui.skija.*;
 import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
@@ -27,9 +28,15 @@ public class MetaNode {
 
     private final Map<EventType, Collection<Consumer<?>>> listeners;
 
+    @SuppressWarnings("unused")
     private final Cleaner cleaner;
 
+    private Picture picture = null;
+
     private int renderOrder;
+
+    private final SideEffect paintEffect;
+    private final SideEffect translationEffect;
 
     MetaNode(MetaNode parent, Node node) {
         this.window = SiguiWindow.useWindow();
@@ -62,6 +69,52 @@ public class MetaNode {
 
             node.reference(this);
         });
+
+        paintEffect = createSideEffect(() -> {
+            visitParentsWithShortcut(n -> {
+                if (n.picture != null) {
+                    n.picture = null;
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            window.requestFrame();
+        });
+
+        translationEffect = createSideEffect(() -> {
+            parent.visitParentsWithShortcut(n -> {
+                if (n.picture != null) {
+                    n.picture = null;
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+            window.requestFrame();
+        });
+    }
+
+    void paint(Canvas canvas) {
+        var count = canvas.save();
+        try {
+            provideSideEffect(translationEffect, () -> canvas.concat(getTransform()));
+
+            if (picture == null) {
+                try (var recorder = new PictureRecorder()) {
+                    var recordingCanvas = recorder.beginRecording(layout.getBoundingRect());
+                    provideSideEffect(paintEffect, () -> node.paint(recordingCanvas, this));
+                    for (MetaNode child : getChildren()) {
+                        child.paint(recordingCanvas);
+                    }
+                    picture = recorder.finishRecordingAsPicture();
+                }
+            }
+
+            canvas.drawPicture(picture);
+        } finally {
+            canvas.restoreToCount(count);
+        }
     }
 
     private void layoutEffectInner() {
@@ -205,6 +258,13 @@ public class MetaNode {
         MetaNode node = this;
         while (node != null) {
             visitor.accept(node);
+            node = node.parent;
+        }
+    }
+
+    public void visitParentsWithShortcut(Function<MetaNode, Boolean> visitor) {
+        MetaNode node = this;
+        while (node != null && visitor.apply(node)) {
             node = node.parent;
         }
     }

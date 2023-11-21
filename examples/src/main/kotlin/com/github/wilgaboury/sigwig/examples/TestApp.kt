@@ -28,6 +28,13 @@ class App : Component() {
     private val show = createSignal(false)
 
     override fun render(): Nodes {
+//        return node {
+//            layout(flex {
+//                height(100f)
+//                width(100f)
+//            })
+//            paint(BasicPainter(background = { EzColors.AMBER_300 }))
+//        }
         return Scroller {
             node {
                 layout(flex {
@@ -45,11 +52,11 @@ class App : Component() {
                     borderColor = { EzColors.EMERALD_500 }
                 ))
                 children(Nodes.compose(
-                    Text.para(supply { Text.basicPara(LOREM, EzColors.BLACK, 12f) }),
-                    Text.line(
-                        supply { Text.basicTextLine("change text line", 20f) },
+                    Para(supply { Para.basic(LOREM, EzColors.BLACK, 12f) }).toNodes(),
+                    Line(
+                        supply { Line.basic("change text line", 20f) },
                         { EzColors.FUCHSIA_800 }
-                    ),
+                    ).toNodes(),
                     Button(
                         color = { color.get() },
                         text = this@App::buttonText,
@@ -60,7 +67,7 @@ class App : Component() {
                         }
                     ).toNodes(),
                     maybeFireImage(),
-                    Image.create(
+                    Image(
                         supply { Blob.fromResource("/peng.png", MediaType.PNG) },
                         fit = { Image.Fit.COVER },
                         width = supply { pixel(100f) },
@@ -74,12 +81,12 @@ class App : Component() {
     private fun maybeFireImage(): Nodes {
         return Nodes.compute {
             if (show.get()) {
-                Nodes.single(Image.create(
+                Image(
                     supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
                     fit = { Image.Fit.CONTAIN },
                     width = supply { percent( 100f ) },
                     height = supply { pixel( 200f ) }
-                ))
+                ).toNodes()
             } else {
                 Nodes.empty()
             }

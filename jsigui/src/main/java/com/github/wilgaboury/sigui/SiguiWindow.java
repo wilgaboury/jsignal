@@ -2,14 +2,13 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.SideEffect;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Matrix33;
+import io.github.humbleui.skija.*;
 import io.github.humbleui.types.Point;
+import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.Collection;
@@ -34,9 +33,6 @@ public class SiguiWindow {
     private final Computed<MetaNode> root;
     private final NodeRegistry nodeRegistry;
 
-    private final SideEffect translationEffect;
-    private final SideEffect requestFrameEffect;
-
     private boolean shouldLayout;
     private boolean shouldPaint;
     private boolean shouldTranslateUpdate;
@@ -54,9 +50,6 @@ public class SiguiWindow {
         this.shouldLayout = false;
         this.shouldPaint = false;
         this.shouldTranslateUpdate = false;
-
-        this.translationEffect = createSideEffect(this::requestTranslationUpdate);
-        this.requestFrameEffect = createSideEffect(this::requestFrame);
 
         var layer = SiguiUtil.createLayer();
         window.setEventListener(this::handleEvent);
@@ -104,34 +97,6 @@ public class SiguiWindow {
         root.get().generateRenderOrder();
     }
 
-    private void paint(Canvas canvas) {
-        shouldPaint = false;
-
-        canvas.clear(0xffffffff);
-        int save = canvas.getSaveCount();
-        try {
-            paintInner(canvas, root.get());
-        } finally {
-            canvas.restoreToCount(save);
-        }
-    }
-
-    private void paintInner(Canvas canvas, MetaNode n) {
-        var node = n.getNode();
-
-        var count = canvas.save();
-        try {
-            provideSideEffect(translationEffect, () -> canvas.concat(n.getTransform()));
-
-            node.paint(canvas, n);
-            for (MetaNode child : n.getChildren()) {
-                paintInner(canvas, child);
-            }
-        } finally {
-            canvas.restoreToCount(count);
-        }
-    }
-
     public void requestLayout() {
         shouldLayout = true;
         requestFrame();
@@ -167,7 +132,10 @@ public class SiguiWindow {
         } else if (e instanceof EventFrameSkija ee) {
             layout();
             translationUpdate();
-            provideSideEffect(requestFrameEffect, () -> paint(ee.getSurface().getCanvas()));
+            var canvas = ee.getSurface().getCanvas();
+            canvas.clear(0xFFFFFFFF);
+            root.get().paint(canvas);
+            shouldPaint = false;
         } else if (e instanceof EventWindowResize) {
             requestLayout();
         } else if (e instanceof EventMouseScroll ee) {

@@ -5,38 +5,39 @@ import com.github.wilgaboury.sigui.Nodes
 import io.github.humbleui.skija.*
 import io.github.humbleui.skija.paragraph.*
 import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.sigui.Component
 import org.lwjgl.util.yoga.Yoga
 import java.io.IOException
 import java.util.logging.Level
 import java.util.logging.Logger
 
 object Text {
-    private val logger = Logger.getLogger(Text::class.java.getName())
-    private var INTER_REGULAR: Typeface? = null
-    private var INTER_BOLD: Typeface? = null
-    private val INTER_RESOURCE_LOCATIONS = arrayOf(
-            "/fonts/Inter-Bold.ttf",
-            "/fonts/Inter-Italic.ttf",
-            "/fonts/Inter-Regular.ttf"
+    val logger = Logger.getLogger(Para::class.java.getName())
+    var INTER_REGULAR: Typeface? = null
+    var INTER_BOLD: Typeface? = null
+    val INTER_RESOURCE_LOCATIONS = arrayOf(
+        "/fonts/Inter-Bold.ttf",
+        "/fonts/Inter-Italic.ttf",
+        "/fonts/Inter-Regular.ttf"
     )
-    private val INTER_FONT_MGR: TypefaceFontProvider = TypefaceFontProvider()
-    private val FONT_COLLECTION: FontCollection = FontCollection()
+    val INTER_FONT_MGR: TypefaceFontProvider = TypefaceFontProvider()
+    val FONT_COLLECTION: FontCollection = FontCollection()
 
     init {
         try {
             for (loc in INTER_RESOURCE_LOCATIONS) {
-                Text::class.java.getResourceAsStream(loc).use { resource ->
+                Para::class.java.getResourceAsStream(loc).use { resource ->
                     if (resource != null) {
                         INTER_FONT_MGR.registerTypeface(Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes())))
                     }
                 }
             }
-            Text::class.java.getResourceAsStream("/fonts/Inter-Regular.ttf").use { resource ->
+            Para::class.java.getResourceAsStream("/fonts/Inter-Regular.ttf").use { resource ->
                 if (resource != null) {
                     INTER_REGULAR = Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes()))
                 }
             }
-            Text::class.java.getResourceAsStream("/fonts/Inter-Bold.ttf").use { resource ->
+            Para::class.java.getResourceAsStream("/fonts/Inter-Bold.ttf").use { resource ->
                 if (resource != null) {
                     INTER_BOLD = Typeface.makeFromData(Data.makeFromBytes(resource.readAllBytes()))
                 }
@@ -49,25 +50,30 @@ object Text {
         FONT_COLLECTION.setTestFontManager(INTER_FONT_MGR)
         FONT_COLLECTION.setEnableFallback(false)
     }
+}
 
-    fun basicPara(text: String, color: Int, size: Float): Paragraph {
-        val style = TextStyle()
-        style.setColor(color)
-        style.setFontSize(size)
-        style.setFontFamily("Inter")
 
-        val paraStyle = ParagraphStyle()
-        paraStyle.setTextStyle(style)
+class Para(val para: () -> Paragraph): Component() {
+    companion object {
+        fun basic(text: String, color: Int, size: Float): Paragraph {
+            val style = TextStyle()
+            style.setColor(color)
+            style.setFontSize(size)
+            style.setFontFamily("Inter")
 
-        val builder = ParagraphBuilder(paraStyle, FONT_COLLECTION)
-        builder.pushStyle(style)
-        builder.addText(text)
-        builder.popStyle()
+            val paraStyle = ParagraphStyle()
+            paraStyle.setTextStyle(style)
 
-        return builder.build()
+            val builder = ParagraphBuilder(paraStyle, Text.FONT_COLLECTION)
+            builder.pushStyle(style)
+            builder.addText(text)
+            builder.popStyle()
+
+            return builder.build()
+        }
     }
 
-    fun para(para: () -> Paragraph): Nodes.Static {
+    override fun render(): Nodes {
         return node {
             layout { yoga: Long ->
                 Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f)
@@ -80,13 +86,28 @@ object Text {
                     result.width(p.maxIntrinsicWidth)
                 }
             }
-            paint { canvas, _ ->
+            paint { canvas, meta ->
+                meta.layout.width
                 para().paint(canvas, 0f, 0f)
             }
         }
     }
+}
 
-    fun line(line: () -> TextLine, color:() -> Int): Nodes.Static {
+class Line(
+    val line: () -> TextLine,
+    val color: () -> Int
+) : Component() {
+    companion object {
+        fun basic(string: String?, size: Float): TextLine {
+            val font = Font()
+            font.setTypeface(Text.INTER_REGULAR)
+            font.setSize(size)
+            return TextLine.make(string, font)
+        }
+    }
+
+    override fun render(): Nodes {
         return node {
             layout { yoga: Long ->
                 Yoga.YGNodeStyleSetWidth(yoga, line().getWidth())
@@ -99,12 +120,5 @@ object Text {
                 }
             }
         }
-    }
-
-    fun basicTextLine(string: String?, size: Float): TextLine {
-        val font = Font()
-        font.setTypeface(INTER_REGULAR)
-        font.setSize(size)
-        return TextLine.make(string, font)
     }
 }
