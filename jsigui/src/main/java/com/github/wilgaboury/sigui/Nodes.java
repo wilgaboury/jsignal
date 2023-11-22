@@ -63,7 +63,7 @@ public sealed interface Nodes permits
     }
 
     static Nodes component(Component component) {
-        return component.toNodes();
+        return component.render();
     }
 
     final class Static implements Nodes {

@@ -57,7 +57,7 @@ class Button(
                 Line(
                     { Line.basic(text(), fontSize()) },
                     { ColorUtil.contrastText(color()) }
-                ).toNodes()
+                ).render()
             ))
         }
     }

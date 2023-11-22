@@ -45,11 +45,11 @@ class App : Component() {
                     borderColor = { EzColors.EMERALD_500 }
                 ))
                 children(compose(
-                    Para(Para.basic(LOREM, EzColors.BLACK, 12f)).toNodes(),
+                    Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
                     Line(
                         supply { Line.basic("change text line", 20f) },
                         { EzColors.FUCHSIA_800 }
-                    ).toNodes(),
+                    ).render(),
                     Button(
                         color = { color.get() },
                         text = this@App::buttonText,
@@ -58,17 +58,17 @@ class App : Component() {
                             color.accept(Color.withA(random.nextInt(), 255))
                             show.accept { show -> !show }
                         }
-                    ).toNodes(),
+                    ).render(),
                     maybeFireImage(),
                     Image(
                         supply { Blob.fromResource("/peng.png", MediaType.PNG) },
                         fit = { Image.Fit.COVER },
                         width = supply { pixel(100f) },
                         height = supply { pixel(200f) }
-                    ).toNodes()
+                    ).render()
                 ))
             }
-        }.toNodes()
+        }.render()
     }
 
     private fun maybeFireImage(): Nodes {
@@ -79,7 +79,7 @@ class App : Component() {
                     fit = { Image.Fit.CONTAIN },
                     width = supply { percent( 100f ) },
                     height = supply { pixel( 200f ) }
-                ).toNodes()
+                ).render()
             } else {
                 empty()
             }

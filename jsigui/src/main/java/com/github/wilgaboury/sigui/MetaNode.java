@@ -17,7 +17,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class MetaNode {
     private final SiguiWindow window;
-    private MutableProvider published;
+    private final MutableProvider published;
 
     private final MetaNode parent;
     private final Node node;

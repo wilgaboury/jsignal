@@ -6,9 +6,8 @@ import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
-import io.github.humbleui.skija.*;
+import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.Collection;
@@ -51,6 +50,9 @@ public class SiguiWindow {
         this.shouldPaint = false;
         this.shouldTranslateUpdate = false;
 
+        windows.add(this);
+        this.root = createComputed(() -> provide(WINDOW.with(this), () -> MetaNode.createRoot(root.get())));
+
         var layer = SiguiUtil.createLayer();
         window.setEventListener(this::handleEvent);
         window.setLayer(layer);
@@ -59,9 +61,6 @@ public class SiguiWindow {
             window.setVisible(true);
             layer.frame(); // fixes display glitch
         });
-        windows.add(this);
-
-        this.root = createComputed(() -> provide(WINDOW.with(this), () -> MetaNode.createRoot(root.get())));
     }
 
     public Window getWindow() {
