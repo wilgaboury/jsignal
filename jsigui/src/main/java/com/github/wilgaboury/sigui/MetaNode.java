@@ -38,6 +38,9 @@ public class MetaNode {
     private final SideEffect paintEffect;
     private final SideEffect translationEffect;
 
+    private String id;
+    private Set<String> tags;
+
     MetaNode(MetaNode parent, Node node) {
         this.window = SiguiWindow.useWindow();
         this.published = new MutableProvider();
@@ -52,6 +55,9 @@ public class MetaNode {
         this.listeners = new HashMap<>();
 
         this.renderOrder = 0;
+
+        this.id = null;
+        this.tags = Collections.emptySet();
 
         cleaner = createCleaner(() -> {
             onCleanup(() -> {
@@ -93,6 +99,26 @@ public class MetaNode {
             });
             window.requestFrame();
         });
+    }
+
+    public void id(String id) {
+        window.getNodeRegistry().removeNodeId(this);
+        this.id = id;
+        window.getNodeRegistry().addNodeId(this);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void tags(String... tags) {
+        window.getNodeRegistry().removeNodeTags(this);
+        this.tags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(tags)));
+        window.getNodeRegistry().addNodeTags(this);
+    }
+
+    public Set<String> getTags() {
+        return tags;
     }
 
     void paint(Canvas canvas) {
@@ -154,14 +180,6 @@ public class MetaNode {
         } else {
             return Collections::emptyList;
         }
-    }
-
-    public void id(String id) {
-        window.getNodeRegistry().setId(this, id);
-    }
-
-    public void tags(String... tags) {
-        window.getNodeRegistry().setTags(this, Arrays.asList(tags));
     }
 
     public MutableProvider getPublished() {

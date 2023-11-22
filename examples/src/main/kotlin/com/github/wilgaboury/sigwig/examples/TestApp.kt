@@ -4,8 +4,8 @@ import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksignal.supply
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.node
-import com.github.wilgaboury.ksigui.toNodes
 import com.github.wilgaboury.sigui.*
+import com.github.wilgaboury.sigui.Nodes.*
 import com.github.wilgaboury.sigwig.*
 import com.google.common.net.MediaType
 import io.github.humbleui.skija.Color
@@ -13,7 +13,7 @@ import java.util.*
 
 const val LOREM = "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit."
 
-fun main(args: Array<String>) {
+fun main() {
     SiguiUtil.start {
         val window = SiguiUtil.createWindow()
         window.setTitle("Test App")
@@ -28,13 +28,6 @@ class App : Component() {
     private val show = createSignal(false)
 
     override fun render(): Nodes {
-//        return node {
-//            layout(flex {
-//                height(100f)
-//                width(100f)
-//            })
-//            paint(BasicPainter(background = { EzColors.AMBER_300 }))
-//        }
         return Scroller {
             node {
                 layout(flex {
@@ -51,8 +44,8 @@ class App : Component() {
                     border = { 10f },
                     borderColor = { EzColors.EMERALD_500 }
                 ))
-                children(Nodes.compose(
-                    Para(supply { Para.basic(LOREM, EzColors.BLACK, 12f) }).toNodes(),
+                children(compose(
+                    Para(Para.basic(LOREM, EzColors.BLACK, 12f)).toNodes(),
                     Line(
                         supply { Line.basic("change text line", 20f) },
                         { EzColors.FUCHSIA_800 }
@@ -79,7 +72,7 @@ class App : Component() {
     }
 
     private fun maybeFireImage(): Nodes {
-        return Nodes.compute {
+        return compute {
             if (show.get()) {
                 Image(
                     supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
@@ -88,7 +81,7 @@ class App : Component() {
                     height = supply { pixel( 200f ) }
                 ).toNodes()
             } else {
-                Nodes.empty()
+                empty()
             }
         }
     }

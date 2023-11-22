@@ -1,10 +1,12 @@
 package com.github.wilgaboury.sigwig
 
+import com.github.wilgaboury.ksignal.supply
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
 import io.github.humbleui.skija.*
 import io.github.humbleui.skija.paragraph.*
 import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.Component
 import org.lwjgl.util.yoga.Yoga
 import java.io.IOException
@@ -55,7 +57,7 @@ object Text {
 
 class Para(val para: () -> Paragraph): Component() {
     companion object {
-        fun basic(text: String, color: Int, size: Float): Paragraph {
+        fun basic(text: String, color: Int, size: Float): () -> Paragraph {
             val style = TextStyle()
             style.setColor(color)
             style.setFontSize(size)
@@ -69,12 +71,15 @@ class Para(val para: () -> Paragraph): Component() {
             builder.addText(text)
             builder.popStyle()
 
-            return builder.build()
+            return supply(builder.build())
         }
     }
 
     override fun render(): Nodes {
         return node {
+            ref {
+                tags("para")
+            }
             layout { yoga: Long ->
                 Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f)
                 Yoga.YGNodeSetMeasureFunc(yoga) { _, width, _, _, _, result ->
@@ -88,6 +93,7 @@ class Para(val para: () -> Paragraph): Component() {
             }
             paint { canvas, meta ->
                 meta.layout.width
+                meta.layout.height
                 para().paint(canvas, 0f, 0f)
             }
         }
@@ -115,6 +121,7 @@ class Line(
             }
             paint { canvas: Canvas, yoga: MetaNode? ->
                 Paint().use { paint ->
+                    line()
                     paint.setColor(color())
                     canvas.drawTextLine(line(), 0f, -line().getAscent(), paint)
                 }

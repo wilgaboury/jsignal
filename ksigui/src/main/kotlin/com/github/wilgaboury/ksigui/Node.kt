@@ -19,8 +19,6 @@ fun node(extension: Node.Builder.() -> Unit): Nodes.Static {
 
 fun Node.toNodes(): Nodes.Static = Nodes.single(this)
 
-fun Component.toNodes(): Nodes = Nodes.component(this)
-
 fun flex(extension: Flex.Builder.() -> Unit): Flex {
     val builder = Flex.builder()
     builder.extension()
