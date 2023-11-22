@@ -72,6 +72,6 @@ Effect effect = createEffect(() -> {
 
 Asynchronous effects are internally executed in a sychronize block so that a given asynchronous effect never has it's logic executed in parallel. This is done to ease the mental burden on developers when reasoning about what asynchronous reactive code is doing.
 
-### Flow/Project Reactor/RxJava
+### Flow/Reactor/RxJava
 
-This library provides simple utilities (`createPublisher` and `subscribeTo`) for using signals as a source or sink for the standard reactive `Publisher` interface.
+This library provides adapters (via the utility methods `createPublisher` and `createSubscriber`) for using signals as a source or sink for the standard reactive `Publisher/Subscriber` interface.
