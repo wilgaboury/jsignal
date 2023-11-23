@@ -93,7 +93,6 @@ public class SiguiWindow {
         var rect = window.getContentRect();
         Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
         batch(() -> root.get().visitTreePre(n -> n.getLayout().update()));
-        root.get().generateRenderOrder();
     }
 
     public void requestLayout() {

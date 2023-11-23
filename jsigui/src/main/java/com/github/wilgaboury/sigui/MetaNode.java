@@ -33,8 +33,6 @@ public class MetaNode {
 
     private Picture picture = null;
 
-    private int renderOrder;
-
     private final SideEffect paintEffect;
     private final SideEffect translationEffect;
 
@@ -53,8 +51,6 @@ public class MetaNode {
         this.layout = new Layout(yoga);
 
         this.listeners = new HashMap<>();
-
-        this.renderOrder = 0;
 
         this.id = null;
         this.tags = Collections.emptySet();
@@ -97,7 +93,7 @@ public class MetaNode {
                     return false;
                 }
             });
-            window.requestFrame();
+            window.requestTranslationUpdate();
         });
     }
 
@@ -122,6 +118,13 @@ public class MetaNode {
     }
 
     void paint(Canvas canvas) {
+        if (parent == null) {
+            for (MetaNode child : getChildren()) {
+                child.paint(canvas);
+            }
+            return;
+        }
+
         var count = canvas.save();
         try {
             provideSideEffect(translationEffect, () -> canvas.concat(getTransform()));
@@ -218,14 +221,6 @@ public class MetaNode {
         return mat.get();
     }
 
-    void generateRenderOrder() {
-        Ref<Integer> i = new Ref<>(0);
-        visitTreePre(n -> {
-            n.renderOrder = i.get();
-            i.set(i.get() + 1);
-        });
-    }
-
     public Node getNode() {
         return node;
     }
@@ -250,10 +245,6 @@ public class MetaNode {
 
     public long getYoga() {
         return yoga;
-    }
-
-    public int getRenderOrder() {
-        return renderOrder;
     }
 
     public void visitTree(Consumer<MetaNode> preVisitor, Consumer<MetaNode> postVisitor) {

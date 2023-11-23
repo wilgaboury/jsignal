@@ -92,9 +92,9 @@ class Para(val para: () -> Paragraph): Component() {
                 }
             }
             paint { canvas, meta ->
-                meta.layout.width
-                meta.layout.height
-                para().paint(canvas, 0f, 0f)
+                val p = para()
+                p.layout(meta.layout.width) // fixes measure callback race condition
+                p.paint(canvas, 0f, 0f)
             }
         }
     }
