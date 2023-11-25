@@ -15,16 +15,19 @@ public class Effect implements EffectLike {
 
     private final int id;
     private final Runnable effect;
-    private final Provider provider;
     private final Cleaner cleanup;
+    private final Provider provider;
     private final Long threadId;
     private boolean disposed;
 
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
         this.effect = effect;
-        this.provider = currentProvider();
         this.cleanup = createCleaner();
+        this.provider = currentProvider().add(
+                CLEANER.with(Optional.of(cleanup)),
+                EFFECT.with(Optional.of(this))
+        );
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
 
@@ -60,10 +63,7 @@ public class Effect implements EffectLike {
 
             batch(() -> {
                 cleanup.run();
-                provide(provider.add(
-                        CLEANER.with(Optional.of(cleanup)),
-                        EFFECT.with(Optional.of(this))
-                ), effect);
+                provide(provider, effect);
             });
         });
     }

@@ -2,11 +2,9 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.ReactiveList;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -58,8 +56,18 @@ public sealed interface Nodes permits
         return new Dynamic(composed);
     }
 
-    static Dynamic compute(Supplier<Nodes> supplier) {
-        return new Dynamic(createComputed(supplier));
+    static Dynamic compute(Supplier<Nodes> inner) {
+        return new Dynamic(createComputed(inner));
+    }
+
+    static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
+        var cache = new CacheOne();
+        return new Dynamic(createComputed(() -> inner.apply(cache)));
+    }
+
+    static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
+        var cache = new CacheMany<K>(new HashMap<>());
+        return new Dynamic(createComputed(() -> inner.apply(cache)));
     }
 
     static Nodes component(Component component) {
@@ -97,6 +105,29 @@ public sealed interface Nodes permits
         @Override
         public Stream<? extends Node> stream() {
             return children.get().stream();
+        }
+    }
+
+    final class CacheOne {
+        private Nodes cached = null;
+
+        public Nodes get(Supplier<Nodes> ifAbsent) {
+            if (cached != null) {
+                cached = ifAbsent.get();
+            }
+            return cached;
+        }
+    }
+
+    final class CacheMany<K> {
+        private final Map<K, Nodes> cached;
+
+        public CacheMany(Map<K, Nodes> cached) {
+            this.cached = cached;
+        }
+
+        public Nodes get(K key, Supplier<Nodes> ifAbsent) {
+            return cached.computeIfAbsent(key, k -> ifAbsent.get());
         }
     }
 }

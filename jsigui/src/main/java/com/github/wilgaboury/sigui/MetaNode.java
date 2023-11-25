@@ -33,8 +33,8 @@ public class MetaNode {
 
     private Picture picture = null;
 
-    private final SideEffect paintEffect;
-    private final SideEffect translationEffect;
+    private SideEffect paintEffect;
+    private SideEffect translationEffect;
 
     private String id;
     private Set<String> tags;
@@ -56,45 +56,50 @@ public class MetaNode {
         this.tags = Collections.emptySet();
 
         cleaner = createCleaner(() -> {
-            onCleanup(() -> {
-                window.getNodeRegistry().removeNode(this);
-
-                if (parent != null) {
-                    Yoga.YGNodeRemoveChild(parent.yoga, yoga);
-                }
-                Yoga.YGNodeFree(yoga);
-
-                window.requestLayout();
-            });
+            onCleanup(this:: cleanup);
 
             createEffect(this::layoutEffectInner);
 
+            paintEffect = createSideEffect(this::paintEffectInner);
+            translationEffect = createSideEffect(this::translationEffectInner);
+
             node.reference(this);
         });
+    }
 
-        paintEffect = createSideEffect(() -> {
-            visitParentsWithShortcut(n -> {
-                if (n.picture != null) {
-                    n.picture = null;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-            window.requestFrame();
-        });
+    private void cleanup() {
+        window.getNodeRegistry().removeNode(this);
 
-        translationEffect = createSideEffect(() -> {
-            parent.visitParentsWithShortcut(n -> {
-                if (n.picture != null) {
-                    n.picture = null;
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-            window.requestTranslationUpdate();
+        if (parent != null) {
+            Yoga.YGNodeRemoveChild(parent.yoga, yoga);
+        }
+        Yoga.YGNodeFree(yoga);
+
+        window.requestLayout();
+    }
+
+    private void paintEffectInner() {
+        visitParentsWithShortcut(n -> {
+            if (n.picture != null) {
+                n.picture = null;
+                return true;
+            } else {
+                return false;
+            }
         });
+        window.requestFrame();
+    }
+
+    private void translationEffectInner() {
+        parent.visitParentsWithShortcut(n -> {
+            if (n.picture != null) {
+                n.picture = null;
+                return true;
+            } else {
+                return false;
+            }
+        });
+        window.requestTranslationUpdate();
     }
 
     public void id(String id) {
