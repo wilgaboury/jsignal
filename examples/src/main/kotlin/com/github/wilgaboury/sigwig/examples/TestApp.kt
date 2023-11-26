@@ -37,6 +37,7 @@ class App : Component() {
                     column()
                     gap(16f)
                     padding(Insets(25f))
+                    widthPercent(100f)
                 })
                 paint(BasicPainter(
                     background = { EzColors.AMBER_300 },

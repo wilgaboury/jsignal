@@ -3,7 +3,6 @@ package com.github.wilgaboury.sigwig
 import com.github.wilgaboury.jsignal.ReactiveUtil.*
 import com.github.wilgaboury.jsignal.Ref
 import com.github.wilgaboury.ksignal.createSignal
-import com.github.wilgaboury.ksignal.supply
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
@@ -23,6 +22,7 @@ import kotlin.math.min
 val DEFAULT_WIDTH = 15f;
 
 class Scroller(
+    val overlay: () -> Boolean = { false },
     val yBarWidth: () -> Float = { DEFAULT_WIDTH },
     val xBarWidth: () -> Float = { DEFAULT_WIDTH },
     val children: () -> Nodes = { Nodes.empty() }
@@ -80,6 +80,7 @@ class Scroller(
         return node {
             ref {
                 view.set(this)
+                tags("scroller-parent")
                 listen {
                     onScroll { e: ScrollEvent ->
                         val height = node.layout.size.y
@@ -107,8 +108,14 @@ class Scroller(
             })
             children(Nodes.multiple(
                 node {
-                    ref { content.set(this) }
-                    layout { yoga: Long -> Yoga.YGNodeStyleSetWidthPercent(yoga, 100f) }
+                    ref {
+                        content.set(this)
+                        tags("scroller-content")
+                    }
+                    layout( flex {
+//                        widthPercent(100f)
+//                        heightPercent(100f)
+                    } )
                     transform { node: MetaNode ->
                         val height = node.parent.layout.size.y
                         val max = node.layout.size.y - height
@@ -161,7 +168,7 @@ class Scroller(
                     children(Nodes.compose(
                         ScrollButton(
                             size = yBarWidth,
-                            show = { yBarMouseOver.get() || yBarMouseDown.get() }
+                            show = this@Scroller::yBarShow
                         ).render(),
                         node {
                             ref {
@@ -190,7 +197,7 @@ class Scroller(
                         },
                         ScrollButton(
                             size = yBarWidth,
-                            show = { yBarMouseOver.get() || yBarMouseDown.get() }
+                            show = this@Scroller::yBarShow
                         ).render(),
                         // spacer
                         node {
@@ -210,6 +217,10 @@ class Scroller(
 
     private fun paintVertScrollBar(canvas: Canvas, node: MetaNode) {
 
+    }
+
+    private fun yBarShow(): Boolean {
+        return yBarMouseOver.get() || yBarMouseDown.get() || !overlay();
     }
 
     private fun horizBarRect(): Rect? {
@@ -233,7 +244,7 @@ class Scroller(
         if (rect != null) {
             Paint().use {
                 it.setColor(EzColors.BLACK)
-                if (yBarMouseOver.get() || yBarMouseDown.get()) {
+                if (yBarShow()) {
                     canvas.drawRect(rect, it)
                 } else {
                     val smaller = rect.withLeft(10f)
@@ -245,21 +256,35 @@ class Scroller(
 }
 
 class ScrollButton(
+    val ref: MetaNode.() -> Unit = {},
     val size: () -> Float = { DEFAULT_WIDTH },
     val show: () -> Boolean = { true },
     val action: () -> Unit = {}
 ) : Component() {
+    val mouseDown = createSignal(false);
+
     override fun render(): Nodes {
         return node {
             ref {
+                this.ref()
                 listen {
                     onMouseClick { action() }
+                    onMouseDown { mouseDown.accept(true) }
+                    onMouseUp { mouseDown.accept(false) }
                 }
             }
             layout(flex {
-                height(15f)
-                widthPercent(100f)
+                height(size())
+                width(size())
             })
+            transform {
+                if (!mouseDown.get())
+                    return@transform Matrix33.IDENTITY
+
+                Matrix33.makeTranslate(size()/2f, size()/2f)
+                    .makeConcat(Matrix33.makeScale(0.8f))
+                    .makeConcat(Matrix33.makeTranslate(-size()/2f, -size()/2f))
+            }
             paint { canvas, meta ->
                 if (!show())
                     return@paint
