@@ -17,6 +17,8 @@ fun <T> createAtomicSignal(
         clone: (T) -> T = { it }
 ): Signal<T> = AtomicSignal(value, equals, clone)
 
+fun <T> Signal<T>.supply(): () -> T = { get() }
+
 fun <T> supply(v: T): () -> T = { v }
 
 fun <T> supply(fn: () -> T): () -> T {

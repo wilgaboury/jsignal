@@ -23,7 +23,6 @@ public class MetaNode {
     private final Node node;
 
     private final long yoga;
-    private final Supplier<List<MetaNode>> children;
     private final Layout layout;
 
     private final Map<EventType, Collection<Consumer<?>>> listeners;
@@ -31,13 +30,15 @@ public class MetaNode {
     @SuppressWarnings("unused")
     private final Cleaner cleaner;
 
-    private Picture picture = null;
-
-    private SideEffect paintEffect;
-    private SideEffect translationEffect;
-
     private String id;
     private Set<String> tags;
+
+    private final SideEffect paintEffect;
+    private final SideEffect translationEffect;
+
+    private Picture picture = null;
+
+    private final Supplier<List<MetaNode>> children;
 
     MetaNode(MetaNode parent, Node node) {
         this.window = SiguiWindow.useWindow();
@@ -47,24 +48,21 @@ public class MetaNode {
         this.node = node;
 
         this.yoga = Yoga.YGNodeNew();
-        this.children = createChildren();
         this.layout = new Layout(yoga);
-
         this.listeners = new HashMap<>();
 
         this.id = null;
         this.tags = Collections.emptySet();
 
         cleaner = createCleaner(() -> {
-            onCleanup(this:: cleanup);
-
+            onCleanup(this::cleanup);
             createEffect(this::layoutEffectInner);
-
-            paintEffect = createSideEffect(this::paintEffectInner);
-            translationEffect = createSideEffect(this::translationEffectInner);
-
-            node.reference(this);
         });
+
+        this.paintEffect = provideCleaner(cleaner, () -> createSideEffect(this::paintEffectInner));
+        this.translationEffect = provideCleaner(cleaner, () -> createSideEffect(this::translationEffectInner));
+        this.children = provideCleaner(cleaner, this::createChildren);
+        provideCleaner(cleaner, () -> node.reference(this));
     }
 
     private void cleanup() {

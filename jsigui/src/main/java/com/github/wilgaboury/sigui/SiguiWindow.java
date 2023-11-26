@@ -122,6 +122,8 @@ public class SiguiWindow {
     }
 
     void handleEvent(io.github.humbleui.jwm.Event e) {
+        System.out.println(e.getClass().getName());
+
         if (e instanceof EventWindowCloseRequest) {
             close();
         } else if (e instanceof EventWindowClose) {

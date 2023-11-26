@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import org.lwjgl.util.yoga.YGNode;
 import org.lwjgl.util.yoga.Yoga;
 
 public class Flex implements Layouter {
@@ -18,6 +19,9 @@ public class Flex implements Layouter {
     private final MaybePercent<Float> right;
     private final MaybePercent<Float> bottom;
     private final MaybePercent<Float> left;
+    private final Float grow;
+    private final Float shrink;
+    private final Integer overflow;
 
     public Flex(Builder builder) {
         this.margins = builder.margins;
@@ -35,6 +39,9 @@ public class Flex implements Layouter {
         this.right = builder.right;
         this.bottom = builder.bottom;
         this.left = builder.left;
+        this.grow = builder.grow;
+        this.shrink = builder.shrink;
+        this.overflow = builder.overflow;
     }
     
     @Override
@@ -122,6 +129,18 @@ public class Flex implements Layouter {
                 Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeLeft, left.value());
             }
         }
+
+        if (grow != null) {
+            Yoga.YGNodeStyleSetFlexGrow(yoga, grow);
+        }
+
+        if (shrink != null) {
+            Yoga.YGNodeStyleSetFlexShrink(yoga, shrink);
+        }
+
+        if (overflow != null) {
+            Yoga.YGNodeStyleSetOverflow(yoga, overflow);
+        }
     }
 
     public static Builder builder() {
@@ -144,6 +163,9 @@ public class Flex implements Layouter {
         private MaybePercent<Float> right;
         private MaybePercent<Float> bottom;
         private MaybePercent<Float> left;
+        private Float grow;
+        private Float shrink;
+        private Integer overflow;
 
         public Builder center() {
             this.justify = Yoga.YGJustifyCenter;
@@ -259,6 +281,21 @@ public class Flex implements Layouter {
 
         public Builder leftPercent(float left) {
             this.left = new MaybePercent<>(true, left);
+            return this;
+        }
+
+        public Builder grow(float grow) {
+            this.grow = grow;
+            return this;
+        }
+
+        public Builder shrink(float shrink) {
+            this.shrink = shrink;
+            return this;
+        }
+
+        public Builder overflow(int overflow) {
+            this.overflow = overflow;
             return this;
         }
 

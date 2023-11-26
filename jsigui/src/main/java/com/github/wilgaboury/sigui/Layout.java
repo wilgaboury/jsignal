@@ -167,7 +167,6 @@ public class Layout {
         return new Point(getWidth(), getHeight());
     }
 
-
     public Rect getBoundingRect() {
         return Rect.makeXYWH(0, 0, getWidth(), getHeight());
     }

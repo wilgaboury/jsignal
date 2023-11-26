@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigwig
 import com.github.wilgaboury.jsignal.ReactiveUtil.*
 import com.github.wilgaboury.jsignal.Ref
 import com.github.wilgaboury.ksignal.createSignal
+import com.github.wilgaboury.ksignal.supply
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
@@ -19,7 +20,13 @@ import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min
 
-class Scroller(private val children: () -> Nodes) : Component() {
+val DEFAULT_WIDTH = 15f;
+
+class Scroller(
+    val yBarWidth: () -> Float = { DEFAULT_WIDTH },
+    val xBarWidth: () -> Float = { DEFAULT_WIDTH },
+    val children: () -> Nodes = { Nodes.empty() }
+) : Component() {
     private val xOffset = createSignal(0f)
     private val yOffset = createSignal(0f)
 
@@ -32,20 +39,21 @@ class Scroller(private val children: () -> Nodes) : Component() {
     private val xBarMouseOver = createSignal(false);
     private val yBarMouseOver = createSignal(false)
 
-    private val inner: Ref<MetaNode> = Ref()
+    private val content: Ref<MetaNode> = Ref()
+    private val view: Ref<MetaNode> = Ref()
+    private val bar: Ref<MetaNode> = Ref()
 
     private val xScale = createSignal(0f)
     private val yScale = createSignal(0f)
 
     override fun render(): Nodes {
         val window = SiguiWindow.useWindow()
-        val outer = Ref<MetaNode>()
 
         onMount {
             createEffect {
                 if (xBarMouseDown.get()) {
                     createEffect(onDefer({ window.mousePosition }) { ->
-                        val rel = MathUtil.apply(MathUtil.inverse(outer.get().getFullTransform()), window.mousePosition)
+                        val rel = MathUtil.apply(MathUtil.inverse(view.get().getFullTransform()), window.mousePosition)
                         val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
                         xOffset.accept(-newOffset)
                     })
@@ -55,27 +63,33 @@ class Scroller(private val children: () -> Nodes) : Component() {
             createEffect {
                 if (yBarMouseDown.get()) {
                     createEffect(onDefer({ window.mousePosition }) { ->
-                        val rel = MathUtil.apply(MathUtil.inverse(outer.get().getFullTransform()), window.mousePosition)
+                        val rel = MathUtil.apply(MathUtil.inverse(view.get().getFullTransform()), window.mousePosition)
                         val newOffset = (rel.y - yMouseDownOffset) / untrack(yScale)
                         yOffset.accept(-newOffset)
                     })
                 }
             }
+
+            createEffect {
+                val viewSize = view.get().layout.size
+                val contentSize = content.get().layout.size
+                yScale.accept(viewSize.y / contentSize.y)
+            }
         }
 
         return node {
             ref {
-                outer.set(this)
-                createEffect {
-                    val viewSize = this.layout.size
-                    val contentSize = inner.get().layout.size
-                    yScale.accept(viewSize.y / contentSize.y)
-                }
+                view.set(this)
                 listen {
                     onScroll { e: ScrollEvent ->
                         val height = node.layout.size.y
-                        val max = inner.get().layout.size.y - height
-                        yOffset.accept { v: Float -> min(0.0, max(-max.toDouble(), (v + e.deltaY).toDouble())).toFloat() }
+                        val max = content.get().layout.size.y - height
+                        yOffset.accept { v: Float ->
+                            min(
+                                0.0,
+                                max(-max.toDouble(), (v + e.deltaY).toDouble())
+                            ).toFloat()
+                        }
                     }
                     onKeyDown { e: KeyboardEvent ->
                         if (e.event.key == Key.DOWN) {
@@ -86,14 +100,14 @@ class Scroller(private val children: () -> Nodes) : Component() {
                     }
                 }
             }
-            layout { yoga: Long ->
-                Yoga.YGNodeStyleSetWidthPercent(yoga, 100f)
-                Yoga.YGNodeStyleSetHeightPercent(yoga, 100f)
-                Yoga.YGNodeStyleSetOverflow(yoga, Yoga.YGOverflowScroll)
-            }
+            layout(flex {
+                widthPercent(100f)
+                heightPercent(100f)
+                overflow(Yoga.YGOverflowScroll)
+            })
             children(Nodes.multiple(
                 node {
-                    ref { inner.set(this) }
+                    ref { content.set(this) }
                     layout { yoga: Long -> Yoga.YGNodeStyleSetWidthPercent(yoga, 100f) }
                     transform { node: MetaNode ->
                         val height = node.parent.layout.size.y
@@ -110,7 +124,8 @@ class Scroller(private val children: () -> Nodes) : Component() {
                             onMouseOver { xBarMouseOver.accept(true) }
                             onMouseOut { xBarMouseOver.accept(false) }
                             onMouseDown {
-                                val pos = MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.mousePosition)
+                                val pos =
+                                    MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.mousePosition)
                                 val rect = vertBarRect(node) ?: return@onMouseDown
                                 if (MathUtil.contains(rect, pos)) {
                                     xMouseDownOffset = pos.x - rect.left
@@ -134,15 +149,6 @@ class Scroller(private val children: () -> Nodes) : Component() {
                         listen {
                             onMouseOver { yBarMouseOver.accept(true) }
                             onMouseOut { yBarMouseOver.accept(false) }
-                            onMouseDown {
-                                val pos = MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.mousePosition)
-                                val rect = horizBarRect(node) ?: return@onMouseDown
-                                if (MathUtil.contains(rect, pos)) {
-                                    yMouseDownOffset = pos.y - rect.top
-                                    yBarMouseDown.accept(true)
-                                }
-                            }
-                            onMouseUp { yBarMouseDown.accept(false) }
                         }
                     }
                     layout(flex {
@@ -152,7 +158,47 @@ class Scroller(private val children: () -> Nodes) : Component() {
                         top(0f)
                         right(0f)
                     })
-                    paint { canvas: Canvas, node: MetaNode -> paintHorizScrollBar(canvas, node) }
+                    children(Nodes.compose(
+                        ScrollButton(
+                            size = yBarWidth,
+                            show = { yBarMouseOver.get() || yBarMouseDown.get() }
+                        ).render(),
+                        node {
+                            ref {
+                                bar.set(this)
+
+                                listen {
+                                    onMouseDown {
+                                        val pos = MathUtil.apply(
+                                            MathUtil.inverse(node.getFullTransform()),
+                                            window.mousePosition
+                                        )
+                                        val rect = horizBarRect() ?: return@onMouseDown
+                                        if (MathUtil.contains(rect, pos)) {
+                                            yMouseDownOffset = pos.y - rect.top
+                                            yBarMouseDown.accept(true)
+                                        }
+                                    }
+                                    onMouseUp { yBarMouseDown.accept(false) }
+                                }
+                            }
+                            layout(flex {
+                                widthPercent(100f)
+                                grow(1f)
+                            })
+                            paint { canvas, _ -> paintHorizScrollBar(canvas) }
+                        },
+                        ScrollButton(
+                            size = yBarWidth,
+                            show = { yBarMouseOver.get() || yBarMouseDown.get() }
+                        ).render(),
+                        // spacer
+                        node {
+                            layout(flex {
+                                height(xBarWidth())
+                            })
+                        }
+                    ))
                 }
             ))
         }
@@ -166,27 +212,62 @@ class Scroller(private val children: () -> Nodes) : Component() {
 
     }
 
-    private fun horizBarRect(node: MetaNode): Rect? {
+    private fun horizBarRect(): Rect? {
         return if (yScale.get() < 1f) {
-            val viewSize = node.layout.size
-            val bounds = Rect.makeWH(node.layout.size)
+            val barHeight = bar.get().layout.height;
+            val viewHeight = view.get().layout.height
+            val secondScale = barHeight / viewHeight
             Rect.makeXYWH(
-                    0f,
-                    yScale.get() * -yOffset.get(),
-                    bounds.width,
-                    yScale.get() * viewSize.y
+                0f,
+                secondScale * yScale.get() * -yOffset.get(),
+                bar.get().layout.width,
+                barHeight * yScale.get()
             )
         } else {
             null
         }
     }
 
-    private fun paintHorizScrollBar(canvas: Canvas, node: MetaNode) {
-        val rect = horizBarRect(node)
+    private fun paintHorizScrollBar(canvas: Canvas) {
+        val rect = horizBarRect()
         if (rect != null) {
-            Paint().use { paint ->
-                paint.setColor(EzColors.BLACK)
-                canvas.drawRect(rect, paint)
+            Paint().use {
+                it.setColor(EzColors.BLACK)
+                if (yBarMouseOver.get() || yBarMouseDown.get()) {
+                    canvas.drawRect(rect, it)
+                } else {
+                    val smaller = rect.withLeft(10f)
+                    canvas.drawRect(smaller, it)
+                }
+            }
+        }
+    }
+}
+
+class ScrollButton(
+    val size: () -> Float = { DEFAULT_WIDTH },
+    val show: () -> Boolean = { true },
+    val action: () -> Unit = {}
+) : Component() {
+    override fun render(): Nodes {
+        return node {
+            ref {
+                listen {
+                    onMouseClick { action() }
+                }
+            }
+            layout(flex {
+                height(15f)
+                widthPercent(100f)
+            })
+            paint { canvas, meta ->
+                if (!show())
+                    return@paint
+
+                Paint().use {
+                    it.color = EzColors.BLUE_300
+                    canvas.drawRect(meta.layout.boundingRect, it)
+                }
             }
         }
     }
