@@ -34,7 +34,7 @@ public class MetaNode {
     private Set<String> tags;
 
     private final SideEffect paintEffect;
-    private final SideEffect translationEffect;
+    private final SideEffect transformEffect;
 
     private Picture picture = null;
 
@@ -60,7 +60,7 @@ public class MetaNode {
         });
 
         this.paintEffect = provideCleaner(cleaner, () -> createSideEffect(this::paintEffectInner));
-        this.translationEffect = provideCleaner(cleaner, () -> createSideEffect(this::translationEffectInner));
+        this.transformEffect = provideCleaner(cleaner, () -> createSideEffect(this::transformEffectInner));
         this.children = provideCleaner(cleaner, this::createChildren);
         provideCleaner(cleaner, () -> node.reference(this));
     }
@@ -88,7 +88,7 @@ public class MetaNode {
         window.requestFrame();
     }
 
-    private void translationEffectInner() {
+    private void transformEffectInner() {
         parent.visitParentsWithShortcut(n -> {
             if (n.picture != null) {
                 n.picture = null;
@@ -97,7 +97,7 @@ public class MetaNode {
                 return false;
             }
         });
-        window.requestTranslationUpdate();
+        window.requestTransformUpdate();
     }
 
     public void id(String id) {
@@ -130,7 +130,7 @@ public class MetaNode {
 
         var count = canvas.save();
         try {
-            provideSideEffect(translationEffect, () -> canvas.concat(getTransform()));
+            provideSideEffect(transformEffect, () -> canvas.concat(getTransform()));
 
             if (picture == null) {
                 try (var recorder = new PictureRecorder()) {
@@ -192,21 +192,32 @@ public class MetaNode {
         return published;
     }
 
-    public MetaNode pick(Matrix33 transform, Point p) {
-        var newTransform = transform.makeConcat(getTransform());
-        var testPoint = MathUtil.apply(MathUtil.inverse(newTransform), p);
-        if (node.hitTest(testPoint, this)) {
-            var children = this.children.get();
+    private static Point createTestPoint(Point p, Matrix33 transform) {
+        return MathUtil.apply(MathUtil.inverse(transform), p);
+    }
+
+    public MetaNode pick(Point p) {
+        var currentNode = this;
+        var currentTransform = this.getTransform();
+
+        if (!currentNode.getNode().hitTest(createTestPoint(p, currentTransform), currentNode))
+            return null;
+
+        outer:
+        for (;;) {
+            var children = currentNode.children.get();
             for (int i = children.size(); i > 0; i--) {
                 var child = children.get(i - 1);
-                MetaNode result = child.pick(newTransform, p);
-                if (result != null) {
-                    return result;
+                var newTransform = currentTransform.makeConcat(child.getTransform());
+
+                if (child.getNode().hitTest(createTestPoint(p, newTransform), child)) {
+                    currentNode = child;
+                    currentTransform = newTransform;
+                    continue outer;
                 }
             }
-            return this;
+            return currentNode;
         }
-        return null;
     }
 
     public Layout getLayout() {

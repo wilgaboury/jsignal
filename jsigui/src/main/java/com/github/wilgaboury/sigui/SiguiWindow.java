@@ -1,19 +1,15 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Computed;
+import com.github.wilgaboury.jsignal.Cleaner;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
-import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.Provide.*;
@@ -28,13 +24,14 @@ public class SiguiWindow {
 
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
-    private final Window window;
-    private final Computed<MetaNode> root;
+    private Window window;
+    private final MetaNode root;
+    private final Cleaner rootCleaner;
     private final NodeRegistry nodeRegistry;
 
     private boolean shouldLayout;
     private boolean shouldPaint;
-    private boolean shouldTranslateUpdate;
+    private boolean shouldTransformUpdate;
 
     private MetaNode mouseDown = null;
     private MetaNode hovered = null;
@@ -48,10 +45,12 @@ public class SiguiWindow {
 
         this.shouldLayout = false;
         this.shouldPaint = false;
-        this.shouldTranslateUpdate = false;
+        this.shouldTransformUpdate = false;
 
         windows.add(this);
-        this.root = createComputed(() -> provide(WINDOW.with(this), () -> MetaNode.createRoot(root.get())));
+        this.rootCleaner = createCleaner();
+        this.root = provide(List.of(WINDOW.with(this), CLEANER.with(Optional.of(rootCleaner))),
+                () -> MetaNode.createRoot(root.get()));
 
         var layer = SiguiUtil.createLayer();
         window.setEventListener(this::handleEvent);
@@ -63,17 +62,19 @@ public class SiguiWindow {
         });
     }
 
-    public Window getWindow() {
-        return window;
+    public Optional<Window> getWindow() {
+        return Optional.ofNullable(window);
     }
 
     public void close() {
         windows.remove(this);
         window.close();
+        window = null;
+        rootCleaner.run();
     }
 
     public MetaNode getRoot() {
-        return root.get();
+        return root;
     }
 
     public NodeRegistry getNodeRegistry() {
@@ -85,14 +86,14 @@ public class SiguiWindow {
     }
 
     private void layout() {
-        if (!shouldLayout)
+        if (!shouldLayout || window == null)
             return;
 
         shouldLayout = false;
 
         var rect = window.getContentRect();
-        Yoga.nYGNodeCalculateLayout(root.get().getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-        batch(() -> root.get().visitTreePre(n -> n.getLayout().update()));
+        Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+        batch(() -> root.visitTreePre(n -> n.getLayout().update()));
     }
 
     public void requestLayout() {
@@ -101,23 +102,23 @@ public class SiguiWindow {
     }
 
     public void requestFrame() {
-        if (shouldPaint)
+        if (shouldPaint || window == null)
             return;
 
         shouldPaint = true;
         window.requestFrame();
     }
 
-    public void requestTranslationUpdate() {
-        shouldTranslateUpdate = true;
+    public void requestTransformUpdate() {
+        shouldTransformUpdate = true;
         requestFrame();
     }
 
-    public void translationUpdate() {
-        if (!shouldTranslateUpdate)
+    public void transformUpdate() {
+        if (!shouldTransformUpdate)
             return;
 
-        shouldTranslateUpdate = false;
+        shouldTransformUpdate = false;
         handleMouseMove(mousePosition.get());
     }
 
@@ -130,11 +131,12 @@ public class SiguiWindow {
             if (windows.isEmpty())
                 App.terminate();
         } else if (e instanceof EventFrameSkija ee) {
+            System.out.println("frame");
             layout();
-            translationUpdate();
+            transformUpdate();
             var canvas = ee.getSurface().getCanvas();
             canvas.clear(0xFFFFFFFF);
-            root.get().paint(canvas);
+            root.paint(canvas);
             shouldPaint = false;
         } else if (e instanceof EventWindowResize) {
             requestLayout();
@@ -147,7 +149,7 @@ public class SiguiWindow {
                 if (root == null) {
                     return;
                 } else {
-                    focus = root.get();
+                    focus = root;
                 }
             }
 
@@ -190,6 +192,7 @@ public class SiguiWindow {
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
+            System.out.println("mouse");
             var point = new Point(ee.getX(), ee.getY());
             handleMouseMove(point);
             mousePosition.accept(point);
@@ -203,7 +206,7 @@ public class SiguiWindow {
 
     private void handleMouseMove(Point point) {
         // todo: convert from screen to paint space using scale
-        var newHovered = pick(point);
+        var newHovered = root.pick(point);
         if (hovered != newHovered) {
             var parents = hovered == null ? null : hovered.getParents();
             var newParents = newHovered == null ? null : newHovered.getParents();
@@ -227,10 +230,6 @@ public class SiguiWindow {
         if (hovered != null) {
             hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered));
         }
-    }
-
-    private MetaNode pick(Point p) {
-        return root.get().pick(Matrix33.IDENTITY, p);
     }
 
     public static Collection<SiguiWindow> getWindows() {
