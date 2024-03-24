@@ -1,5 +1,7 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.sigui.paint.NullPaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
@@ -22,6 +24,10 @@ public interface Node {
     default void paint(Canvas canvas, MetaNode node) {}
 
     default void paintAfter(Canvas canvas, MetaNode node) {}
+
+    default PaintCacheStrategy paintCache() {
+        return new NullPaintCacheStrategy();
+    }
 
     default Matrix33 transform(MetaNode node) {
         return Matrix33.IDENTITY;

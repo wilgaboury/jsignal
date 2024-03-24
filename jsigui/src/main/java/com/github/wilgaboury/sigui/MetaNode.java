@@ -4,6 +4,8 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import com.github.wilgaboury.sigui.paint.NullPaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
@@ -36,11 +38,13 @@ public class MetaNode {
     private final SideEffect paintEffect;
     private final SideEffect transformEffect;
 
-    private Picture picture = null;
+//    private Picture picture = null;
+
+    private PaintCacheStrategy paintCacheStrategy;
 
     private final Supplier<List<MetaNode>> children;
 
-    MetaNode(MetaNode parent, Node node) {
+    private MetaNode(MetaNode parent, Node node) {
         this.window = SiguiWindow.useWindow();
         this.published = new MutableProvider();
 
@@ -53,6 +57,8 @@ public class MetaNode {
 
         this.id = null;
         this.tags = Collections.emptySet();
+
+        this.paintCacheStrategy = new NullPaintCacheStrategy();
 
         cleaner = createCleaner(() -> {
             onCleanup(this::cleanup);
@@ -77,27 +83,26 @@ public class MetaNode {
     }
 
     private void paintEffectInner() {
-        visitParentsWithShortcut(n -> {
-            if (n.picture != null) {
-                n.picture = null;
-                return true;
-            } else {
-                return false;
-            }
-        });
+        setPaintDirty();
         window.requestFrame();
     }
 
     private void transformEffectInner() {
-        parent.visitParentsWithShortcut(n -> {
-            if (n.picture != null) {
-                n.picture = null;
-                return true;
-            } else {
-                return false;
-            }
-        });
+        parent.setPaintDirty();
         window.requestTransformUpdate();
+    }
+
+    private void setPaintDirty() {
+        visitParentsWithShortcut(n -> {
+            var notDirty = !n.paintCacheStrategy.isDirty();
+            if (notDirty)
+                n.paintCacheStrategy.markDirty();
+            return notDirty;
+        });
+    }
+
+    public void setPaintCacheStrategy(PaintCacheStrategy paintCacheStrategy) {
+        this.paintCacheStrategy = paintCacheStrategy;
     }
 
     public void id(String id) {
@@ -128,22 +133,17 @@ public class MetaNode {
             return;
         }
 
+
         var count = canvas.save();
         try {
             provideSideEffect(transformEffect, () -> canvas.concat(getTransform()));
 
-            if (picture == null) {
-                try (var recorder = new PictureRecorder()) {
-                    var recordingCanvas = recorder.beginRecording(layout.getBoundingRect());
-                    provideSideEffect(paintEffect, () -> node.paint(recordingCanvas, this));
-                    for (MetaNode child : getChildren()) {
-                        child.paint(recordingCanvas);
-                    }
-                    picture = recorder.finishRecordingAsPicture();
+            paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
+                provideSideEffect(paintEffect, () -> node.paint(cacheCanvas, this));
+                for (MetaNode child : getChildren()) {
+                    child.paint(cacheCanvas);
                 }
-            }
-
-            canvas.drawPicture(picture);
+            });
         } finally {
             canvas.restoreToCount(count);
         }

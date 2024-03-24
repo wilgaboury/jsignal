@@ -10,6 +10,8 @@ import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.KeyboardEvent
 import com.github.wilgaboury.sigui.event.ScrollEvent
+import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy
+import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy
 import io.github.humbleui.jwm.Key
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Matrix33
@@ -111,6 +113,8 @@ class Scroller(
                     ref {
                         content.set(this)
                         tags("scroller-content")
+                        setPaintCacheStrategy(SurfacePaintCacheStrategy())
+//                        setPaintCacheStrategy(PicturePaintCacheStrategy())
                     }
                     layout( flex {
 //                        widthPercent(100f)
