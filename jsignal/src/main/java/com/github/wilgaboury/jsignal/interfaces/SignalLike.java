@@ -8,25 +8,19 @@ public interface SignalLike<T> extends
         Supplier<T>,
         Acceptable<T>,
         Mutateable<T> {
-
     static <T> SignalLike<T> constant(T value) {
-        return new SignalLike<T>() {
+        return new SignalLike<>() {
             @Override
-            public void accept(Function<T, T> transform) {
-            }
+            public void accept(Function<T, T> transform) {}
 
             @Override
-            public void mutate(Mutate<T> mutate) {
-            }
+            public void mutate(Mutate<T> mutate) {}
 
             @Override
-            public void track() {
-            }
+            public void track() {}
 
             @Override
-            public void untrack() {
-
-            }
+            public void untrack() {}
 
             @Override
             public T get() {

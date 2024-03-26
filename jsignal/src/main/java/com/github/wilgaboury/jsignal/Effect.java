@@ -2,25 +2,27 @@ package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.Provide.currentProvider;
 import static com.github.wilgaboury.jsignal.Provide.provide;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Effect implements EffectLike {
-    private static final AtomicInteger nextId = new AtomicInteger(0);
+    protected static final AtomicInteger nextId = new AtomicInteger(0);
 
-    private final int id;
-    private final Runnable effect;
-    private final Cleaner cleanup;
-    private final Provider provider;
-    private final Long threadId;
-    private boolean disposed;
-    private final HashSet<SignalLike<?>> signals;
+    protected final int id;
+    protected final Runnable effect;
+    protected final Cleaner cleanup;
+    protected final Provider provider;
+    protected final ThreadBound threadBound;
+    protected boolean disposed;
+    protected final Flipper<Set<SignalLike<?>>> signals;
 
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
@@ -30,34 +32,41 @@ public class Effect implements EffectLike {
                 CLEANER.with(Optional.of(cleanup)),
                 EFFECT.with(Optional.of(this))
         );
-        this.threadId = isSync ? Thread.currentThread().getId() : null;
+        this.threadBound = new ThreadBound(isSync);
         this.disposed = false;
-        this.signals = new HashSet<>();
+        this.signals = new Flipper<>(HashSet::new);
 
         onCleanup(this::dispose);
     }
 
+    /**
+     * This method should only be called inside of implementations of {@link SignalLike#track()}
+     */
     @Override
     public void onTrack(SignalLike<?> signal) {
-        signals.add(signal);
+        signals.getFront().add(signal);
+    }
+
+    /**
+     * This method should only be called inside of implementations of {@link SignalLike#untrack()}
+     */
+    @Override
+    public void onUntrack(SignalLike<?> signal) {
+        signals.getFront().remove(signal);
     }
 
     @Override
-    public void onUntrack(SignalLike<?> signal) {
-        signals.remove(signal);
-    }
-
     public int getId() {
         return id;
     }
 
-    public Long getThreadId() {
-        return threadId;
+    public @Nullable Long getThreadId() {
+        return threadBound.getThreadId();
     }
 
     @Override
     public void dispose() {
-        maybeSynchronize(() -> {
+        threadBound.maybeSynchronize(() -> {
             disposed = true;
             cleanup.run();
         });
@@ -65,26 +74,29 @@ public class Effect implements EffectLike {
 
     @Override
     public boolean isDisposed() {
-        return maybeSynchronize(() -> disposed);
+        return threadBound.maybeSynchronize(() -> disposed);
     }
 
     @Override
     public void run() {
-        maybeSynchronize(() -> {
+        run(effect);
+    }
+
+    protected void run(Runnable inner) {
+        threadBound.maybeSynchronize(() -> {
             if (isDisposed())
                 return;
 
-            batch(() -> {
-                provide(provider, () -> {
-                    // TODO: this is not efficient
-                    for (var signal : new ArrayList<>(signals)) {
-                        signal.untrack();
-                    }
+            batch(() -> provide(provider, () -> {
+                signals.flip();
+                for (var signal : signals.getBack()) {
+                    signal.untrack();
+                }
+                signals.getBack().clear();
 
-                    cleanup.run();
-                    effect.run();
-                });
-            });
+                cleanup.run();
+                inner.run();
+            }));
         });
     }
 
@@ -103,25 +115,6 @@ public class Effect implements EffectLike {
     @Override
     public int hashCode() {
         return id;
-    }
-
-    private void maybeSynchronize(Runnable inner) {
-        maybeSynchronize(() -> {
-            inner.run();
-            return null;
-        });
-    }
-
-    private <T> T maybeSynchronize(Supplier<T> inner) {
-        if (threadId != null) {
-            assert threadId == Thread.currentThread().getId() : "effect accessed from wrong thread, try making it async";
-
-            return inner.get();
-        } else {
-            synchronized (this) {
-                return inner.get();
-            }
-        }
     }
 
     public static int nextId() {

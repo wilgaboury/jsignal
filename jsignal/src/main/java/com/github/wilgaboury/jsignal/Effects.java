@@ -21,7 +21,7 @@ public record Effects(Map<Integer, EffectRef> effects) implements Runnable {
                 if (effect.isEmpty() || effect.get().isDisposed())
                     itr.remove();
                 else
-                    batch.add(ref.getId(), ref);
+                    batch.add(ref);
             }
         });
     }

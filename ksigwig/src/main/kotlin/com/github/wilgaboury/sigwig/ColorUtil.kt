@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigwig
 
-import com.github.wilgaboury.sigui.*
+import com.github.wilgaboury.sigui.MathUtil
 import io.github.humbleui.skija.Color
 import io.github.humbleui.skija.Matrix33
 import kotlin.math.*
@@ -195,7 +195,6 @@ object ColorUtil {
 
         //  Calculate the Luminance
         val l = (max + min) / 2
-        //System.out.println(max + " : " + min + " : " + l);
 
         //  Calculate the Saturation
         var s = 0f

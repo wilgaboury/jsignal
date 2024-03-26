@@ -133,7 +133,7 @@ public class ReactiveUtil {
     }
 
     public static @NotNull SideEffect createSideEffect(@NotNull Runnable inner) {
-        return new SideEffect(inner);
+        return new SideEffect(inner, true);
     }
 
     public static @NotNull Executor useExecutor() {

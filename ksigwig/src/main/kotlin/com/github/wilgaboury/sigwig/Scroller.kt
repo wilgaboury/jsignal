@@ -20,7 +20,7 @@ import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
-val DEFAULT_WIDTH = 15f;
+val DEFAULT_WIDTH = 15f
 
 class Scroller(
     val overlay: () -> Boolean = { false },
@@ -33,13 +33,13 @@ class Scroller(
     private val xOffset = createSignal(0f)
     private val yOffset = createSignal(0f)
 
-    private val xBarMouseDown = createSignal(false);
+    private val xBarMouseDown = createSignal(false)
     private val yBarMouseDown = createSignal(false)
 
-    private var xMouseDownOffset = 0f;
+    private var xMouseDownOffset = 0f
     private var yMouseDownOffset = 0f
 
-    private val xBarMouseOver = createSignal(false);
+    private val xBarMouseOver = createSignal(false)
     private val yBarMouseOver = createSignal(false)
 
     private val content: Ref<MetaNode> = Ref()
@@ -80,8 +80,6 @@ class Scroller(
                 val contentSize = content.get().layout.size
                 yScale.accept(viewSize.y / contentSize.y)
             }
-
-            createEffect { println(shouldShowSidebar.get()) }
         }
 
         return node {
@@ -96,7 +94,6 @@ class Scroller(
                         if (e.event.key == Key.DOWN) {
                             yOffset.accept { y: Float -> y - 100 }
                         } else if (e.event.key == Key.UP) {
-                            System.out.println(yOffset.get())
                             yOffset.accept { y: Float -> y + 100 }
                         }
                     }
@@ -231,12 +228,12 @@ class Scroller(
     }
 
     private fun yBarShow(): Boolean {
-        return yBarMouseOver.get() || yBarMouseDown.get() || !overlay();
+        return yBarMouseOver.get() || yBarMouseDown.get() || !overlay()
     }
 
     private fun horizBarRect(): Rect? {
         return if (yScale.get() < 1f) {
-            val barHeight = yBar.get().layout.height;
+            val barHeight = yBar.get().layout.height
             val viewHeight = view.get().layout.height
             val secondScale = barHeight / viewHeight
             Rect.makeXYWH(
@@ -272,7 +269,7 @@ class ScrollButton(
     val show: () -> Boolean = { true },
     val action: () -> Unit = {}
 ) : Component() {
-    val mouseDown = createSignal(false);
+    val mouseDown = createSignal(false)
 
     override fun render(): Nodes {
         return node {

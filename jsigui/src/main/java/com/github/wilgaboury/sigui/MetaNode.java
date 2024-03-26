@@ -4,10 +4,10 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
-import com.github.wilgaboury.sigui.paint.NullPaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
-import io.github.humbleui.skija.*;
+import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
@@ -136,10 +136,10 @@ public class MetaNode {
 
         var count = canvas.save();
         try {
-            transformEffect.attach(() -> canvas.concat(getTransform()));
+            transformEffect.run(() -> canvas.concat(getTransform()));
 
             paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
-                paintEffect.attach(() -> node.paint(cacheCanvas, this));
+                paintEffect.run(() -> node.paint(cacheCanvas, this));
                 for (MetaNode child : getChildren()) {
                     child.paint(cacheCanvas);
                 }
@@ -243,7 +243,7 @@ public class MetaNode {
         return parent;
     }
 
-;    public Collection<MetaNode> getParents() {
+    public Collection<MetaNode> getParents() {
         var node = this.parent;
         var res = new LinkedHashSet<MetaNode>();
         while (node != null) {

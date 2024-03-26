@@ -4,43 +4,36 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Batch {
-    private int depth;
-    private Map<Integer, EffectRef> front;
-    private Map<Integer, EffectRef> back;
+    private boolean inBatch;
+    private final Flipper<Map<Integer, EffectRef>> effects;
 
     public Batch() {
-        depth = 0;
-        front = new LinkedHashMap<>();
-        back = new LinkedHashMap<>();
+        inBatch = false;
+        effects = new Flipper<>(LinkedHashMap::new);
     }
 
     public void run(Runnable inner) {
-        depth++;
-        try {
+        if (inBatch) {
             inner.run();
-        } finally {
-            depth--;
-
-            if (depth == 0 && !front.isEmpty()) {
-                flip();
-                run(() -> {
-                    for (var e : back.values()) {
-                        e.run();
+        } else {
+            inBatch = true;
+            try {
+                inner.run();
+                while (!effects.getFront().isEmpty()) {
+                    effects.flip();
+                    for (var effect : effects.getBack().values()) {
+                        effect.run();
                     }
-                });
+                    effects.getBack().clear();
+                }
+            } finally {
+                inBatch = false;
             }
         }
     }
 
-    void add(int id, EffectRef ref) {
-        assert depth > 0;
-        front.put(id, ref);
-    }
-
-    private void flip() {
-        var tmp = front;
-        front = back;
-        back = tmp;
-        front.clear();
+    void add(EffectRef ref) {
+        assert inBatch;
+        effects.getFront().put(ref.getId(), ref);
     }
 }
