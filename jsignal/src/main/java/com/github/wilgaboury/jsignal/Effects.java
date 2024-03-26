@@ -5,21 +5,10 @@ import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.BATCH;
 
-public class Effects implements Runnable {
-    private final Map<Integer, EffectRef> effects;
-
-    public Effects(Map<Integer, EffectRef> effects) {
-        this.effects = effects;
-    }
-
-    public void add(EffectLike effect, Executor executor) {
-        effects.putIfAbsent(effect.getId(), new EffectRef(effect, executor));
-    }
-
+public record Effects(Map<Integer, EffectRef> effects) implements Runnable {
     @Override
     public void run() {
         var batch = BATCH.get();

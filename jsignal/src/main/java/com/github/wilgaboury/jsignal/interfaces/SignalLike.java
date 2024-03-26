@@ -24,6 +24,11 @@ public interface SignalLike<T> extends
             }
 
             @Override
+            public void untrack() {
+
+            }
+
+            @Override
             public T get() {
                 return value;
             }

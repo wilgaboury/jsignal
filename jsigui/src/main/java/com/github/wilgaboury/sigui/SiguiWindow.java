@@ -123,7 +123,6 @@ public class SiguiWindow {
     }
 
     void handleEvent(io.github.humbleui.jwm.Event e) {
-//        System.out.println(e.getClass().getName());
 
         if (e instanceof EventWindowCloseRequest) {
             close();
@@ -131,7 +130,6 @@ public class SiguiWindow {
             if (windows.isEmpty())
                 App.terminate();
         } else if (e instanceof EventFrameSkija ee) {
-            System.out.println("frame");
             layout();
             transformUpdate();
             var canvas = ee.getSurface().getCanvas();
@@ -187,12 +185,11 @@ public class SiguiWindow {
                 // todo: possibly check up tree instead of just target for click test
                 if (hovered != null && mouseDown == hovered) {
                     hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
-                } else {
+                } else if (mouseDown != null) {
                     mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
                 }
             }
         } else if (e instanceof EventMouseMove ee) {
-            System.out.println("mouse");
             var point = new Point(ee.getX(), ee.getY());
             handleMouseMove(point);
             mousePosition.accept(point);
@@ -205,7 +202,7 @@ public class SiguiWindow {
     }
 
     private void handleMouseMove(Point point) {
-        // todo: convert from screen to paint space using scale
+        // TODO: convert from screen to paint space using scale
         var newHovered = root.pick(point);
         if (hovered != newHovered) {
             var parents = hovered == null ? null : hovered.getParents();

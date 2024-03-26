@@ -28,6 +28,11 @@ public class SignalDecorator<T> implements SignalLike<T> {
     }
 
     @Override
+    public void untrack() {
+        this.signal.untrack();
+    }
+
+    @Override
     public T get() {
         return this.signal.get();
     }

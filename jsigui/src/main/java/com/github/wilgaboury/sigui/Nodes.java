@@ -112,7 +112,7 @@ public sealed interface Nodes permits
         private Nodes cached = null;
 
         public Nodes get(Supplier<Nodes> ifAbsent) {
-            if (cached != null) {
+            if (cached == null) {
                 cached = ifAbsent.get();
             }
             return cached;

@@ -17,6 +17,7 @@ public class PicturePaintCacheStrategy implements PaintCacheStrategy{
 
     @Override
     public void markDirty() {
+        picture.close();
         picture = null;
     }
 

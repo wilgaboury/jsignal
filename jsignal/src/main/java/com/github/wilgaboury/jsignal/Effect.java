@@ -1,8 +1,9 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.EffectLike;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -19,6 +20,7 @@ public class Effect implements EffectLike {
     private final Provider provider;
     private final Long threadId;
     private boolean disposed;
+    private final HashSet<SignalLike<?>> signals;
 
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
@@ -30,8 +32,19 @@ public class Effect implements EffectLike {
         );
         this.threadId = isSync ? Thread.currentThread().getId() : null;
         this.disposed = false;
+        this.signals = new HashSet<>();
 
         onCleanup(this::dispose);
+    }
+
+    @Override
+    public void onTrack(SignalLike<?> signal) {
+        signals.add(signal);
+    }
+
+    @Override
+    public void onUntrack(SignalLike<?> signal) {
+        signals.remove(signal);
     }
 
     public int getId() {
@@ -62,8 +75,15 @@ public class Effect implements EffectLike {
                 return;
 
             batch(() -> {
-                cleanup.run();
-                provide(provider, effect);
+                provide(provider, () -> {
+                    // TODO: this is not efficient
+                    for (var signal : new ArrayList<>(signals)) {
+                        signal.untrack();
+                    }
+
+                    cleanup.run();
+                    effect.run();
+                });
             });
         });
     }

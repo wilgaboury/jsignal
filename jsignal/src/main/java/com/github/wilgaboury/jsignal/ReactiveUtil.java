@@ -136,14 +136,6 @@ public class ReactiveUtil {
         return new SideEffect(inner);
     }
 
-    public static void provideSideEffect(@NotNull SideEffect effect, @NotNull Runnable inner) {
-        provideSideEffect(effect, toSupplier(inner));
-    }
-
-    public static <T> T provideSideEffect(@NotNull SideEffect effect, @NotNull Supplier<T> inner) {
-        return provide(EFFECT.with(Optional.of(effect)), inner);
-    }
-
     public static @NotNull Executor useExecutor() {
         return useContext(EXECUTOR);
     }

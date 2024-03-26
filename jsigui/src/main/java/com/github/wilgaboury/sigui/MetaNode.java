@@ -6,8 +6,10 @@ import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.paint.NullPaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
 import io.github.humbleui.skija.*;
 import io.github.humbleui.types.Point;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
@@ -38,8 +40,6 @@ public class MetaNode {
     private final SideEffect paintEffect;
     private final SideEffect transformEffect;
 
-//    private Picture picture = null;
-
     private PaintCacheStrategy paintCacheStrategy;
 
     private final Supplier<List<MetaNode>> children;
@@ -58,7 +58,7 @@ public class MetaNode {
         this.id = null;
         this.tags = Collections.emptySet();
 
-        this.paintCacheStrategy = new NullPaintCacheStrategy();
+        this.paintCacheStrategy = new PicturePaintCacheStrategy();
 
         cleaner = createCleaner(() -> {
             onCleanup(this::cleanup);
@@ -136,10 +136,10 @@ public class MetaNode {
 
         var count = canvas.save();
         try {
-            provideSideEffect(transformEffect, () -> canvas.concat(getTransform()));
+            transformEffect.attach(() -> canvas.concat(getTransform()));
 
             paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
-                provideSideEffect(paintEffect, () -> node.paint(cacheCanvas, this));
+                paintEffect.attach(() -> node.paint(cacheCanvas, this));
                 for (MetaNode child : getChildren()) {
                     child.paint(cacheCanvas);
                 }
@@ -196,7 +196,7 @@ public class MetaNode {
         return MathUtil.apply(MathUtil.inverse(transform), p);
     }
 
-    public MetaNode pick(Point p) {
+    public @Nullable MetaNode pick(Point p) {
         var currentNode = this;
         var currentTransform = this.getTransform();
 

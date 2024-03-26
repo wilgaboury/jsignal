@@ -1,9 +1,6 @@
 package com.github.wilgaboury.jsignal;
 
-import com.github.wilgaboury.jsignal.interfaces.Clone;
-import com.github.wilgaboury.jsignal.interfaces.Equals;
-import com.github.wilgaboury.jsignal.interfaces.Mutate;
-import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+import com.github.wilgaboury.jsignal.interfaces.*;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -18,6 +15,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.useExecutor;
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
+
     protected final Effects effects;
     protected T value;
     protected final Equals<T> equals;
@@ -44,7 +42,16 @@ public class Signal<T> implements SignalLike<T> {
             assert threadId == null ||
                     (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))
                     : "signal thread does not match effect thread";
-            effects.add(effect, useExecutor());
+            effects.effects().computeIfAbsent(effect.getId(), k -> new EffectRef(effect, useExecutor()));
+            effect.onTrack(this);
+        });
+    }
+
+    @Override
+    public void untrack() {
+        useEffect().ifPresent(effect -> {
+            effects.effects().remove(effect.getId());
+            effect.onUntrack(this);
         });
     }
 

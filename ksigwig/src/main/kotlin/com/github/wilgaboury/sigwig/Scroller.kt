@@ -10,14 +10,13 @@ import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.*
 import com.github.wilgaboury.sigui.event.KeyboardEvent
 import com.github.wilgaboury.sigui.event.ScrollEvent
-import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy
-import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy
 import io.github.humbleui.jwm.Key
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Matrix33
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
 import org.lwjgl.util.yoga.Yoga
+import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
@@ -25,8 +24,10 @@ val DEFAULT_WIDTH = 15f;
 
 class Scroller(
     val overlay: () -> Boolean = { false },
-    val yBarWidth: () -> Float = { DEFAULT_WIDTH },
-    val xBarWidth: () -> Float = { DEFAULT_WIDTH },
+    val barWidth: () -> Float = { DEFAULT_WIDTH },
+    val xBarWidth: () -> Float = barWidth,
+    val yBarWidth: () -> Float = barWidth,
+    val yBarOverlayWidth: () -> Float = { yBarWidth() / 2 },
     val children: () -> Nodes = { Nodes.empty() }
 ) : Component() {
     private val xOffset = createSignal(0f)
@@ -43,10 +44,12 @@ class Scroller(
 
     private val content: Ref<MetaNode> = Ref()
     private val view: Ref<MetaNode> = Ref()
-    private val bar: Ref<MetaNode> = Ref()
+    private val xBar: Ref<MetaNode> = Ref()
+    private val yBar: Ref<MetaNode> = Ref()
 
     private val xScale = createSignal(0f)
     private val yScale = createSignal(0f)
+    private val shouldShowSidebar = createComputed( Supplier { (yScale.get().isNaN() || yScale.get() < 1f) && !overlay() } )
 
     override fun render(): Nodes {
         val window = SiguiWindow.useWindow()
@@ -54,8 +57,8 @@ class Scroller(
         onMount {
             createEffect {
                 if (xBarMouseDown.get()) {
-                    createEffect(onDefer({ window.mousePosition }) { ->
-                        val rel = MathUtil.apply(MathUtil.inverse(view.get().getFullTransform()), window.mousePosition)
+                    createEffect(onDefer({ window.mousePosition }) { pos ->
+                        val rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos)
                         val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
                         xOffset.accept(-newOffset)
                     })
@@ -64,9 +67,9 @@ class Scroller(
 
             createEffect {
                 if (yBarMouseDown.get()) {
-                    createEffect(onDefer({ window.mousePosition }) { ->
-                        val rel = MathUtil.apply(MathUtil.inverse(view.get().getFullTransform()), window.mousePosition)
-                        val newOffset = (rel.y - yMouseDownOffset) / untrack(yScale)
+                    createEffect(onDefer({ window.mousePosition }) { pos ->
+                        val rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos)
+                        val newOffset = (rel.y - yMouseDownOffset)  / untrack( Supplier { return@Supplier yScale.get() * (yBar.get().layout.height / view.get().layout.height) } )
                         yOffset.accept(-newOffset)
                     })
                 }
@@ -77,6 +80,8 @@ class Scroller(
                 val contentSize = content.get().layout.size
                 yScale.accept(viewSize.y / contentSize.y)
             }
+
+            createEffect { println(shouldShowSidebar.get()) }
         }
 
         return node {
@@ -85,19 +90,13 @@ class Scroller(
                 tags("scroller-parent")
                 listen {
                     onScroll { e: ScrollEvent ->
-                        val height = node.layout.size.y
-                        val max = content.get().layout.size.y - height
-                        yOffset.accept { v: Float ->
-                            min(
-                                0.0,
-                                max(-max.toDouble(), (v + e.deltaY).toDouble())
-                            ).toFloat()
-                        }
+                        yOffset.accept { v -> v + e.deltaY }
                     }
                     onKeyDown { e: KeyboardEvent ->
                         if (e.event.key == Key.DOWN) {
                             yOffset.accept { y: Float -> y - 100 }
                         } else if (e.event.key == Key.UP) {
+                            System.out.println(yOffset.get())
                             yOffset.accept { y: Float -> y + 100 }
                         }
                     }
@@ -110,16 +109,22 @@ class Scroller(
             })
             children(Nodes.multiple(
                 node {
-                    ref {
+                        ref {
                         content.set(this)
                         tags("scroller-content")
-                        setPaintCacheStrategy(SurfacePaintCacheStrategy())
-//                        setPaintCacheStrategy(PicturePaintCacheStrategy())
                     }
-                    layout( flex {
-//                        widthPercent(100f)
-//                        heightPercent(100f)
-                    } )
+                    layout {
+                        if (shouldShowSidebar.get()) {
+                            flex {
+                                padding(Insets(0f, yBarWidth(), xBarWidth(), 0f))
+                            }.layout(it)
+                        } else {
+                            flex {
+                                widthPercent(100f)
+                                padding(Insets(0f))
+                            }.layout(it)
+                        }
+                    }
                     transform { node: MetaNode ->
                         val height = node.parent.layout.size.y
                         val max = node.layout.size.y - height
@@ -148,7 +153,7 @@ class Scroller(
                     }
                     layout(flex {
                         widthPercent(100f)
-                        height(15f)
+                        height(xBarWidth())
                         absolute()
                         left(0f)
                         bottom(0f)
@@ -163,7 +168,7 @@ class Scroller(
                         }
                     }
                     layout(flex {
-                        width(15f)
+                        width(yBarWidth())
                         heightPercent(100f)
                         absolute()
                         top(0f)
@@ -172,11 +177,12 @@ class Scroller(
                     children(Nodes.compose(
                         ScrollButton(
                             size = yBarWidth,
-                            show = this@Scroller::yBarShow
+                            show = this@Scroller::yBarShow,
+                            action = { yOffset.accept { y: Float -> y + 100 } }
                         ).render(),
                         node {
                             ref {
-                                bar.set(this)
+                                yBar.set(this)
 
                                 listen {
                                     onMouseDown {
@@ -201,7 +207,8 @@ class Scroller(
                         },
                         ScrollButton(
                             size = yBarWidth,
-                            show = this@Scroller::yBarShow
+                            show = this@Scroller::yBarShow,
+                            action = { yOffset.accept { y: Float -> y - 100 } }
                         ).render(),
                         // spacer
                         node {
@@ -229,13 +236,13 @@ class Scroller(
 
     private fun horizBarRect(): Rect? {
         return if (yScale.get() < 1f) {
-            val barHeight = bar.get().layout.height;
+            val barHeight = yBar.get().layout.height;
             val viewHeight = view.get().layout.height
             val secondScale = barHeight / viewHeight
             Rect.makeXYWH(
                 0f,
                 secondScale * yScale.get() * -yOffset.get(),
-                bar.get().layout.width,
+                yBar.get().layout.width,
                 barHeight * yScale.get()
             )
         } else {
@@ -251,7 +258,7 @@ class Scroller(
                 if (yBarShow()) {
                     canvas.drawRect(rect, it)
                 } else {
-                    val smaller = rect.withLeft(10f)
+                    val smaller = rect.withLeft(yBarWidth() - yBarOverlayWidth())
                     canvas.drawRect(smaller, it)
                 }
             }
