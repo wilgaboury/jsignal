@@ -29,6 +29,8 @@ class App : Component() {
     private val buttonColor = createSignal(Color.withA(EzColors.BLACK, 255))
     private val showFire = createSignal(false)
 
+    private val count = createSignal(0);
+
     override fun render(): Nodes {
         return Scroller(barWidth = { 10f }) {
             node {
@@ -49,9 +51,10 @@ class App : Component() {
                 )
                 children(
                     compose(
+                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 1 } }).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
-                        Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
-                        Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
+//                        Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
+//                        Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
                         Line(supply { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }).render(),
                         Button(
                             color = { buttonColor.get() },
@@ -64,7 +67,7 @@ class App : Component() {
                         maybeFireImage(),
                         Image(supply { Blob.fromResource("/peng.png", MediaType.PNG) },
                             fit = { Image.Fit.COVER },
-                            width = supply { pixel(100f) },
+                            width = supply { pixel(300f) },
                             height = supply { pixel(200f) }).render(),
                     )
                 )

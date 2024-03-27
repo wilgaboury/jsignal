@@ -116,14 +116,15 @@ class Line(
     override fun render(): Nodes {
         return node {
             layout { yoga: Long ->
-                Yoga.YGNodeStyleSetWidth(yoga, line().getWidth())
-                Yoga.YGNodeStyleSetHeight(yoga, line().getHeight())
+                val line = line()
+                Yoga.YGNodeStyleSetWidth(yoga, line.width)
+                Yoga.YGNodeStyleSetHeight(yoga, line.height)
             }
             paint { canvas: Canvas, yoga: MetaNode? ->
                 Paint().use { paint ->
-                    line()
+                    val line = line()
                     paint.setColor(color())
-                    canvas.drawTextLine(line(), 0f, -line().getAscent(), paint)
+                    canvas.drawTextLine(line, 0f, -line.ascent, paint)
                 }
             }
         }
