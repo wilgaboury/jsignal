@@ -30,7 +30,7 @@ class App : Component() {
     private val showFire = createSignal(false)
 
     override fun render(): Nodes {
-        return Scroller(barWidth = { 25f }) {
+        return Scroller(barWidth = { 10f }) {
             node {
                 layout(flex {
                     stretch()

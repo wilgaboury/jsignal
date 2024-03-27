@@ -21,7 +21,8 @@ import java.util.*;
         expectedVersions = {"1.4.1"}
 )
 public class SiguiHotswapPlugin {
-    private static final String TRIGGER_FIELD = "ha$trigger";
+    public static final String TRIGGER_FIELD = "ha$trigger";
+    public static final String HA_RENDER = "ha$render";
 
     private Trigger relayoutTrigger;
     private final Map<String, Set<Object>> componentInstances = Collections.synchronizedMap(new HashMap<>());
@@ -81,10 +82,16 @@ public class SiguiHotswapPlugin {
             return;
 
         CtMethod ctMethod = ct.getDeclaredMethod("render");
+        ctMethod.setName(HA_RENDER);
         ctMethod.insertBefore("{" +
                     "java.lang.Object trigger = org.hotswap.agent.util.ReflectionHelper.get($0,\"" + TRIGGER_FIELD + "\");" +
                     "org.hotswap.agent.util.ReflectionHelper.invoke(trigger, \"track\");" +
                 "}");
+
+        ct.addMethod(CtNewMethod.make("public com.github.wilgaboury.sigui.Nodes render() { " +
+                        "return com.github.wilgaboury.sigui.Component.hotswapPluginRender($0);" +
+                    "} ",
+                ct));
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)

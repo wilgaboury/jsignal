@@ -57,21 +57,19 @@ class Scroller(
         onMount {
             createEffect {
                 if (xBarMouseDown.get()) {
-                    createEffect(onDefer({ window.mousePosition }) { pos ->
-                        val rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos)
-                        val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
-                        xOffset.accept(-newOffset)
-                    })
+                    val pos = window.mousePosition
+                    val rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos)
+                    val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
+                    xOffset.accept(-newOffset)
                 }
             }
 
             createEffect {
                 if (yBarMouseDown.get()) {
-                    createEffect(onDefer({ window.mousePosition }) { pos ->
-                        val rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos)
-                        val newOffset = (rel.y - yMouseDownOffset)  / untrack( Supplier { return@Supplier yScale.get() * (yBar.get().layout.height / view.get().layout.height) } )
-                        yOffset.accept(-newOffset)
-                    })
+                    val pos = window.mousePosition
+                    val rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos)
+                    val newOffset = (rel.y - yMouseDownOffset)  / untrack( Supplier { return@Supplier yScale.get() * (yBar.get().layout.height / view.get().layout.height) } )
+                    yOffset.accept(-newOffset)
                 }
             }
 
@@ -111,6 +109,7 @@ class Scroller(
                         tags("scroller-content")
                     }
                     layout {
+                        // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
                         if (shouldShowSidebar.get()) {
                             flex {
                                 padding(Insets(0f, yBarWidth(), xBarWidth(), 0f))

@@ -22,7 +22,7 @@ public class Effect implements EffectLike {
     protected final Provider provider;
     protected final ThreadBound threadBound;
     protected boolean disposed;
-    protected final Flipper<Set<SignalLike<?>>> signals;
+    protected final Flipper<Set<SignalLike<?>>> signals; // TODO: preemptively remove effect from signals when it is garbage collected
 
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();

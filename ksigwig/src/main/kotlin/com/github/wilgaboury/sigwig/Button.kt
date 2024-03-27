@@ -3,6 +3,9 @@ package com.github.wilgaboury.sigwig
 import com.github.wilgaboury.jsignal.ReactiveUtil.batch
 import com.github.wilgaboury.jsignal.ReactiveUtil.createSignal
 import com.github.wilgaboury.jsignal.interfaces.SignalLike
+import com.github.wilgaboury.ksigui.listen
+import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.Component
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
@@ -10,10 +13,6 @@ import com.github.wilgaboury.sigui.SiguiUtil
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
-import com.github.wilgaboury.ksigui.listen
-import com.github.wilgaboury.ksigui.node
-import com.github.wilgaboury.ksigui.ref
-import com.github.wilgaboury.ksigui.toNodes
 import org.lwjgl.util.yoga.Yoga
 import kotlin.math.max
 import kotlin.math.min

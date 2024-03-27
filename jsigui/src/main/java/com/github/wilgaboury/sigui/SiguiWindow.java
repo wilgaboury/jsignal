@@ -86,14 +86,13 @@ public class SiguiWindow {
     }
 
     private void layout() {
-        if (!shouldLayout || window == null)
-            return;
-
-        shouldLayout = false;
-
-        var rect = window.getContentRect();
-        Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-        batch(() -> root.visitTreePre(n -> n.getLayout().update()));
+        // TODO: this loop is a somewhat hacky (elegant?) way to get around layout updates that rely on previous layout updates
+        while (shouldLayout && window != null) {
+            shouldLayout = false;
+            var rect = window.getContentRect();
+            Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+            batch(() -> root.visitTreePre(n -> n.getLayout().update()));
+        }
     }
 
     public void requestLayout() {
