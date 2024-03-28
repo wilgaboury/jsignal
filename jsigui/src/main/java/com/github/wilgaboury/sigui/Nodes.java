@@ -42,8 +42,7 @@ public sealed interface Nodes permits
 
     static Nodes compose(Collection<? extends Nodes> nodes) {
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
-            return new Dynamic(createComputed(() -> new Static(
-                    nodes.stream().flatMap(Nodes::stream).toList())));
+            return new Dynamic(createComputed(() -> nodes.stream().flatMap(Nodes::stream).toList()));
         } else {
             return new Static(nodes.stream().flatMap(Nodes::stream).toList());
         }
@@ -51,23 +50,22 @@ public sealed interface Nodes permits
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = ReactiveList.createMapped(list, map);
-        var composed = createComputed(() -> new Static(
-                mapped.get().stream().flatMap(Nodes::stream).toList()));
+        var composed = createComputed(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
         return new Dynamic(composed);
     }
 
     static Dynamic compute(Supplier<Nodes> inner) {
-        return new Dynamic(createComputed(inner));
+        return new Dynamic(createComputed(() -> inner.get().stream().toList()));
     }
 
     static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
         var cache = new CacheOne();
-        return new Dynamic(createComputed(() -> inner.apply(cache)));
+        return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
     }
 
     static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
         var cache = new CacheMany<K>(new HashMap<>());
-        return new Dynamic(createComputed(() -> inner.apply(cache)));
+        return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
     }
 
     static Nodes component(Component component) {
@@ -81,10 +79,6 @@ public sealed interface Nodes permits
             this.children = children;
         }
 
-        public Collection<? extends Node> get() {
-            return children;
-        }
-
         @Override
         public Stream<? extends Node> stream() {
             return children.stream();
@@ -92,14 +86,10 @@ public sealed interface Nodes permits
     }
 
     final class Dynamic implements Nodes {
-        private final Supplier<? extends Nodes> children;
+        private final Supplier<? extends List<? extends Node>> children;
 
-        private Dynamic(Supplier<? extends Nodes>  children) {
+        private Dynamic(Supplier<? extends List<? extends Node>>  children) {
             this.children = children;
-        }
-
-        public Supplier<? extends Nodes> get() {
-            return children;
         }
 
         @Override
