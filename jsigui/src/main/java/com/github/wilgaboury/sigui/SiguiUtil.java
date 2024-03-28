@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.sigui.hotswap.HaInitHook;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Layer;
 import io.github.humbleui.jwm.Platform;
@@ -21,6 +22,7 @@ public class SiguiUtil {
     private static long clearNodeStyle;
 
     public static void start(Runnable runnable) {
+        new HaInitHook();
         App.start(() -> startInner(runnable));
     }
 
