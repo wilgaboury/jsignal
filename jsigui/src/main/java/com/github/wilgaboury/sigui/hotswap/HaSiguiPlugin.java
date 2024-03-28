@@ -41,17 +41,24 @@ public class HaSiguiPlugin {
 
     @OnClassLoadEvent(classNameRegexp = ".*")
     public static void instrumentComponents(CtClass ct) throws NotFoundException, CannotCompileException {
-        if (!isChildClass(ct, Component.class.getName()))
-            return;
+        if (isComponentChildClass(ct)) {
+            CtMethod renderMethod = ct.getDeclaredMethod("render");
+            renderMethod.setName(HaComponent.HA_RENDER);
+            ct.addMethod(CtNewMethod.make("public " + Nodes.class.getName() + " render() { " +
+                            "return " + HaComponent.class.getName() + ".render($0);" +
+                            "} ",
+                    ct));
+        }
+    }
 
-        componentClassNames.add(ct.getName());
+    @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
+    public void publishRerenderComponentsCommand(CtClass ct) {
+        if (isComponentChildClass(ct))
+            scheduler.scheduleCommand(new RerenderComponentsCommand(ct.getName()), 100);
+    }
 
-        CtMethod renderMethod = ct.getDeclaredMethod("render");
-        renderMethod.setName(HaComponent.HA_RENDER);
-        ct.addMethod(CtNewMethod.make("public " + Nodes.class.getName() + " render() { " +
-                        "return " + HaComponent.class.getName() + ".render($0);" +
-                    "} ",
-                ct));
+    public static boolean isComponentChildClass(CtClass ct) {
+        return isChildClass(ct, Component.class.getName());
     }
 
     public static boolean isChildClass(CtClass ct, String name) {
@@ -69,11 +76,5 @@ public class HaSiguiPlugin {
             }
         }
         return hierarchy.contains(name);
-    }
-
-    @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void publishRerenderComponentsCommand(Class<?> original) {
-        if (componentClassNames.contains(original.getName()))
-            scheduler.scheduleCommand(new RerenderComponentsCommand(original.getName()), 100);
     }
 }

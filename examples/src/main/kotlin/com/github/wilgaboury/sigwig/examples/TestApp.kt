@@ -32,7 +32,7 @@ class App : Component() {
     private val count = createSignal(0);
 
     override fun render(): Nodes {
-        return Scroller(barWidth = { 10f }) {
+        return Scroller(barWidth = { 15f }) {
             node {
                 layout(flex {
                     stretch()
@@ -51,10 +51,10 @@ class App : Component() {
                 )
                 children(
                     compose(
-                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 1 } }).render(),
+                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 5 } }).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
-//                        Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
-//                        Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
+                        Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
+                        Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
                         Line(supply { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }).render(),
                         Button(
                             color = { buttonColor.get() },
