@@ -51,7 +51,7 @@ class App : Component() {
                 )
                 children(
                     compose(
-                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 5 } }).render(),
+                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 1 } }).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),

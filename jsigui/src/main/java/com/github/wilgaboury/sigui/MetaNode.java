@@ -333,7 +333,7 @@ public class MetaNode {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                 })
-                .children(Nodes.component(component))
+                .children(component.render())
                 .build());
     }
 }

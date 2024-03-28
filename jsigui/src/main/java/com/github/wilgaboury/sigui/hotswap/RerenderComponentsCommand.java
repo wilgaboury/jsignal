@@ -23,9 +23,9 @@ public class RerenderComponentsCommand extends MergeableCommand {
     @Override
     public void executeCommand() {
         SiguiUtil.invokeLater(() -> {
-            Set<HaComponent> components = Stream.concat(Stream.of(this), getMergedCommands().stream())
+            Set<HaComponent> components = Stream.concat(Stream.of(this), getMergedCommands().stream()
                     .filter(RerenderComponentsCommand.class::isInstance)
-                    .map(RerenderComponentsCommand.class::cast)
+                    .map(RerenderComponentsCommand.class::cast))
                     .map(RerenderComponentsCommand::getClassName)
                     .flatMap(className -> HaComponent.getClassNameToHaComponent().get(className).stream())
                     .collect(Collectors.toSet());
@@ -58,4 +58,8 @@ public class RerenderComponentsCommand extends MergeableCommand {
         return obj instanceof RerenderComponentsCommand;
     }
 
+    @Override
+    public int hashCode() {
+        return RerenderComponentsCommand.class.getName().hashCode();
+    }
 }

@@ -13,6 +13,9 @@ import org.hotswap.agent.util.PluginManagerInvoker;
 import java.util.*;
 import java.util.logging.Logger;
 
+/**
+ * Important caveat is that classes cannot be renamed
+ */
 @Plugin(
         name = "HaSiguiPlugin",
         description = "Reactive java UI Plugin For Component Hot Swapping",
