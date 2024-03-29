@@ -45,7 +45,10 @@ dependencies {
     api("io.github.humbleui:skija-macos-x64:${skijaVersion}")
     api("io.github.humbleui:jwm:0.4.15")
 
-    implementation("org.hotswapagent:hotswap-agent-core:1.4.1")
+    // 2024-03-26
+    implementation(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
+
+    implementation("io.github.classgraph:classgraph:4.8.168")
 
     implementation("org.jetbrains:annotations:24.0.0")
 

@@ -55,9 +55,9 @@ public class HaComponent {
 
     public static Nodes render(Component component) {
         var haComponent = new HaComponent(component);
-        return Nodes.compute(() -> {
+        return Provide.provide(haComponentContext.with(Optional.of(haComponent)), () -> Nodes.compute(() -> {
             haComponent.rerender.track();
             return (Nodes) ReflectionHelper.invoke(component, HA_RENDER);
-        });
+        }));
     }
 }

@@ -29,7 +29,7 @@ class App : Component() {
     private val buttonColor = createSignal(Color.withA(EzColors.BLACK, 255))
     private val showFire = createSignal(false)
 
-    private val count = createSignal(0);
+    private val count = createSignal(0)
 
     override fun render(): Nodes {
         return Scroller(barWidth = { 15f }) {
@@ -51,7 +51,8 @@ class App : Component() {
                 )
                 children(
                     compose(
-                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 1 } }).render(),
+//                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 4 } }).render(),
+                        Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),

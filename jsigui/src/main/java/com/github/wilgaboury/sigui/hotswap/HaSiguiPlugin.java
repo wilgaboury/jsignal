@@ -10,7 +10,9 @@ import org.hotswap.agent.command.Scheduler;
 import org.hotswap.agent.javassist.*;
 import org.hotswap.agent.util.PluginManagerInvoker;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -49,13 +51,23 @@ public class HaSiguiPlugin {
             renderMethod.setName(HaComponent.HA_RENDER);
             ct.addMethod(CtNewMethod.make("public " + Nodes.class.getName() + " render() { " +
                             "return " + HaComponent.class.getName() + ".render($0);" +
-                            "} ",
+                        "} ",
                     ct));
         }
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void publishRerenderComponentsCommand(CtClass ct) {
+    public void publishRerenderComponentsCommand(ClassLoader classLoader, CtClass ct, ClassPool classPool) {
+
+//        try (ScanResult scanResult = new ClassGraph()
+//                .overrideClassLoaders(classLoader)
+//                .enableAllInfo()
+//                .acceptClasses(ct.getName())
+//                .scan()) {
+////            scanResult.getAllClasses();
+//        }
+
+        System.out.println("NAME: " + ct.getName());
         if (isComponentChildClass(ct))
             scheduler.scheduleCommand(new RerenderComponentsCommand(ct.getName()), 100);
     }
