@@ -51,12 +51,21 @@ class App : Component() {
                 )
                 children(
                     compose(
-//                        Button(color = { EzColors.BLUE_300 }, text = { "Count: ${count.get()}" }, action = { count.accept { c -> c + 4 } }).render(),
-                        Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }).render(),
+                        Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.GRAY_700 }).render(),
+                        node {
+                            layout(flex {
+                                row()
+                                gap(10f)
+                            })
+                            children(compose(
+                                Button(color = { EzColors.BLUE_300 }, text = { "Increase" }, action = { count.accept { c -> c + 1 } }).render(),
+                                Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }).render(),
+                            ))
+                        },
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
                         Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
-                        Line(supply { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }).render(),
+                        Line( { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }).render(),
                         Button(
                             color = { buttonColor.get() },
                             text = this@App::buttonText,
