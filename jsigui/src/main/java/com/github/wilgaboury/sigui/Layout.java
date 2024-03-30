@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Cleaner;
+import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Trigger;
 import io.github.humbleui.types.Point;
@@ -16,7 +16,7 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
  */
 public class Layout {
     private final long yoga;
-    private final Cleaner cleaner;
+    private final Cleanups cleanups;
 
     private final Trigger update;
 
@@ -40,12 +40,12 @@ public class Layout {
 
     public Layout(long yoga) {
         this.yoga = yoga;
-        this.cleaner = createCleaner();
+        this.cleanups = createCleanups();
         this.update = createTrigger();
     }
 
     private <T> Computed<T> create(Supplier<T> inner) {
-        return provideCleaner(cleaner, () -> createComputed(() -> {
+        return provideCleanups(cleanups, () -> createComputed(() -> {
             update.track();
             return inner.get();
         }));

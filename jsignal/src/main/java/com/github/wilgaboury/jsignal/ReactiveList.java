@@ -30,7 +30,7 @@ public class ReactiveList {
         return createComputed(on(list, (newItems) -> {
             return untrack(() -> {
                 Function<Integer, Supplier<U>> mapper = j -> () -> {
-                    var cleaner = useCleaner();
+                    var cleaner = useCleanups();
                     assert cleaner.isPresent();
                     cleaners.set(j, cleaner.get());
                     var sig = createSignal(j);
@@ -54,7 +54,7 @@ public class ReactiveList {
                 else if (items.size() == 0) {
                     for (int j = 0; j < newItems.size(); j++) {
                         items.add(newItems.get(j));
-                        mapped.set(j, createRootCleaner(mapper.apply(j)));
+                        mapped.set(j, createRootCleanups(mapper.apply(j)));
                     }
                 } else {
                     var temp = new HashMap<Integer, U>();
@@ -112,7 +112,7 @@ public class ReactiveList {
                             indexes.set(j, tempIndexes.get(j));
                             indexes.get(j).accept(j);
                         } else {
-                            mapped.set(j, createRootCleaner(mapper.apply(j)));
+                            mapped.set(j, createRootCleanups(mapper.apply(j)));
                         }
                     }
 

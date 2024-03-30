@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Cleaner;
+import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
@@ -26,7 +26,7 @@ public class SiguiWindow {
 
     private Window window;
     private final MetaNode root;
-    private final Cleaner rootCleaner;
+    private final Cleanups rootCleanups;
     private final NodeRegistry nodeRegistry;
 
     private boolean shouldLayout;
@@ -48,8 +48,8 @@ public class SiguiWindow {
         this.shouldTransformUpdate = false;
 
         windows.add(this);
-        this.rootCleaner = createCleaner();
-        this.root = provide(List.of(WINDOW.with(this), CLEANER.with(Optional.of(rootCleaner))),
+        this.rootCleanups = createCleanups();
+        this.root = provide(List.of(WINDOW.with(this), CLEANUPS.with(Optional.of(rootCleanups))),
                 () -> MetaNode.createRoot(root.get()));
 
         var layer = SiguiUtil.createLayer();
@@ -70,7 +70,7 @@ public class SiguiWindow {
         windows.remove(this);
         window.close();
         window = null;
-        rootCleaner.run();
+        rootCleanups.run();
     }
 
     public MetaNode getRoot() {

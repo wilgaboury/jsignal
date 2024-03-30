@@ -1,27 +1,28 @@
 package com.github.wilgaboury.jsignal.flow;
 
-import com.github.wilgaboury.jsignal.Cleaner;
+import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.SignalDecorator;
 import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Flow;
 
+// TODO: these adapters suck
 public class SubscriberAdapter<T> extends SignalDecorator<T> implements Flow.Subscriber<T> {
-    private final WeakReference<Cleaner> cleaner;
+    private final WeakReference<Cleanups> cleanups;
 
-    public SubscriberAdapter(SignalLike<T> signal, Cleaner cleaner) {
+    public SubscriberAdapter(SignalLike<T> signal, Cleanups cleanups) {
         super(signal);
-        this.cleaner = new WeakReference<>(cleaner);
+        this.cleanups = new WeakReference<>(cleanups);
     }
 
     @Override
     public void onSubscribe(Flow.Subscription subscription) {
         subscription.request(Long.MAX_VALUE);
-        var cleaner = this.cleaner.get();
+        var cleaner = this.cleanups.get();
 
         if (cleaner != null)
-            cleaner.add(subscription::cancel);
+            cleaner.getQueue().add(subscription::cancel);
         else
             subscription.cancel();
     }

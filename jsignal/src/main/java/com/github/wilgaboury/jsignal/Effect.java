@@ -18,23 +18,23 @@ public class Effect implements EffectLike {
 
     protected final int id;
     protected final Runnable effect;
-    protected final Cleaner cleanup;
+    protected final Cleanups cleanups;
     protected final Provider provider;
     protected final ThreadBound threadBound;
+    protected final Flipper<Set<SignalLike<?>>> signals;
     protected boolean disposed;
-    protected final Flipper<Set<SignalLike<?>>> signals; // TODO: preemptively remove effect from signals when it is garbage collected
 
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
         this.effect = effect;
-        this.cleanup = createCleaner();
+        this.cleanups = createCleanups();
         this.provider = currentProvider().add(
-                CLEANER.with(Optional.of(cleanup)),
+                CLEANUPS.with(Optional.of(cleanups)),
                 EFFECT.with(Optional.of(this))
         );
         this.threadBound = new ThreadBound(isSync);
-        this.disposed = false;
         this.signals = new Flipper<>(HashSet::new);
+        this.disposed = false;
 
         onCleanup(this::dispose);
     }
@@ -68,7 +68,7 @@ public class Effect implements EffectLike {
     public void dispose() {
         threadBound.maybeSynchronize(() -> {
             disposed = true;
-            cleanup.run();
+            cleanups.run();
         });
     }
 
@@ -94,7 +94,7 @@ public class Effect implements EffectLike {
                 }
                 signals.getBack().clear();
 
-                cleanup.run();
+                cleanups.run();
                 inner.run();
             }));
         });

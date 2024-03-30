@@ -21,7 +21,7 @@ import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class ReactiveUtil {
     public static final Context<Optional<EffectLike>> EFFECT = createContext(Optional.empty());
-    public static final Context<Optional<Cleaner>> CLEANER = createContext(Optional.empty());
+    public static final Context<Optional<Cleanups>> CLEANUPS = createContext(Optional.empty());
     public static final Context<Executor> EXECUTOR = createContext(Runnable::run);
     public static final ThreadLocal<Batch> BATCH = ThreadLocal.withInitial(Batch::new);
 
@@ -172,35 +172,35 @@ public class ReactiveUtil {
         return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
     }
 
-    public static Optional<Cleaner> useCleaner() {
-        return useContext(CLEANER);
+    public static Optional<Cleanups> useCleanups() {
+        return useContext(CLEANUPS);
     }
 
-    public static void provideCleaner(Cleaner cleaner, Runnable inner) {
-        provideCleaner(cleaner, toSupplier(inner));
+    public static void provideCleanups(Cleanups cleanups, Runnable inner) {
+        provideCleanups(cleanups, toSupplier(inner));
     }
 
-    public static <T> T provideCleaner(Cleaner cleaner, Supplier<T> inner) {
-        return provide(CLEANER.with(Optional.of(cleaner)), inner);
+    public static <T> T provideCleanups(Cleanups cleanups, Supplier<T> inner) {
+        return provide(CLEANUPS.with(Optional.of(cleanups)), inner);
     }
 
-    public static Cleaner createCleaner() {
-        return createCleaner(() -> {});
+    public static Cleanups createCleanups() {
+        return createCleanups(() -> {});
     }
 
-    public static Cleaner createCleaner(Runnable inner) {
-        var cleaner = new Cleaner();
-        useCleaner().ifPresent(c -> c.add(cleaner));
-        provide(CLEANER.with(Optional.of(cleaner)), inner);
+    public static Cleanups createCleanups(Runnable inner) {
+        var cleaner = new Cleanups();
+        useCleanups().ifPresent(c -> c.getQueue().add(cleaner));
+        provide(CLEANUPS.with(Optional.of(cleaner)), inner);
         return cleaner;
     }
 
-    public static <T> T createRootCleaner(Supplier<T> inner) {
-        return provide(CLEANER.with(Optional.of(new Cleaner())), inner);
+    public static <T> T createRootCleanups(Supplier<T> inner) {
+        return provide(CLEANUPS.with(Optional.of(new Cleanups())), inner);
     }
 
     public static void onCleanup(Runnable cleanup) {
-        useContext(CLEANER).ifPresent(c -> c.add(cleanup));
+        useContext(CLEANUPS).ifPresent(c -> c.getQueue().add(cleanup));
     }
 
     public static void batch(Runnable inner) {
@@ -289,10 +289,10 @@ public class ReactiveUtil {
         return new PublisherAdapter<>(signal);
     }
 
-    public static <T> Cleaner createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
-        Cleaner cleaner = useContext(CLEANER).orElseGet(Cleaner::new);
-        publisher.subscribe(new SubscriberAdapter<T>(signal, cleaner));
-        return cleaner;
+    public static <T> Cleanups createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
+        Cleanups cleanups = useContext(CLEANUPS).orElseGet(Cleanups::new);
+        publisher.subscribe(new SubscriberAdapter<T>(signal, cleanups));
+        return cleanups;
     }
 
     public static <T> Supplier<T> constantSupplier(T value) {

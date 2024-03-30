@@ -32,7 +32,7 @@ public class MetaNode {
     private final Map<EventType, Collection<Consumer<?>>> listeners;
 
     @SuppressWarnings("unused")
-    private final Cleaner cleaner;
+    private final Cleanups cleanups;
 
     private String id;
     private Set<String> tags;
@@ -60,15 +60,15 @@ public class MetaNode {
 
         this.paintCacheStrategy = new PicturePaintCacheStrategy();
 
-        cleaner = createCleaner(() -> {
+        cleanups = createCleanups(() -> {
             onCleanup(this::cleanup);
             createEffect(this::layoutEffectInner);
         });
 
-        this.paintEffect = provideCleaner(cleaner, () -> createSideEffect(this::paintEffectInner));
-        this.transformEffect = provideCleaner(cleaner, () -> createSideEffect(this::transformEffectInner));
-        this.children = provideCleaner(cleaner, this::createChildren);
-        provideCleaner(cleaner, () -> node.reference(this));
+        this.paintEffect = provideCleanups(cleanups, () -> createSideEffect(this::paintEffectInner));
+        this.transformEffect = provideCleanups(cleanups, () -> createSideEffect(this::transformEffectInner));
+        this.children = provideCleanups(cleanups, this::createChildren);
+        provideCleanups(cleanups, () -> node.reference(this));
     }
 
     private void cleanup() {
