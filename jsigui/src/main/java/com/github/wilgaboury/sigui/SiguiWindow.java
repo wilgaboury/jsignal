@@ -86,12 +86,12 @@ public class SiguiWindow {
     }
 
     private void layout() {
-        // TODO: this loop is a somewhat hacky (elegant?) way to get around layout updates that rely on previous layout updates
+        // this loop is a somewhat hacky (elegant?) way to get around layout updates that rely on previous layout updates
         while (shouldLayout && window != null) {
             shouldLayout = false;
             var rect = window.getContentRect();
             Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
-            batch(() -> root.visitTreePre(n -> n.getLayout().update()));
+            batch(root::updateLayout);
         }
     }
 
@@ -181,7 +181,7 @@ public class SiguiWindow {
                 if (hovered != null)
                     hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
 
-                // todo: possibly check up tree instead of just target for click test
+                // TODO: possibly check up tree instead of just target for click test
                 if (hovered != null && mouseDown == hovered) {
                     hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
                 } else if (mouseDown != null) {

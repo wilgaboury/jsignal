@@ -261,20 +261,17 @@ public class MetaNode {
         return yoga;
     }
 
-    public void visitTree(Consumer<MetaNode> preVisitor, Consumer<MetaNode> postVisitor) {
-        preVisitor.accept(this);
+    public void updateLayout() {
+        if (!Yoga.YGNodeGetHasNewLayout(yoga))
+            return;
+
+        Yoga.YGNodeSetHasNewLayout(yoga, false);
+
+        layout.update();
+
         for (var child : children.get()) {
-            child.visitTree(preVisitor, postVisitor);
+            child.updateLayout();
         }
-        postVisitor.accept(this);
-    }
-
-    public void visitTreePre(Consumer<MetaNode> visitor) {
-        visitTree(visitor, (n) -> {});
-    }
-
-    public void visitTreePost(Consumer<MetaNode> visitor) {
-        visitTree((n) -> {}, visitor);
     }
 
     public void visitParents(Consumer<MetaNode> visitor) {
