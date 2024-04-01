@@ -25,10 +25,12 @@ public class HaComponent {
 
     private final HaComponent parent;
     private final Trigger rerender;
+    private final Component component;
 
     public HaComponent(Component component) {
         this.parent = Provide.useContext(haComponentContext).orElse(null);
         this.rerender = ReactiveUtil.createTrigger();
+        this.component = component;
 
         classNameToHaComponent.computeIfAbsent(component.getClass().getName(), k -> new LinkedHashSet<>()).add(this);
         componentToHa.put(component, this);

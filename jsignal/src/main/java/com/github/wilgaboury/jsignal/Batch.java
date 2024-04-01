@@ -21,10 +21,13 @@ public class Batch {
                 inner.run();
                 while (!effects.getFront().isEmpty()) {
                     effects.flip();
-                    for (var effect : effects.getBack().values()) {
-                        effect.run();
+                    try {
+                        for (var effect : effects.getBack().values()) {
+                            effect.run();
+                        }
+                    } finally {
+                        effects.getBack().clear();
                     }
-                    effects.getBack().clear();
                 }
             } finally {
                 inBatch = false;

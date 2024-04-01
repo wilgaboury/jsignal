@@ -73,11 +73,14 @@ class Scroller(
                 }
             }
 
-            createEffect {
-                val viewSize = view.get().layout.size
-                val contentSize = content.get().layout.size
-                yScale.accept(viewSize.y / contentSize.y)
-            }
+//            createEffect {
+//                onCleanup {
+//                    println("is this disposed?")
+//                }
+//                val viewSize = view.get().layout.size
+//                val contentSize = content.get().layout.size
+//                yScale.accept(viewSize.y / contentSize.y)
+//            }
         }
 
         return node {

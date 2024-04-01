@@ -330,7 +330,23 @@ public class MetaNode {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                 })
-                .children(component.render())
+                .children(new RootComponent(component).render())
                 .build());
+    }
+
+    /**
+     * provide hook for hotswap instrumentation at root
+     */
+    private static class RootComponent extends Component {
+        private final Component child;
+
+        public RootComponent(Component child) {
+            this.child = child;
+        }
+
+        @Override
+        public Nodes render() {
+            return child.render();
+        }
     }
 }

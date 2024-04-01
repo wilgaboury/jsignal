@@ -19,28 +19,24 @@ package com.github.wilgaboury.sigui.hotswap.anon;
  * with HotswapAgent. If not, see http://www.gnu.org/licenses/.
  */
 
+import org.hotswap.agent.annotation.Init;
+import org.hotswap.agent.annotation.LoadEvent;
+import org.hotswap.agent.annotation.OnClassLoadEvent;
+import org.hotswap.agent.annotation.Plugin;
+import org.hotswap.agent.javassist.*;
+import org.hotswap.agent.logging.AgentLogger;
+import org.hotswap.agent.plugin.jvm.AnonymousClassInfo;
+import org.hotswap.agent.plugin.jvm.AnonymousClassInfos;
+import org.hotswap.agent.util.HaClassFileTransformer;
+import org.hotswap.agent.util.HotswapTransformer;
+import org.hotswap.agent.util.classloader.ClassLoaderHelper;
+
 import java.io.IOException;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import org.hotswap.agent.annotation.Init;
-import org.hotswap.agent.annotation.LoadEvent;
-import org.hotswap.agent.annotation.OnClassLoadEvent;
-import org.hotswap.agent.annotation.Plugin;
-import org.hotswap.agent.javassist.CannotCompileException;
-import org.hotswap.agent.javassist.ClassMap;
-import org.hotswap.agent.javassist.ClassPool;
-import org.hotswap.agent.javassist.CtClass;
-import org.hotswap.agent.javassist.NotFoundException;
-import org.hotswap.agent.logging.AgentLogger;
-import org.hotswap.agent.plugin.jvm.AnonymousClassInfo;
-import org.hotswap.agent.plugin.jvm.AnonymousClassInfos;
-import org.hotswap.agent.util.HotswapTransformer;
-import org.hotswap.agent.util.HaClassFileTransformer;
-import org.hotswap.agent.util.classloader.ClassLoaderHelper;
 
 /**
  * Class names MyClass$1, MyClass$2 are created in the order as anonymous class appears in the source code.
@@ -75,7 +71,7 @@ import org.hotswap.agent.util.classloader.ClassLoaderHelper;
  *
  * @author Jiri Bubnik
  */
-@Plugin(name = "AnonymousClassPatch",
+@Plugin(name = "KotlinAnonymousClassPatch",
         description = "Swap anonymous inner class names to avoid not compatible changes.",
         testedVersions = {"DCEVM"})
 public class KotlinAnonymousClassPatchPlugin {
@@ -92,7 +88,7 @@ public class KotlinAnonymousClassPatchPlugin {
      * Replace an anonymous class with a compatible change (from another class according to state info).
      * If no compatible class exists, replace with compatible empty implementation.
      */
-    @OnClassLoadEvent(classNameRegexp = ".*\\$\\d+", events = LoadEvent.REDEFINE)
+    @OnClassLoadEvent(classNameRegexp = ".*\\$\\d+$", events = LoadEvent.REDEFINE)
     public static CtClass patchAnonymousClass(ClassLoader classLoader, ClassPool classPool, String className, Class original)
             throws IOException, NotFoundException, CannotCompileException {
 
@@ -181,9 +177,8 @@ public class KotlinAnonymousClassPatchPlugin {
         String javaClassName = className.replaceAll("/", ".");
 
         // check if has anonymous classes
-        if (!ClassLoaderHelper.isClassLoaded(classLoader, javaClassName + "$1"))
+        if (className.matches(".*\\$\\d+$") || new KotlinAnonymousClassSearchStrategy().searchCurrent(classLoader, javaClassName).isEmpty())
             return null;
-
 
         KotlinAnonymousClassInfos stateInfo = getStateInfo(classLoader, classPool, javaClassName);
         Map<AnonymousClassInfo, AnonymousClassInfo> transitions = stateInfo.getCompatibleTransitions();
@@ -221,7 +216,7 @@ public class KotlinAnonymousClassPatchPlugin {
 //        CtClass ctClass = classPool.get(javaClassName);
         ctClass.replaceClassName(replaceClassNameMap);
 
-        LOGGER.reload("Class '{}' has been enhanced with anonymous classes for hotswap.", className);
+        LOGGER.reload("Class '{}' has been enhanced with anonymous classes for hotswap.", javaClassName);
         return ctClass.toBytecode();
     }
 

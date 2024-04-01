@@ -58,8 +58,9 @@ class App : Component() {
                                 gap(10f)
                             })
                             children(compose(
-                                Button(color = { EzColors.BLUE_300 }, text = { "Increase" }, action = { count.accept { c -> c + 1 } }).render(),
+//                                Button(color = { EzColors.BLUE_300 }, text = { "Increase" }, action = { count.accept { c -> c + 1 } }).render(),
                                 Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }).render(),
+                                Button(color = { EzColors.RED_600 }, text = { "Multiply" }, action = { count.accept { c -> c * 2 } }).render(),
                             ))
                         },
                         Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),

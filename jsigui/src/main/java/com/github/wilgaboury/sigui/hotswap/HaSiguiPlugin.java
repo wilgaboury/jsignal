@@ -57,19 +57,10 @@ public class HaSiguiPlugin {
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void publishRerenderComponentsCommand(ClassLoader classLoader, CtClass ct, ClassPool classPool) {
-
-//        try (ScanResult scanResult = new ClassGraph()
-//                .overrideClassLoaders(classLoader)
-//                .enableAllInfo()
-//                .acceptClasses(ct.getName())
-//                .scan()) {
-////            scanResult.getAllClasses();
-//        }
-
+    public void publishRerenderComponentsCommand(CtClass ct) {
         System.out.println("NAME: " + ct.getName());
         if (isComponentChildClass(ct))
-            scheduler.scheduleCommand(new RerenderComponentsCommand(ct.getName()), 100);
+            scheduler.scheduleCommand(new RerenderComponentsCommand(ct.getName()), 2000);
     }
 
     public static boolean isComponentChildClass(CtClass ct) {

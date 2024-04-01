@@ -89,10 +89,13 @@ public class Effect implements EffectLike {
 
             batch(() -> provide(provider, () -> {
                 signals.flip();
-                for (var signal : signals.getBack()) {
-                    signal.untrack();
+                try {
+                    for (var signal : signals.getBack()) {
+                        signal.untrack();
+                    }
+                } finally {
+                    signals.getBack().clear();
                 }
-                signals.getBack().clear();
 
                 cleanups.run();
                 inner.run();

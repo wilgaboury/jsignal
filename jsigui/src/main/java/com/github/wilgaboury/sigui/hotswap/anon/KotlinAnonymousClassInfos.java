@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui.hotswap.anon;
 
+import io.github.classgraph.ClassInfoList;
 import org.hotswap.agent.javassist.ClassPool;
 import org.hotswap.agent.javassist.CtClass;
 import org.hotswap.agent.javassist.CtMethod;
@@ -48,25 +49,9 @@ public class KotlinAnonymousClassInfos {
      */
     public KotlinAnonymousClassInfos(ClassLoader classLoader, String className) {
         this.className = className;
-
-        try {
-            // reflective call to check already loaded class (not to load a new one)
-            Method m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
-            m.setAccessible(true);
-
-            int i = 1;
-            while (true) {
-
-                Class anonymous = (Class) m.invoke(classLoader, className + "$" + i);
-                if (anonymous == null)
-                    break;
-
-                anonymousClassInfoList.add(i - 1, new AnonymousClassInfo(anonymous));
-                i++;
-            }
-        } catch (Exception e) {
-            throw new Error("Unexpected error in checking loaded classes", e);
-        }
+        this.anonymousClassInfoList = new KotlinAnonymousClassSearchStrategy().searchCurrent(classLoader, className).stream()
+                .map(AnonymousClassInfo::new)
+                .toList();
     }
 
     /**
@@ -77,56 +62,12 @@ public class KotlinAnonymousClassInfos {
      */
     public KotlinAnonymousClassInfos(ClassPool classPool, String className) {
         this.className = className;
-        lastModifiedTimestamp = lastModified(classPool, className);
-
-        // search for declared classes in new state to skip obsolete anonymous inner classes on filesystem
-        List<CtClass> declaredClasses;
-        try {
-            CtClass ctClass = classPool.get(className);
-            declaredClasses = Arrays.asList(ctClass.getNestedClasses());
-        } catch (NotFoundException e) {
-            throw new IllegalArgumentException("Class " + className + " not found.");
-        }
-
-        anonymousClassInfoList = findAnonymousClasses(classPool, className).stream()
-                .filter(ctClass -> !declaredClasses.contains(ctClass))
+        this.lastModifiedTimestamp = lastModified(classPool, className);
+        this.anonymousClassInfoList = new KotlinAnonymousClassSearchStrategy().searchNew(classPool, className).stream()
                 .map(AnonymousClassInfo::new)
                 .toList();
 
         LOGGER.trace("Anonymous class '{}' scan finished with {} classes found", className, anonymousClassInfoList.size());
-    }
-
-    private List<CtClass> findAnonymousClasses(ClassPool classPool, String className) {
-        CtClass main = classPool.getOrNull(className);
-        if (main == null) {
-            LOGGER.error("Could not find main class {}", className);
-            return List.of();
-        }
-
-        ArrayList<Integer> lambdaNumStack = new ArrayList<>();
-        ArrayList<CtClass> result = new ArrayList<>();
-
-        for (CtMethod method : main.getMethods()) {
-            lambdaNumStack.add(0);
-
-            while (!lambdaNumStack.isEmpty()) {
-                lambdaNumStack.add(lambdaNumStack.remove(lambdaNumStack.size() - 1) + 1);
-                String suffix = createSuffix(method, lambdaNumStack);
-
-                CtClass anon = classPool.getOrNull(main.getName() + suffix);
-                if (anon != null) {
-                    lambdaNumStack.add(0);
-                } else {
-                    lambdaNumStack.remove(lambdaNumStack.size() - 1);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private static String createSuffix(CtMethod method, List<Integer> integers) {
-        return "$" + method.getName() + "$" + integers.stream().map(Object::toString).collect(Collectors.joining("$"));
     }
 
     /**

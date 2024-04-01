@@ -1,7 +1,11 @@
 package com.github.wilgaboury.sigui.hotswap.anon;
 
+import org.hotswap.agent.javassist.ClassPool;
+import org.hotswap.agent.javassist.CtClass;
+
 import java.util.Collection;
 
-public interface AnonymousClassSearchStrategy<P, C> {
-    Collection<C> search(String main, AnonymousClassSearchQueryable<P, C> queryable);
+public interface AnonymousClassSearchStrategy {
+    Collection<Class<?>> searchCurrent(ClassLoader classLoader, String name);
+    Collection<CtClass> searchNew(ClassPool classPool, String name);
 }
