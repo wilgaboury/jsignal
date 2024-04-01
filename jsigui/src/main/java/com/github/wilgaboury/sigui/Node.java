@@ -7,7 +7,9 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -56,7 +58,12 @@ public interface Node {
         private Painter paintAfter = (canvas, layout) -> {};
 
         public Builder children(Nodes nodes) {
-            this.children = nodes;
+            children = nodes;
+            return this;
+        }
+
+        public Builder children(Supplier<? extends Nodes>... nodes) {
+            children = Nodes.compose(Arrays.asList(nodes));
             return this;
         }
 

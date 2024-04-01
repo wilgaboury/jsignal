@@ -105,7 +105,7 @@ class Scroller(
                 heightPercent(100f)
                 overflow(Yoga.YGOverflowScroll)
             })
-            children(Nodes.multiple(
+            children(
                 node {
                         ref {
                         content.set(this)
@@ -131,7 +131,7 @@ class Scroller(
                         yOffset.accept(min(0f, max(-max, yOffset.get())))
                         Matrix33.makeTranslate(0f, yOffset.get())
                     }
-                    children(children())
+                    children(this@Scroller.children())
                 },
                 node {
                     ref {
@@ -217,7 +217,7 @@ class Scroller(
                         }
                     ))
                 }
-            ))
+            )
         }
     }
 

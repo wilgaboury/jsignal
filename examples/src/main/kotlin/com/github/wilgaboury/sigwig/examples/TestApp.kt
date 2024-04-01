@@ -50,37 +50,37 @@ class App : Component() {
                         borderColor = { EzColors.EMERALD_500 })
                 )
                 children(
-                    compose(
-                        Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.GRAY_700 }).render(),
-                        node {
-                            layout(flex {
-                                row()
-                                gap(10f)
-                            })
-                            children(compose(
-//                                Button(color = { EzColors.BLUE_300 }, text = { "Increase" }, action = { count.accept { c -> c + 1 } }).render(),
-                                Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }).render(),
-                                Button(color = { EzColors.RED_600 }, text = { "Multiply" }, action = { count.accept { c -> c * 2 } }).render(),
-                            ))
-                        },
-                        Para(Para.basic(LOREM, EzColors.BLACK, 12f)).render(),
-                        Para(Para.basic(LOREM, EzColors.BLACK, 10f)).render(),
-                        Para(Para.basic(LOREM, EzColors.BLACK, 8f)).render(),
-                        Line( { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }).render(),
-                        Button(
-                            color = { buttonColor.get() },
-                            text = this@App::buttonText,
-                            size = { Button.Size.LG },
-                            action = {
-                                buttonColor.accept(Color.withA(random.nextInt(), 255))
-                                showFire.accept { show -> !show }
-                            }).render(),
-                        maybeFireImage(),
-                        Image(supply { Blob.fromResource("/peng.png", MediaType.PNG) },
-                            fit = { Image.Fit.COVER },
-                            width = supply { pixel(300f) },
-                            height = supply { pixel(200f) }).render(),
-                    )
+                    Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.GRAY_700 }),
+                    node {
+                        layout(flex {
+                            row()
+                            gap(10f)
+                        })
+                        children(
+                            Button(color = { EzColors.BLUE_300 }, text = { "Increase" }, action = { count.accept { c -> c + 1 } }),
+                            Button(color = { EzColors.BLUE_700 }, text = { "Decrease" }, action = { count.accept { c -> c - 1 } }),
+                            Button(color = { EzColors.RED_600 }, text = { "Multiply" }, action = { count.accept { c -> c * 2 } }),
+                        )
+                    },
+                    Para(Para.basic(LOREM, EzColors.BLACK, 12f)),
+                    Para(Para.basic(LOREM, EzColors.BLACK, 10f)),
+                    Para(Para.basic(LOREM, EzColors.BLACK, 8f)),
+                    Line( { Line.basic("change text line", 20f) }, { EzColors.FUCHSIA_800 }),
+                    Button(
+                        color = { buttonColor.get() },
+                        text = this@App::buttonText,
+                        size = { Button.Size.LG },
+                        action = {
+                            buttonColor.accept(Color.withA(random.nextInt(), 255))
+                            showFire.accept { show -> !show }
+                        }
+                    ),
+                    maybeFireImage(),
+                    Image(supply { Blob.fromResource("/peng.png", MediaType.PNG) },
+                        fit = { Image.Fit.COVER },
+                        width = supply { pixel(300f) },
+                        height = supply { pixel(200f) }
+                    ),
                 )
             }
         }.render()

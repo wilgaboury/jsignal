@@ -10,9 +10,7 @@ import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
 import com.github.wilgaboury.sigui.SiguiUtil
 import com.github.wilgaboury.sigui.SiguiWindow
-import com.github.wilgaboury.sigwig.Button
 import com.github.wilgaboury.sigwig.Circle
-import com.github.wilgaboury.sigwig.EzColors
 
 fun main() {
     SiguiUtil.start {
@@ -41,12 +39,12 @@ class App2 : Component() {
                 row()
                 gap(10f)
             })
-            children(Nodes.compose(
-                Circle(radius = { 10f }).render(),
-                Circle(radius = { 20f }).render(),
-                Circle(radius = { 30f }).render(),
-                Circle(radius = { 40f }).render()
-            ))
+            children(
+                Circle(radius = { 10f }),
+                Circle(radius = { 20f }),
+                Circle(radius = { 30f }),
+                Circle(radius = { 40f }),
+            )
         };
     }
 }

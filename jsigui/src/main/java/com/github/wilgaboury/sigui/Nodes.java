@@ -10,11 +10,15 @@ import java.util.stream.Stream;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
-public sealed interface Nodes permits
+public sealed interface Nodes extends Supplier<Nodes> permits
         Nodes.Static,
         Nodes.Dynamic
 {
     Stream<? extends Node> stream();
+
+    default Nodes get() {
+        return this;
+    }
 
     static Static empty() {
         return new Static(Collections.emptyList());
@@ -36,11 +40,12 @@ public sealed interface Nodes permits
         return new Static(nodes.stream().flatMap(Nodes::stream).toList());
     }
 
-    static Nodes compose(Nodes... nodes) {
+    static Nodes compose(Supplier<? extends Nodes>... nodes) {
         return compose(Arrays.asList(nodes));
     }
 
-    static Nodes compose(Collection<? extends Nodes> nodes) {
+    static Nodes compose(Collection<? extends Supplier<? extends Nodes>> suppliers) {
+        var nodes = suppliers.stream().map(Supplier::get).toList();
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
             return new Dynamic(createComputed(() -> nodes.stream().flatMap(Nodes::stream).toList()));
         } else {
