@@ -1,6 +1,38 @@
 # JSignal
 
-A reactive primitive for Java and with strong support for multithreading. This project was inspired by the SolidJS javascript framework.
+Desktop GUI library for Java and Kotlin desktop applications. This libray takes strong inspiration from [SolidJS](https://www.solidjs.com/).
+
+## Obligatory Counter Example
+
+```kotlin
+fun main() {
+    SiguiUtil.start {
+        val window = SiguiUtil.createWindow()
+        window.setTitle("Counter")
+        window.setContentSize(400, 400)
+        SiguiWindow(window) { App() }
+    }
+}
+
+class App : Component() {
+    private val count = createSignal(0)
+
+    override fun render(): Nodes {
+        return node {
+            layout(flex {
+                stretch()
+                center()
+                column()
+                gap(10f)
+            })
+            children(
+                Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.BLUE_500 }),
+                Button(color = { EzColors.BLUE_300 }, text = { "Increment" }, action = { count.accept { c -> c + 1 } }),
+            )
+        }
+    }
+}
+```
 
 ## Signals and Effects
 
