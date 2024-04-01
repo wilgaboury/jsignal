@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Batch {
+    static final ThreadLocal<Batch> batch = ThreadLocal.withInitial(Batch::new);
+
     private boolean inBatch;
     private final Flipper<Map<Integer, EffectRef>> effects;
 

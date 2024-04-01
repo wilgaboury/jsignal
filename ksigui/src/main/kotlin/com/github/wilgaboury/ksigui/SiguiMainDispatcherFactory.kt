@@ -1,5 +1,7 @@
 package com.github.wilgaboury.ksigui
 
+import com.github.wilgaboury.jsignal.ReactiveUtil
+import com.github.wilgaboury.sigui.SiguiExecutor
 import com.github.wilgaboury.sigui.SiguiUtil
 import kotlinx.coroutines.*
 import kotlinx.coroutines.internal.MainDispatcherFactory
@@ -16,7 +18,7 @@ internal object SiguiDispatcher : MainCoroutineDispatcher(), Delay {
 
     override fun isDispatchNeeded(context: CoroutineContext): Boolean = !SiguiUtil.onThread()
 
-    override fun dispatch(context: CoroutineContext, block: Runnable): Unit = SiguiUtil.invokeLater(block)
+    override fun dispatch(context: CoroutineContext, block: Runnable): Unit = SiguiExecutor.invokeLater(block)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {

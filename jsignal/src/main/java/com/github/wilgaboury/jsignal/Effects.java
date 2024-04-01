@@ -6,12 +6,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.BATCH;
-
 public record Effects(Map<Integer, EffectRef> effects) implements Runnable {
     @Override
     public void run() {
-        var batch = BATCH.get();
+        var batch = Batch.batch.get();
         batch.run(() -> {
             Iterator<EffectRef> itr = effects.values().iterator();
             while (itr.hasNext()) {

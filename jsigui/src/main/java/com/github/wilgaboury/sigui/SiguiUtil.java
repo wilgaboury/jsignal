@@ -1,5 +1,7 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.Effect;
+import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.hotswap.HaInitHook;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Layer;
@@ -33,12 +35,8 @@ public class SiguiUtil {
         runnable.run();
     }
 
-    public static void invoke(Runnable runnable) {
-        App.runOnUIThread(runnable);
-    }
-
-    public static void invokeLater(Runnable runnable) {
-        App._nRunOnUIThread(runnable);
+    public static Effect createEffectLater(Runnable runnable) {
+        return ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable));
     }
 
     public static boolean onThread() {

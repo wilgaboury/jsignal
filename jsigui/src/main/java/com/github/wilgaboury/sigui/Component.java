@@ -12,6 +12,6 @@ public abstract class Component {
 
     public static void onMount(Runnable inner) {
         Provider provider = currentProvider();
-        SiguiUtil.invokeLater(() -> provide(provider, inner));
+        SiguiExecutor.invokeLater(() -> provide(provider, inner));
     }
 }

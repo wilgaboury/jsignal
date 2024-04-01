@@ -305,7 +305,7 @@ public class MetaNode {
 
     public <T extends Event> void fire(T event) {
         for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
-            ((Consumer<T>)listener).accept(event);
+            SiguiExecutor.invokeLater(() -> ((Consumer<T>)listener).accept(event));
 
             if (event.isImmediatePropagationStopped())
                 return;

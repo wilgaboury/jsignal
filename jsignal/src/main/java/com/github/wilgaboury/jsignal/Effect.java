@@ -9,11 +9,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.Provide.currentProvider;
-import static com.github.wilgaboury.jsignal.Provide.provide;
+import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Effect implements EffectLike {
+    static final Context<Optional<EffectLike>> effectContext = createContext(Optional.empty());
     protected static final AtomicInteger nextId = new AtomicInteger(0);
 
     protected final int id;
@@ -29,8 +29,8 @@ public class Effect implements EffectLike {
         this.effect = effect;
         this.cleanups = createCleanups();
         this.provider = currentProvider().add(
-                CLEANUPS.with(Optional.of(cleanups)),
-                EFFECT.with(Optional.of(this))
+                cleanupsContext.with(Optional.of(cleanups)),
+                effectContext.with(Optional.of(this))
         );
         this.threadBound = new ThreadBound(isSync);
         this.signals = new Flipper<>(HashSet::new);
@@ -67,8 +67,11 @@ public class Effect implements EffectLike {
     @Override
     public void dispose() {
         threadBound.maybeSynchronize(() -> {
+            if (disposed)
+                return;
+
             disposed = true;
-            cleanups.run();
+            clear();
         });
     }
 
@@ -82,25 +85,29 @@ public class Effect implements EffectLike {
         run(effect);
     }
 
-    protected void run(Runnable inner) {
+    public void run(Runnable inner) {
         threadBound.maybeSynchronize(() -> {
-            if (isDisposed())
+            if (disposed)
                 return;
 
             batch(() -> provide(provider, () -> {
-                signals.flip();
-                try {
-                    for (var signal : signals.getBack()) {
-                        signal.untrack();
-                    }
-                } finally {
-                    signals.getBack().clear();
-                }
-
-                cleanups.run();
+                clear();
                 inner.run();
             }));
         });
+    }
+
+    private void clear() {
+        signals.flip();
+        try {
+            for (var signal : signals.getBack()) {
+                signal.untrack();
+            }
+        } finally {
+            signals.getBack().clear();
+        }
+
+        cleanups.run();
     }
 
     @Override

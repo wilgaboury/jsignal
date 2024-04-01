@@ -20,10 +20,8 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.Provide.*;
 
 public class ReactiveUtil {
-    public static final Context<Optional<EffectLike>> EFFECT = createContext(Optional.empty());
-    public static final Context<Optional<Cleanups>> CLEANUPS = createContext(Optional.empty());
-    public static final Context<Executor> EXECUTOR = createContext(Runnable::run);
-    public static final ThreadLocal<Batch> BATCH = ThreadLocal.withInitial(Batch::new);
+    public static final Context<Optional<Cleanups>> cleanupsContext = createContext(Optional.empty());
+    public static final Context<Executor> executorContext = createContext(Runnable::run);
 
     private ReactiveUtil() {
     }
@@ -117,7 +115,7 @@ public class ReactiveUtil {
     }
 
     public static @NotNull Optional<@NotNull EffectLike> useEffect() {
-        return useContext(EFFECT);
+        return useContext(Effect.effectContext);
     }
 
     public static @NotNull Effect createEffect(@NotNull Runnable inner) {
@@ -137,7 +135,7 @@ public class ReactiveUtil {
     }
 
     public static @NotNull Executor useExecutor() {
-        return useContext(EXECUTOR);
+        return useContext(executorContext);
     }
 
     public static void provideExecutor(Executor executor, Runnable inner) {
@@ -145,7 +143,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T provideExecutor(Executor executor, Supplier<T> inner) {
-        return provide(EXECUTOR.with(executor), inner);
+        return provide(executorContext.with(executor), inner);
     }
 
     public static void provideAsyncExecutor(Runnable inner) {
@@ -173,7 +171,7 @@ public class ReactiveUtil {
     }
 
     public static Optional<Cleanups> useCleanups() {
-        return useContext(CLEANUPS);
+        return useContext(cleanupsContext);
     }
 
     public static void provideCleanups(Cleanups cleanups, Runnable inner) {
@@ -181,7 +179,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T provideCleanups(Cleanups cleanups, Supplier<T> inner) {
-        return provide(CLEANUPS.with(Optional.of(cleanups)), inner);
+        return provide(cleanupsContext.with(Optional.of(cleanups)), inner);
     }
 
     public static Cleanups createCleanups() {
@@ -191,20 +189,20 @@ public class ReactiveUtil {
     public static Cleanups createCleanups(Runnable inner) {
         var cleaner = new Cleanups();
         useCleanups().ifPresent(c -> c.getQueue().add(cleaner));
-        provide(CLEANUPS.with(Optional.of(cleaner)), inner);
+        provide(cleanupsContext.with(Optional.of(cleaner)), inner);
         return cleaner;
     }
 
     public static <T> T createRootCleanups(Supplier<T> inner) {
-        return provide(CLEANUPS.with(Optional.of(new Cleanups())), inner);
+        return provide(cleanupsContext.with(Optional.of(new Cleanups())), inner);
     }
 
     public static void onCleanup(Runnable cleanup) {
-        useContext(CLEANUPS).ifPresent(c -> c.getQueue().add(cleanup));
+        useContext(cleanupsContext).ifPresent(c -> c.getQueue().add(cleanup));
     }
 
     public static void batch(Runnable inner) {
-        BATCH.get().run(inner);
+        Batch.batch.get().run(inner);
     }
 
     public static void track(Iterable<? extends Trackable> deps) {
@@ -218,7 +216,7 @@ public class ReactiveUtil {
     }
 
     public static <T> T untrack(Supplier<T> signal) {
-        return provide(EFFECT.with(Optional.empty()), signal);
+        return provide(Effect.effectContext.with(Optional.empty()), signal);
     }
 
     public static <T> Runnable on(Supplier<T> dep, Runnable effect) {
@@ -290,7 +288,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Cleanups createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
-        Cleanups cleanups = useContext(CLEANUPS).orElseGet(Cleanups::new);
+        Cleanups cleanups = useContext(cleanupsContext).orElseGet(Cleanups::new);
         publisher.subscribe(new SubscriberAdapter<T>(signal, cleanups));
         return cleanups;
     }

@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigui.hotswap;
 
 import com.github.wilgaboury.jsignal.ReactiveUtil;
+import com.github.wilgaboury.sigui.SiguiExecutor;
 import com.github.wilgaboury.sigui.SiguiUtil;
 import org.hotswap.agent.command.MergeableCommand;
 
@@ -22,7 +23,7 @@ public class RerenderComponentsCommand extends MergeableCommand {
 
     @Override
     public void executeCommand() {
-        SiguiUtil.invokeLater(() -> {
+        SiguiExecutor.invokeLater(() -> {
             Set<HaComponent> components = Stream.concat(Stream.of(this), getMergedCommands().stream()
                     .filter(RerenderComponentsCommand.class::isInstance)
                     .map(RerenderComponentsCommand.class::cast))
@@ -45,11 +46,9 @@ public class RerenderComponentsCommand extends MergeableCommand {
                 rerenderComponents.add(highest);
             }
 
-            ReactiveUtil.batch(() -> {
-                for (HaComponent component : rerenderComponents) {
-                    component.getRerender().trigger();
-                }
-            });
+            for (HaComponent component : rerenderComponents) {
+                component.getRerender().trigger();
+            }
         });
     }
 
