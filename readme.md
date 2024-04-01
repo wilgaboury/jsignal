@@ -27,7 +27,11 @@ class App : Component() {
             })
             children(
                 Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.BLUE_500 }),
-                Button(color = { EzColors.BLUE_300 }, text = { "Increment" }, action = { count.accept { c -> c + 1 } }),
+                Button(
+                    color = { EzColors.BLUE_300 },
+                    text = { "Increment" },
+                    action = { count.accept { c -> c + 1 } }
+                )
             )
         }
     }
