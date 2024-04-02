@@ -6,6 +6,8 @@ import com.github.wilgaboury.sigui.Nodes;
 import org.hotswap.agent.util.ReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class HaComponent {
@@ -59,6 +61,11 @@ public class HaComponent {
         var haComponent = new HaComponent(component);
         return Provide.provide(haComponentContext.with(Optional.of(haComponent)), () -> Nodes.compute(() -> {
             haComponent.rerender.track();
+
+            for (Method m : component.getClass().getMethods()) {
+                System.out.println("METHOD2: " + m.getName());
+            }
+
             return (Nodes) ReflectionHelper.invoke(component, HA_RENDER);
         }));
     }

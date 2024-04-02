@@ -46,7 +46,7 @@ dependencies {
     api("io.github.humbleui:jwm:0.4.15")
 
     // 2024-03-26
-    implementation(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
+    compileOnly(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
 
     implementation("io.github.classgraph:classgraph:4.8.168")
 

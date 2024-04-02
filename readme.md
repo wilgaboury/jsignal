@@ -10,11 +10,11 @@ fun main() {
         val window = SiguiUtil.createWindow()
         window.setTitle("Counter")
         window.setContentSize(400, 400)
-        SiguiWindow(window) { App() }
+        SiguiWindow(window) { Counter() }
     }
 }
 
-class App : Component() {
+class Counter : Component() {
     private val count = createSignal(0)
 
     override fun render(): Nodes {
@@ -26,7 +26,7 @@ class App : Component() {
                 gap(10f)
             })
             children(
-                Line( { Line.basic("Count: ${count.get()}", 20f)}, { EzColors.BLUE_500 }),
+                Line({ Line.basic("Count: ${count.get()}", 20f) }, { EzColors.BLUE_500 }),
                 Button(
                     color = { EzColors.BLUE_300 },
                     text = { "Increment" },
@@ -37,6 +37,13 @@ class App : Component() {
     }
 }
 ```
+
+## Hotswap
+
+- move `jsigui/hotswap-agent-1.4.2-SNAPSHOT.jar` to `<jvm location>/lib/hotswap/hotswap-agent.jar`
+- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=fatjar`
+- set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
+- disable `Build, Execution, Deployment > Debugger > HotSwap > Build project before reloading classes`
 
 ## Signals and Effects
 

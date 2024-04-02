@@ -5,15 +5,19 @@ import com.github.wilgaboury.sigui.SiguiExecutor;
 import com.github.wilgaboury.sigui.SiguiUtil;
 import org.hotswap.agent.command.MergeableCommand;
 
+import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RerenderComponentsCommand extends MergeableCommand {
+    private final ClassLoader classLoader;
     private final String className;
 
-    public RerenderComponentsCommand(String className) {
+    public RerenderComponentsCommand(ClassLoader classLoader, String className) {
+        this.classLoader = classLoader;
         this.className = className;
     }
 
@@ -23,33 +27,19 @@ public class RerenderComponentsCommand extends MergeableCommand {
 
     @Override
     public void executeCommand() {
-        SiguiExecutor.invokeLater(() -> {
-            Set<HaComponent> components = Stream.concat(Stream.of(this), getMergedCommands().stream()
-                    .filter(RerenderComponentsCommand.class::isInstance)
-                    .map(RerenderComponentsCommand.class::cast))
-                    .map(RerenderComponentsCommand::getClassName)
-                    .flatMap(className -> HaComponent.getClassNameToHaComponent().get(className).stream())
-                    .collect(Collectors.toSet());
+        List<String> classNames = Stream.concat(Stream.of(this), getMergedCommands().stream()
+                        .filter(RerenderComponentsCommand.class::isInstance)
+                        .map(RerenderComponentsCommand.class::cast))
+                .map(RerenderComponentsCommand::getClassName)
+                .toList();
+        try {
+            Method m = classLoader.loadClass(RerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
+            m.invoke(null, classNames);
 
-            Set<HaComponent> rerenderComponents = new LinkedHashSet<>();
-            for (HaComponent component : components) {
-                // shortcut
-                if (rerenderComponents.contains(component))
-                    continue;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-                HaComponent highest = component;
-                while (component.getParent().isPresent()) {
-                    component = component.getParent().get();
-                    if (components.contains(component))
-                        highest = component;
-                }
-                rerenderComponents.add(highest);
-            }
-
-            for (HaComponent component : rerenderComponents) {
-                component.getRerender().trigger();
-            }
-        });
     }
 
     @Override

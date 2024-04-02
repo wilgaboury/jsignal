@@ -10,6 +10,8 @@ import org.hotswap.agent.command.Scheduler;
 import org.hotswap.agent.javassist.*;
 import org.hotswap.agent.util.PluginManagerInvoker;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,34 +35,60 @@ public class HaSiguiPlugin {
     Scheduler scheduler;
 
     @Init
+    ClassLoader classLoader;
+
+//    @Init
+//    Object rerenderService;
+
+    @Init
     public void init() {
         logger.info("initializing sigui hotswap plugin");
     }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.hotswap.HaInitHook", events = LoadEvent.DEFINE)
+    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.hotswap.RerenderService")
     public static void instrumentInitialization(CtClass ct) throws CannotCompileException {
         for (CtConstructor constructor : ct.getDeclaredConstructors()) {
             constructor.insertAfter(PluginManagerInvoker.buildInitializePlugin(HaSiguiPlugin.class));
+//            constructor.insertAfter(PluginManagerInvoker.buildCallPluginMethod(HaSiguiPlugin.class, "registerRerenderService", "this", "java.lang.Object"));
         }
     }
 
+//    public void registerRerenderService(Object rerenderService) {
+//        this.rerenderService = rerenderService;
+//    }
+
+//    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.hotswap.HaInitHook", events = LoadEvent.DEFINE)
+//    public static void instrumentInitialization(CtClass ct) throws CannotCompileException {
+//        for (CtConstructor constructor : ct.getDeclaredConstructors()) {
+//            constructor.insertAfter(PluginManagerInvoker.buildInitializePlugin(HaSiguiPlugin.class));
+//        }
+//    }
+
     @OnClassLoadEvent(classNameRegexp = ".*")
-    public static void instrumentComponents(CtClass ct) throws NotFoundException, CannotCompileException {
+    public static void patchComponents(Class<?> prev, CtClass ct) throws NotFoundException, CannotCompileException, IOException {
         if (isComponentChildClass(ct)) {
+            System.out.println("INSTRUMENT COMPONENT: " + ct.getName());
+            if (prev != null) {
+                for (Method m : prev.getMethods()) {
+                    System.out.println("METHOD: " + m.getName());
+                }
+            }
+
             CtMethod renderMethod = ct.getDeclaredMethod("render");
             renderMethod.setName(HaComponent.HA_RENDER);
-            ct.addMethod(CtNewMethod.make("public " + Nodes.class.getName() + " render() { " +
-                            "return " + HaComponent.class.getName() + ".render($0);" +
+            ct.addMethod(CtNewMethod.make("public com.github.wilgaboury.sigui.Nodes render() { " +
+                            "return com.github.wilgaboury.sigui.hotswap.HaComponent.render(this);" +
                         "} ",
                     ct));
         }
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void publishRerenderComponentsCommand(CtClass ct) {
-        System.out.println("NAME: " + ct.getName());
-        if (isComponentChildClass(ct))
-            scheduler.scheduleCommand(new RerenderComponentsCommand(ct.getName()), 2000);
+    public void rerenderComponents(CtClass ct) {
+        if (isComponentChildClass(ct)) {
+            System.out.println("RERENDER: " + ct.getName());
+            scheduler.scheduleCommand(new RerenderComponentsCommand(classLoader, ct.getName()), 250);
+        }
     }
 
     public static boolean isComponentChildClass(CtClass ct) {

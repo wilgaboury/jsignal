@@ -42,8 +42,8 @@ class App2 : Component() {
             children(
                 Circle(radius = { 10f }),
                 Circle(radius = { 20f }),
-                Circle(radius = { 30f }),
-                Circle(radius = { 40f }),
+//                Circle(radius = { 30f }),
+//                Circle(radius = { 40f }),
             )
         };
     }
