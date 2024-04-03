@@ -50,7 +50,7 @@ public class SiguiWindow {
         windows.add(this);
         this.rootCleanups = createCleanups();
         this.root = provide(List.of(WINDOW.with(this), cleanupsContext.with(Optional.of(rootCleanups))),
-                () -> MetaNode.createRoot(root.get()));
+                () -> MetaNode.createRoot(root));
 
         var layer = SiguiUtil.createLayer();
         window.setEventListener(this::handleEvent);

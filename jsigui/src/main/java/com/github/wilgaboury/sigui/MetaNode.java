@@ -324,7 +324,7 @@ public class MetaNode {
         }
     }
 
-    public static MetaNode createRoot(Component component) {
+    public static MetaNode createRoot(Supplier<Component> component) {
         return new MetaNode(null, Node.builder()
                 .layout(yoga -> {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
@@ -338,15 +338,15 @@ public class MetaNode {
      * provide hook for hotswap instrumentation at root
      */
     private static class RootComponent extends Component {
-        private final Component child;
+        private final Supplier<Component> child;
 
-        public RootComponent(Component child) {
+        public RootComponent(Supplier<Component> child) {
             this.child = child;
         }
 
         @Override
         public Nodes render() {
-            return child.render();
+            return child.get().render();
         }
     }
 }
