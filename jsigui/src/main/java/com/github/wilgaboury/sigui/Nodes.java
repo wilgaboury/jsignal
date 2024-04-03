@@ -10,13 +10,18 @@ import java.util.stream.Stream;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
-public sealed interface Nodes extends Supplier<Nodes> permits
+public sealed interface Nodes extends Renderable permits
         Nodes.Static,
         Nodes.Dynamic
 {
     Stream<? extends Node> stream();
 
-    default Nodes get() {
+    @Override
+    default Nodes render() {
+        return this;
+    }
+
+    default Nodes getNodes() {
         return this;
     }
 
@@ -40,12 +45,12 @@ public sealed interface Nodes extends Supplier<Nodes> permits
         return new Static(nodes.stream().flatMap(Nodes::stream).toList());
     }
 
-    static Nodes compose(Supplier<? extends Nodes>... nodes) {
+    static Nodes compose(Renderable... nodes) {
         return compose(Arrays.asList(nodes));
     }
 
-    static Nodes compose(Collection<? extends Supplier<? extends Nodes>> suppliers) {
-        var nodes = suppliers.stream().map(Supplier::get).toList();
+    static Nodes compose(Collection<Renderable> children) {
+        var nodes = children.stream().map(Renderable::render).toList();
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
             return new Dynamic(createComputed(() -> nodes.stream().flatMap(Nodes::stream).toList()));
         } else {
@@ -71,10 +76,6 @@ public sealed interface Nodes extends Supplier<Nodes> permits
     static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
         var cache = new CacheMany<K>(new HashMap<>());
         return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
-    }
-
-    static Nodes component(Component component) {
-        return component.render();
     }
 
     final class Static implements Nodes {

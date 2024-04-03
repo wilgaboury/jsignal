@@ -2,15 +2,14 @@ package com.github.wilgaboury.sigwig.examples
 
 import com.github.wilgaboury.jsignal.ReactiveUtil
 import com.github.wilgaboury.jsignal.Ref
+import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.node
 import com.github.wilgaboury.ksigui.ref
-import com.github.wilgaboury.sigui.Component
-import com.github.wilgaboury.sigui.MetaNode
-import com.github.wilgaboury.sigui.Nodes
-import com.github.wilgaboury.sigui.SiguiUtil
-import com.github.wilgaboury.sigui.SiguiWindow
+import com.github.wilgaboury.sigui.*
+import com.github.wilgaboury.sigwig.Button
 import com.github.wilgaboury.sigwig.Circle
+import com.github.wilgaboury.sigwig.EzColors
 
 fun main() {
     SiguiUtil.start {
@@ -24,27 +23,40 @@ fun main() {
 class App2 : Component() {
     private val reference: Ref<MetaNode> = Ref();
 
+    private val count = createSignal(0);
+
     override fun render(): Nodes {
         onMount {
+//            println("test")
             ReactiveUtil.createEffect {
                 println(reference.get())
             }
         }
 
         return node {
-            ref {
-                reference.set(this)
-            }
             layout(flex {
-                row()
-                gap(10f)
+                column()
+                gap(20f)
+                padding(Insets(20f))
             })
             children(
-                Circle(radius = { 10f }),
-                Circle(radius = { 20f }),
-//                Circle(radius = { 30f }),
-//                Circle(radius = { 40f }),
+                node {
+                    ref {
+                        reference.set(this)
+                    }
+                    layout(flex {
+                        row()
+                        gap(20f)
+                    })
+                    children(
+                        Circle(radius = { 10f }),
+                        Circle(radius = { 20f }),
+                        Circle(radius = { 30f }),
+                        Circle(radius = { 40f }),
+                    )
+                },
+                Button( color = { EzColors.AMBER_800 }, text = { "${count}" }, action = { count.accept(5) } )
             )
-        };
+        }
     }
 }

@@ -27,12 +27,10 @@ public class HaComponent {
 
     private final HaComponent parent;
     private final Trigger rerender;
-    private final Component component;
 
     public HaComponent(Component component) {
         this.parent = Provide.useContext(haComponentContext).orElse(null);
         this.rerender = ReactiveUtil.createTrigger();
-        this.component = component;
 
         classNameToHaComponent.computeIfAbsent(component.getClass().getName(), k -> new LinkedHashSet<>()).add(this);
         componentToHa.put(component, this);
@@ -61,11 +59,6 @@ public class HaComponent {
         var haComponent = new HaComponent(component);
         return Provide.provide(haComponentContext.with(Optional.of(haComponent)), () -> Nodes.compute(() -> {
             haComponent.rerender.track();
-
-            for (Method m : component.getClass().getMethods()) {
-                System.out.println("METHOD2: " + m.getName());
-            }
-
             return (Nodes) ReflectionHelper.invoke(component, HA_RENDER);
         }));
     }

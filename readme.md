@@ -40,10 +40,10 @@ class Counter : Component() {
 
 ## Hotswap
 
-- move `jsigui/hotswap-agent-1.4.2-SNAPSHOT.jar` to `<jvm location>/lib/hotswap/hotswap-agent.jar`
-- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=fatjar`
 - set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
 - disable `Build, Execution, Deployment > Debugger > HotSwap > Build project before reloading classes`
+- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:jsigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
+
 
 ## Signals and Effects
 

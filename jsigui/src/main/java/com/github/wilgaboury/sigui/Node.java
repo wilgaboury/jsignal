@@ -9,7 +9,6 @@ import io.github.humbleui.types.Rect;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -62,7 +61,7 @@ public interface Node {
             return this;
         }
 
-        public Builder children(Supplier<? extends Nodes>... nodes) {
+        public Builder children(Renderable... nodes) {
             children = Nodes.compose(Arrays.asList(nodes));
             return this;
         }
