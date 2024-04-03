@@ -1,6 +1,6 @@
 # JSignal
 
-Desktop GUI library for Java and Kotlin desktop applications. This libray takes strong inspiration from [SolidJS](https://www.solidjs.com/).
+A modern, declarative GUI library for Java and Kotlin desktop applications. This library takes strong inspiration from [SolidJS](https://www.solidjs.com/).
 
 ## Obligatory Counter Example
 
@@ -9,7 +9,7 @@ fun main() {
     SiguiUtil.start {
         val window = SiguiUtil.createWindow()
         window.setTitle("Counter")
-        window.setContentSize(400, 400)
+        window.setContentSize(250, 250)
         SiguiWindow(window) { Counter() }
     }
 }
@@ -38,6 +38,8 @@ class Counter : Component() {
 }
 ```
 
+![Counter Example Screencapture](./resources/readme/counter.gif)
+
 ## Hotswap
 
 - set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
@@ -47,7 +49,7 @@ class Counter : Component() {
 
 ## Signals and Effects
 
-Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is essentially just the observer pattern, but with an added layer of indirection and siginificantly better developer ergonomics.
+Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is essentially just the observer pattern, but with an added layer of indirection and significantly better developer ergonomics.
 
 ### Brief Example
 
@@ -85,13 +87,13 @@ One of the optional inputs when creating signals is an "equals" function. This m
 
 ### Clone
 
-Another optional argument provided to is a "clone" function. This function is run on data before returning it from a signal's get method. While the default "clone" function does not do anything, it is intended to allow user's to prevent leaking mutable references to the data inside of a signal.
+Another optional argument provided to is a "clone" function. This function is run on data before returning it from a signal's get method. While the default "clone" function does not do anything, it is intended to allow user's to prevent leaking mutable references to the data inside a signal.
 
-A good example would be a signal of type `Signal<List<T>>`, which can have it's internal list mutated via the get method (i.e., `signal.get().add(elem)`). Modifying the data in this way will not notify any of the effects. A remedy in this case would be using `Collections::unmodifiableList` as the "clone" argument.
+A good example would be a signal of type `Signal<List<T>>`, which can have its internal list mutated via the get method (i.e., `signal.get().add(elem)`). Modifying the data in this way will not notify any of the effects. A remedy in this case would be using `Collections::unmodifiableList` as the "clone" argument.
 
 ### Synchronicity
 
-Signals support both sychronous and asynchronous operation via the `Executor` interface. User's may specify an executor using the `withExecutor` or `useExecuter` methods, by default signals use a sychronous executor (`Runnable::run`). Here is an example:
+Signals support both synchronous and asynchronous operation via the `Executor` interface. User's may specify an executor using the `withExecutor` or `useExecuter` methods, by default signals use a synchronous executor (`Runnable::run`). Here is an example:
 
 ```java
 ExecutorService executor = Executors.newCachedThreadPool();
@@ -103,7 +105,7 @@ Effect effect = createAsyncEffect(withExecutor(executor, () -> {
 value.accept(i -> i + 1);
 ```
 
-Asynchronous signals may be used from sychronous effects or asynchronous effects, but sychronous signal may only be used from sychronous effects. What is important to note about using asynchronous signals from synchronous effects, is that it will most likely cause an error unless the sychronous effects thread possesses some sort of event queue system. A good example would be the Swing UI thread. To use an asynchronous signal from a Swing UI thread effect, one should access the signal inside the effect like so:
+Asynchronous signals may be used from synchronous effects or asynchronous effects, but synchronous signal may only be used from synchronous effects. What is important to note about using asynchronous signals from synchronous effects, is that it will most likely cause an error unless the synchronous effects thread possesses some sort of event queue system. A good example would be the Swing UI thread. To use an asynchronous signal from a Swing UI thread effect, one should access the signal inside the effect like so:
 
 ```java
 Signal<Integer> value = createAsyncSignal(0);
@@ -113,7 +115,7 @@ Effect effect = createEffect(() -> {
 });
 ```
 
-Asynchronous effects are internally executed in a sychronize block so that a given asynchronous effect never has it's logic executed in parallel. This is done to ease the mental burden on developers when reasoning about what asynchronous reactive code is doing.
+Asynchronous effects are internally executed in a synchronize block so that a given asynchronous effect never has its logic executed in parallel. This is done to ease the mental burden on developers when reasoning about what asynchronous reactive code is doing.
 
 ### Flow/Reactor/RxJava
 

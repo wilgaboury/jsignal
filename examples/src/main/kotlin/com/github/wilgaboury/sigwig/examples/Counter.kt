@@ -15,7 +15,7 @@ fun main() {
     SiguiUtil.start {
         val window = SiguiUtil.createWindow()
         window.setTitle("Counter")
-        window.setContentSize(400, 400)
+        window.setContentSize(250, 250)
         SiguiWindow(window) { Counter() }
     }
 }
