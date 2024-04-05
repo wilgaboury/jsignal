@@ -2,6 +2,7 @@ package com.github.wilgaboury.sigui.hotswap;
 
 import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.Component;
+import com.github.wilgaboury.sigui.ComponentInstrumentation;
 import com.github.wilgaboury.sigui.Nodes;
 import org.hotswap.agent.util.ReflectionHelper;
 import org.jetbrains.annotations.Nullable;
@@ -61,5 +62,15 @@ public class HaComponent {
             haComponent.rerender.track();
             return (Nodes) ReflectionHelper.invoke(component, HA_RENDER);
         }));
+    }
+
+    public static ComponentInstrumentation createInstrumentation() {
+        return (component, render) -> {
+            var haComponent = new HaComponent(component);
+            return Provide.provide(haComponentContext.with(Optional.of(haComponent)), () -> Nodes.compute(() -> {
+                haComponent.rerender.track();
+                return render.getNodes();
+            }));
+        };
     }
 }

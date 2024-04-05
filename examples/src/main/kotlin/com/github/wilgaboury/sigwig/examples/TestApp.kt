@@ -83,7 +83,7 @@ class App : Component() {
                     ),
                 )
             }
-        }.render()
+        }.nodes
     }
 
     private fun maybeFireImage(): Nodes {
@@ -92,7 +92,8 @@ class App : Component() {
                 Image(supply { Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8) },
                     fit = { Image.Fit.CONTAIN },
                     width = supply { percent(100f) },
-                    height = supply { pixel(200f) }).render()
+                    height = supply { pixel(200f) }
+                ).nodes
             } else {
                 empty()
             }

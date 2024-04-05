@@ -61,7 +61,7 @@ public interface Node {
             return this;
         }
 
-        public Builder children(Renderable... nodes) {
+        public Builder children(NodesSupplier... nodes) {
             children = Nodes.compose(Arrays.asList(nodes));
             return this;
         }
