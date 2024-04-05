@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigui.hotswap.anon;
+package com.github.wilgaboury.sigui.hotswap.agent.anon;
 
 import org.hotswap.agent.javassist.ClassPool;
 import org.hotswap.agent.javassist.CtClass;

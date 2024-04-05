@@ -1,16 +1,17 @@
-package com.github.wilgaboury.sigui.hotswap;
+package com.github.wilgaboury.sigui.hotswap.agent;
 
+import com.github.wilgaboury.sigui.hotswap.HotswapRerenderService;
 import org.hotswap.agent.command.MergeableCommand;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class RerenderComponentsCommand extends MergeableCommand {
+public class HaRerenderCommand extends MergeableCommand {
     private final ClassLoader classLoader;
     private final String className;
 
-    public RerenderComponentsCommand(ClassLoader classLoader, String className) {
+    public HaRerenderCommand(ClassLoader classLoader, String className) {
         this.classLoader = classLoader;
         this.className = className;
     }
@@ -22,12 +23,12 @@ public class RerenderComponentsCommand extends MergeableCommand {
     @Override
     public void executeCommand() {
         List<String> classNames = Stream.concat(Stream.of(this), getMergedCommands().stream()
-                        .filter(RerenderComponentsCommand.class::isInstance)
-                        .map(RerenderComponentsCommand.class::cast))
-                .map(RerenderComponentsCommand::getClassName)
+                        .filter(HaRerenderCommand.class::isInstance)
+                        .map(HaRerenderCommand.class::cast))
+                .map(HaRerenderCommand::getClassName)
                 .toList();
         try {
-            Method m = classLoader.loadClass(HaRerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
+            Method m = classLoader.loadClass(HotswapRerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
             m.invoke(null, classNames);
 
         } catch (Exception e) {
@@ -38,11 +39,11 @@ public class RerenderComponentsCommand extends MergeableCommand {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RerenderComponentsCommand;
+        return obj instanceof HaRerenderCommand;
     }
 
     @Override
     public int hashCode() {
-        return RerenderComponentsCommand.class.getName().hashCode();
+        return HaRerenderCommand.class.getName().hashCode();
     }
 }

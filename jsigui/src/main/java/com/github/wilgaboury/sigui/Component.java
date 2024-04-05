@@ -10,6 +10,10 @@ public abstract class Component implements NodesSupplier {
         return useContext(ComponentInstrumentation.context).instrument(this, this::render);
     }
 
+    /**
+     * Function to be overridden by components, please do not call this method
+     * because it will bypass component instrumentation.
+     */
     protected abstract Nodes render();
 
     public static void onMount(Runnable inner) {

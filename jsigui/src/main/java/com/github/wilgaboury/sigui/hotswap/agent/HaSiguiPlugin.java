@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigui.hotswap;
+package com.github.wilgaboury.sigui.hotswap.agent;
 
 import com.github.wilgaboury.sigui.Component;
 import org.hotswap.agent.annotation.Init;
@@ -48,7 +48,7 @@ public class HaSiguiPlugin {
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
     public void rerenderComponents(CtClass ct) {
         if (isComponentChildClass(ct)) {
-            scheduler.scheduleCommand(new RerenderComponentsCommand(classLoader, ct.getName()), 250);
+            scheduler.scheduleCommand(new HaRerenderCommand(classLoader, ct.getName()), 250);
         }
     }
 

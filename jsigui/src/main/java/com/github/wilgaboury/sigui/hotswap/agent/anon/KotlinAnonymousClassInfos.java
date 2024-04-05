@@ -1,18 +1,12 @@
-package com.github.wilgaboury.sigui.hotswap.anon;
+package com.github.wilgaboury.sigui.hotswap.agent.anon;
 
-import io.github.classgraph.ClassInfoList;
 import org.hotswap.agent.javassist.ClassPool;
-import org.hotswap.agent.javassist.CtClass;
-import org.hotswap.agent.javassist.CtMethod;
-import org.hotswap.agent.javassist.NotFoundException;
 import org.hotswap.agent.logging.AgentLogger;
 import org.hotswap.agent.plugin.jvm.AnonymousClassInfo;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class KotlinAnonymousClassInfos {
     private static AgentLogger LOGGER = AgentLogger.getLogger(KotlinAnonymousClassInfos.class);

@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigui.hotswap.anon;
+package com.github.wilgaboury.sigui.hotswap.agent.anon;
 
 /*
  * Copyright 2013-2024 the HotswapAgent authors.

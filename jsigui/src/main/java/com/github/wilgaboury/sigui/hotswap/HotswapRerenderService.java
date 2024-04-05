@@ -7,23 +7,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class HaRerenderService {
-    public HaRerenderService() {}
+public class HotswapRerenderService {
+    public HotswapRerenderService() {}
 
     public static void rerender(List<String> classNames) {
         SiguiExecutor.invokeLater(() -> {
-            Set<HaComponent> components = classNames.stream()
-                    .flatMap(className -> HaComponent.getClassNameToHaComponent().get(className).stream())
+            Set<HotswapComponent> components = classNames.stream()
+                    .flatMap(className -> HotswapComponent.getClassNameToHotswap().get(className).stream())
                     .collect(Collectors.toSet());
 
-            Set<HaComponent> rerenderComponents = new LinkedHashSet<>();
+            Set<HotswapComponent> rerenderComponents = new LinkedHashSet<>();
 
-            for (HaComponent component : components) {
+            for (HotswapComponent component : components) {
                 // shortcut
                 if (rerenderComponents.contains(component))
                     continue;
 
-                HaComponent highest = component;
+                HotswapComponent highest = component;
                 while (component.getParent().isPresent()) {
                     component = component.getParent().get();
                     if (components.contains(component))
@@ -32,7 +32,7 @@ public class HaRerenderService {
                 rerenderComponents.add(highest);
             }
 
-            for (HaComponent component : rerenderComponents) {
+            for (HotswapComponent component : rerenderComponents) {
                 component.getRerender().trigger();
             }
         });
