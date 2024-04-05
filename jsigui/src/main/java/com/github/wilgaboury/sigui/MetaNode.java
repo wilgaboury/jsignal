@@ -330,7 +330,7 @@ public class MetaNode {
                     Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                 })
-                .children(new RootComponent(component).render())
+                .children(new RootComponent(component).getNodes())
                 .build());
     }
 
@@ -345,8 +345,8 @@ public class MetaNode {
         }
 
         @Override
-        public Nodes render() {
-            return child.get().render();
+        protected Nodes render() {
+            return child.get().getNodes();
         }
     }
 }

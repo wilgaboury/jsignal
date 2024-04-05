@@ -1,15 +1,9 @@
 package com.github.wilgaboury.sigui.hotswap;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.sigui.SiguiExecutor;
-import com.github.wilgaboury.sigui.SiguiUtil;
 import org.hotswap.agent.command.MergeableCommand;
 
 import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class RerenderComponentsCommand extends MergeableCommand {
@@ -33,7 +27,7 @@ public class RerenderComponentsCommand extends MergeableCommand {
                 .map(RerenderComponentsCommand::getClassName)
                 .toList();
         try {
-            Method m = classLoader.loadClass(RerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
+            Method m = classLoader.loadClass(HaRerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
             m.invoke(null, classNames);
 
         } catch (Exception e) {

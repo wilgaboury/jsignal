@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RerenderService {
-    public RerenderService() {}
+public class HaRerenderService {
+    public HaRerenderService() {}
 
     public static void rerender(List<String> classNames) {
         SiguiExecutor.invokeLater(() -> {

@@ -178,7 +178,7 @@ class Scroller(
                             size = yBarWidth,
                             show = this@Scroller::yBarShow,
                             action = { yOffset.accept { y: Float -> y + 100 } }
-                        ).render(),
+                        ),
                         node {
                             ref {
                                 yBar.set(this)
@@ -208,7 +208,7 @@ class Scroller(
                             size = yBarWidth,
                             show = this@Scroller::yBarShow,
                             action = { yOffset.accept { y: Float -> y - 100 } }
-                        ).render(),
+                        ),
                         // spacer
                         node {
                             layout(flex {

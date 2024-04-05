@@ -1,14 +1,13 @@
 package com.github.wilgaboury.sigui.hotswap;
 
-import com.github.wilgaboury.jsignal.*;
+import com.github.wilgaboury.jsignal.Context;
+import com.github.wilgaboury.jsignal.Provide;
+import com.github.wilgaboury.jsignal.ReactiveUtil;
+import com.github.wilgaboury.jsignal.Trigger;
 import com.github.wilgaboury.sigui.Component;
 import com.github.wilgaboury.sigui.ComponentInstrumentation;
 import com.github.wilgaboury.sigui.Nodes;
-import org.hotswap.agent.util.ReflectionHelper;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class HaComponent {
@@ -54,14 +53,6 @@ public class HaComponent {
 
     public Trigger getRerender() {
         return rerender;
-    }
-
-    public static Nodes render(Component component) {
-        var haComponent = new HaComponent(component);
-        return Provide.provide(haComponentContext.with(Optional.of(haComponent)), () -> Nodes.compute(() -> {
-            haComponent.rerender.track();
-            return (Nodes) ReflectionHelper.invoke(component, HA_RENDER);
-        }));
     }
 
     public static ComponentInstrumentation createInstrumentation() {

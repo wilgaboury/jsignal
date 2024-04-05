@@ -1,9 +1,11 @@
 package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Effect;
+import com.github.wilgaboury.jsignal.Provide;
+import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.sigui.hotswap.HaInitHook;
-import com.github.wilgaboury.sigui.hotswap.RerenderService;
+import com.github.wilgaboury.sigui.hotswap.HaComponent;
+import com.github.wilgaboury.sigui.hotswap.HaRerenderService;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Layer;
 import io.github.humbleui.jwm.Platform;
@@ -25,8 +27,13 @@ public class SiguiUtil {
     private static long clearNodeStyle;
 
     public static void start(Runnable runnable) {
-        new RerenderService();
-        App.start(() -> startInner(runnable));
+        new HaRerenderService();
+        App.start(() ->
+            Provide.provide(
+                    Provider.Entry.create(ComponentInstrumentation.context, HaComponent.createInstrumentation()),
+                    () -> startInner(runnable)
+            )
+        );
     }
 
     private static void startInner(Runnable runnable) {
