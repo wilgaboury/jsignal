@@ -16,7 +16,6 @@ public class JTestApp extends Component {
   }
 
   public static final Blob fireSvg;
-
   static {
     try {
       fireSvg = Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8);
@@ -27,24 +26,17 @@ public class JTestApp extends Component {
 
   @Override
   protected Nodes render() {
-    // TODO: this has weird resizing visual glitch
-//        return Image.builder()
-//            .setBlob(fireSvg)
-//            .setWidth(LayoutValue.pixel(100))
-//            .build()
-//            .getNodes();
-
     return Node.builder()
       .layout(Flex.builder()
         .stretch()
         .center()
-        .gap(10f)
+        .gap(20f)
         .build()
       )
       .children(
         TextLine.builder()
           .setLine(InterFontUtil.createTextLine("Hello World!", 16f))
-          .setColor(EzColors.BLUE_600)
+          .setColor(EzColors.BLUE_800)
           .build(),
         Image.builder()
           .setBlob(fireSvg)

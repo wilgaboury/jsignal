@@ -1,11 +1,12 @@
 package com.github.wilgaboury.sigui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class NodeRegistry {
-    private static final Logger logger = Logger.getLogger(NodeRegistry.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(NodeRegistry.class);
 
     private final Map<String, MetaNode> byId;
     private final Map<String, Set<MetaNode>> byTag;
@@ -25,7 +26,7 @@ public class NodeRegistry {
             return;
 
         if (byId.containsKey(node.getId())) {
-            logger.log(Level.WARNING, String.format("cannot assign id \"%s\", already exists", node.getId()));
+            logger.warn("cannot assign id \"{}\", already exists", node.getId());
             return;
         }
 

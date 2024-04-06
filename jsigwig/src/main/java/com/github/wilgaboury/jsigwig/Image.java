@@ -109,14 +109,14 @@ public class Image extends Component {
         }
 
         if (userWidth == null && userHeight != null) {
-            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
-                __result.width((imgWidth / imgHeight) * height);
-                __result.height(height);
+            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, result) -> {
+                result.width((imgWidth / imgHeight) * height);
+                result.height(height);
             });
         } else if (userHeight == null && userWidth != null) {
-            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, __result) -> {
-                __result.width(width);
-                __result.height((imgHeight / imgWidth) * width);
+            Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, result) -> {
+                result.width(width);
+                result.height((imgHeight / imgWidth) * width);
             });
         } else if (userWidth == null && userHeight == null) {
             Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);

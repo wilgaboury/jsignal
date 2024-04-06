@@ -1,15 +1,16 @@
 package com.github.wilgaboury.jsignal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class is not thread safe for performance reasons
  */
 public class Cleanups implements Runnable {
-    private static final Logger logger = Logger.getLogger(Cleanups.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Cleanups.class);
 
     private final Queue<Runnable> queue;
 
@@ -31,7 +32,7 @@ public class Cleanups implements Runnable {
             try {
                 queue.poll().run();
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "failed to run cleanup", e);
+                logger.error("failed to run cleanup", e);
             }
         }
     }

@@ -14,15 +14,15 @@ import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
 import org.lwjgl.util.yoga.Yoga;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class SiguiUtil {
-    private static final Logger logger = Logger.getLogger(SiguiUtil.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SiguiUtil.class);
     private static long clearNodeStyle;
 
     public static void start(Runnable runnable) {
@@ -36,7 +36,7 @@ public class SiguiUtil {
     }
 
     private static void startInner(Runnable runnable) {
-        logger.log(Level.FINE, "starting Sigui application thread");
+        logger.trace("starting sigui application thread");
 
         clearNodeStyle = Yoga.YGNodeNew();
         runnable.run();
@@ -86,7 +86,7 @@ public class SiguiUtil {
         for (var initializers : LAYER_INITIALIZERS.get(Platform.CURRENT)) {
             try {
                 var layer = initializers.get();
-                logger.log(Level.INFO, String.format("using layer type: %s", layer.getClass().getSimpleName()));
+                logger.trace("using layer type: {}", layer.getClass().getSimpleName());
                 return layer;
             } catch (Exception e) {
                 // no-op
