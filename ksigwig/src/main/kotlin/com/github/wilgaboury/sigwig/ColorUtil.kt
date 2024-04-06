@@ -180,8 +180,8 @@ object ColorUtil {
 
     fun hslFromRgb(color: Int): FloatArray {
         //  Get RGB values in the range 0 - 1
-        val a = Color.getA(color).toFloat() / 255f
-        val r = Color.getR(color).toFloat() / 255f
+        val a = Color.getA(color) / 255f
+        val r = Color.getR(color) / 255f
         val g = Color.getG(color).toFloat() / 255f
         val b = Color.getB(color).toFloat() / 255f
 
