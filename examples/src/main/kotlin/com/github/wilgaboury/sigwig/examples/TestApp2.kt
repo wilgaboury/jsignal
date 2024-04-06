@@ -5,8 +5,11 @@ import com.github.wilgaboury.jsignal.Ref
 import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.node
+import com.github.wilgaboury.ksigui.ref
 import com.github.wilgaboury.sigui.*
+import com.github.wilgaboury.sigwig.Button
 import com.github.wilgaboury.sigwig.Circle
+import com.github.wilgaboury.sigwig.EzColors
 
 fun main() {
     SiguiUtil.start {
@@ -23,11 +26,8 @@ class App2 : Component() {
     private val count = createSignal(0);
 
     override fun render(): Nodes {
-        onMount {
-//            println("test")
-            ReactiveUtil.createEffect {
-                println(reference.get())
-            }
+        SiguiUtil.createEffectLater {
+            println(reference.get())
         }
 
         return node {
@@ -37,22 +37,22 @@ class App2 : Component() {
                 padding(Insets(20f))
             })
             children(
-//                node {
-//                    ref {
-//                        reference.set(this)
-//                    }
-//                    layout(flex {
-//                        row()
-//                        gap(20f)
-//                    })
-//                    children(
+                node {
+                    ref {
+                        reference.set(this)
+                    }
+                    layout(flex {
+                        row()
+                        gap(20f)
+                    })
+                    children(
                         Circle(radius = { 10f }),
                         Circle(radius = { 20f }),
                         Circle(radius = { 30f }),
                         Circle(radius = { 40f }),
-//                    )
-//                },
-//                Button( color = { EzColors.AMBER_800 }, text = { "${count}" }, action = { count.accept(5) } )
+                    )
+                },
+                Button( color = { EzColors.AMBER_800 }, text = { "${count}" }, action = { count.accept(5) } )
             )
         }
     }

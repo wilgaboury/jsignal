@@ -158,16 +158,17 @@ public class MetaNode {
     private Supplier<List<MetaNode>> createChildren() {
         var children = node.children();
 
-        if (children instanceof Nodes.Static multiple) {
-            Ref<Integer> i = new Ref<>(0);
-            return constantSupplier(multiple.stream().map(n -> {
-                var meta = new MetaNode(this, n);
-                Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
-                i.set(i.get() + 1);
-                return meta;
-            }).toList());
-        } else if (children instanceof  Nodes.Dynamic dynamic) {
-            return ReactiveList.createMapped(
+        return switch (children) {
+            case Nodes.Fixed fixed -> {
+                Ref<Integer> i = new Ref<>(0);
+                yield () -> fixed.stream().map(n -> {
+                    var meta = new MetaNode(this, n);
+                    Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
+                    i.set(i.get() + 1);
+                    return meta;
+                }).toList();
+            }
+            case Nodes.Dynamic dynamic -> ReactiveList.createMapped(
                     () -> dynamic.stream()
                             .filter(Objects::nonNull)
                             .toList(),
@@ -183,9 +184,7 @@ public class MetaNode {
                         return meta;
                     }
             );
-        } else {
-            return Collections::emptyList;
-        }
+        };
     }
 
     public MutableProvider getPublished() {
@@ -331,7 +330,7 @@ public class MetaNode {
                     Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
                 })
                 .children(new RootComponent(component).getNodes())
-                .build());
+                .buildNode());
     }
 
     /**

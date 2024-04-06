@@ -11,13 +11,13 @@ fun Node.Builder.ref(extension: MetaNode.() -> Unit) {
     reference { it.extension() }
 }
 
-fun node(extension: Node.Builder.() -> Unit): Nodes.Static {
+fun node(extension: Node.Builder.() -> Unit): Nodes.Fixed {
     val builder = Node.builder()
     builder.extension()
-    return builder.build().toNodes()
+    return builder.build()
 }
 
-fun Node.toNodes(): Nodes.Static = Nodes.single(this)
+fun Node.toNodes(): Nodes.Fixed = Nodes.fixed(this)
 
 fun flex(extension: Flex.Builder.() -> Unit): Flex {
     val builder = Flex.builder()

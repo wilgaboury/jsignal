@@ -31,7 +31,7 @@ public class KotlinAnonymousClassSearchStrategy implements AnonymousClassSearchS
     public List<CtClass> searchNew(ClassPool classPool, String name) {
         List<String> methods = null;
         try {
-            methods = Arrays.stream(classPool.get(name).getMethods())
+            methods = Arrays.stream(classPool.get(name).getDeclaredMethods())
                     .map(CtMethod::getName)
                     .toList();
         } catch (NotFoundException e) {
@@ -51,7 +51,9 @@ public class KotlinAnonymousClassSearchStrategy implements AnonymousClassSearchS
                 lambdaNumStack.add(lambdaNumStack.remove(lambdaNumStack.size() - 1) + 1);
                 String suffix = createSuffix(method, lambdaNumStack);
 
+//                System.out.println("TRYING " + main + suffix);
                 Optional<C> anon = queryable.find(main + suffix);
+//                System.out.println("FOUND " + anon.isPresent());
                 if (anon.isPresent()) {
                     lambdaNumStack.add(0);
                     result.add(anon.get());

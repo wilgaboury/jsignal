@@ -54,33 +54,28 @@ class Scroller(
     override fun render(): Nodes {
         val window = SiguiWindow.useWindow()
 
-        onMount {
-            createEffect {
-                if (xBarMouseDown.get()) {
-                    val pos = window.mousePosition
-                    val rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos)
-                    val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
-                    xOffset.accept(-newOffset)
-                }
+        SiguiUtil.createEffectLater {
+            if (xBarMouseDown.get()) {
+                val pos = window.mousePosition
+                val rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos)
+                val newOffset = (rel.x - xMouseDownOffset) / untrack(xScale)
+                xOffset.accept(-newOffset)
             }
+        }
 
-            createEffect {
-                if (yBarMouseDown.get()) {
-                    val pos = window.mousePosition
-                    val rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos)
-                    val newOffset = (rel.y - yMouseDownOffset)  / untrack( Supplier { return@Supplier yScale.get() * (yBar.get().layout.height / view.get().layout.height) } )
-                    yOffset.accept(-newOffset)
-                }
+        SiguiUtil.createEffectLater {
+            if (yBarMouseDown.get()) {
+                val pos = window.mousePosition
+                val rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos)
+                val newOffset = (rel.y - yMouseDownOffset)  / untrack( Supplier { return@Supplier yScale.get() * (yBar.get().layout.height / view.get().layout.height) } )
+                yOffset.accept(-newOffset)
             }
+        }
 
-            createEffect {
-                onCleanup {
-                    println("is this disposed?")
-                }
-                val viewSize = view.get().layout.size
-                val contentSize = content.get().layout.size
-                yScale.accept(viewSize.y / contentSize.y)
-            }
+        SiguiUtil.createEffectLater {
+            val viewSize = view.get().layout.size
+            val contentSize = content.get().layout.size
+            yScale.accept(viewSize.y / contentSize.y)
         }
 
         return node {
@@ -276,7 +271,6 @@ class ScrollButton(
     override fun render(): Nodes {
         return node {
             ref {
-                this.ref()
                 listen {
                     onMouseClick { action() }
                     onMouseDown { mouseDown.accept(true) }

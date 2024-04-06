@@ -11,7 +11,7 @@ public abstract class Component implements NodesSupplier {
     }
 
     /**
-     * Function to be overridden by components, please do not call this method
+     * Function to be overridden by components, never call this method
      * because it will bypass component instrumentation.
      */
     protected abstract Nodes render();

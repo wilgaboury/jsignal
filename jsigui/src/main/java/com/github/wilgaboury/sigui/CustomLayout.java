@@ -15,15 +15,14 @@ public class CustomLayout extends Component {
 
     @Override
     public Nodes render() {
-        return Nodes.single(Node.builder()
+        return Node.builder()
                 .layout(Flex.builder().stretch().build())
                 .children(Nodes.forEach(() -> children.stream().toList(), (n, idx) ->
-                        Nodes.single(Node.builder()
-                                .children(Nodes.single(n))
+                        Node.builder()
+                                .children(Nodes.fixed(n))
                                 .build())
-                ))
-                .build()
-        );
+                )
+                .build();
     }
 
     @FunctionalInterface

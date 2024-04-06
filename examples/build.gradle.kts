@@ -8,6 +8,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":jsigwig"))
     implementation(project(":ksignal"))
     implementation(project(":ksigui"))
     implementation(project(":ksigwig"))

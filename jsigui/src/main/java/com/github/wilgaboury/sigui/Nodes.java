@@ -10,9 +10,7 @@ import java.util.stream.Stream;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
-public sealed interface Nodes extends NodesSupplier permits
-        Nodes.Static,
-        Nodes.Dynamic
+public sealed interface Nodes extends NodesSupplier
 {
     Stream<? extends Node> stream();
 
@@ -21,24 +19,16 @@ public sealed interface Nodes extends NodesSupplier permits
         return this;
     }
 
-    static Static empty() {
-        return new Static(Collections.emptyList());
+    static Fixed empty() {
+        return new Fixed(Collections.emptyList());
     }
 
-    static Static single(Node node) {
-        return new Static(Collections.singletonList(node));
+    static Fixed fixed(Node... nodes) {
+        return new Fixed(List.of(nodes));
     }
 
-    static Static multiple(Node... nodes) {
-        return new Static(Arrays.asList(nodes));
-    }
-
-    static Static multiple(Static... nodes) {
-        return multiple(Arrays.asList(nodes));
-    }
-
-    static Static multiple(Collection<Static> nodes) {
-        return new Static(nodes.stream().flatMap(Nodes::stream).toList());
+    static Fixed fixed(Collection<? extends Node> nodes) {
+        return new Fixed(nodes);
     }
 
     static Nodes compose(NodesSupplier... nodes) {
@@ -50,7 +40,7 @@ public sealed interface Nodes extends NodesSupplier permits
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
             return new Dynamic(createComputed(() -> nodes.stream().flatMap(Nodes::stream).toList()));
         } else {
-            return new Static(nodes.stream().flatMap(Nodes::stream).toList());
+            return new Fixed(nodes.stream().flatMap(Nodes::stream).toList());
         }
     }
 
@@ -74,26 +64,14 @@ public sealed interface Nodes extends NodesSupplier permits
         return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
     }
 
-    final class Static implements Nodes {
-        private final Collection<? extends Node> children;
-
-        private Static(Collection<? extends Node> children) {
-            this.children = children;
-        }
-
+    record Fixed(Collection<? extends Node> children) implements Nodes {
         @Override
         public Stream<? extends Node> stream() {
             return children.stream();
         }
     }
 
-    final class Dynamic implements Nodes {
-        private final Supplier<? extends List<? extends Node>> children;
-
-        private Dynamic(Supplier<? extends List<? extends Node>>  children) {
-            this.children = children;
-        }
-
+    record Dynamic(Supplier<? extends List<? extends Node>> children) implements Nodes {
         @Override
         public Stream<? extends Node> stream() {
             return children.get().stream();
@@ -111,13 +89,7 @@ public sealed interface Nodes extends NodesSupplier permits
         }
     }
 
-    final class CacheMany<K> {
-        private final Map<K, Nodes> cached;
-
-        public CacheMany(Map<K, Nodes> cached) {
-            this.cached = cached;
-        }
-
+    record CacheMany<K>(Map<K, Nodes> cached) {
         public Nodes get(K key, Supplier<Nodes> ifAbsent) {
             return cached.computeIfAbsent(key, k -> ifAbsent.get());
         }

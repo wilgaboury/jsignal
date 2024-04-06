@@ -9,6 +9,5 @@ repositories {
 
 dependencies {
     api(project(":jsigui"))
-    api("com.google.guava:guava:32.1.3-jre")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }

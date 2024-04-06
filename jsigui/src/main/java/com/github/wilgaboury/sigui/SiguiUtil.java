@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provide;
 import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
@@ -43,8 +42,13 @@ public class SiguiUtil {
         runnable.run();
     }
 
-    public static Effect createEffectLater(Runnable runnable) {
-        return ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable));
+    public static void createEffectLater(Runnable runnable) {
+        Provider provider = Provide.currentProvider();
+        SiguiExecutor.invokeLater(() ->
+            Provide.provide(provider, () ->
+                    ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
+            )
+        );
     }
 
     public static boolean onThread() {

@@ -91,8 +91,12 @@ public interface Node {
             return this;
         }
 
-        public Node build() {
+        public Node buildNode() {
             return new Composed(this);
+        }
+
+        public Nodes.Fixed build() {
+            return Nodes.fixed(buildNode());
         }
     }
 
