@@ -1,14 +1,16 @@
 package com.github.wilgaboury.jsigwig.text;
 
-import com.github.wilgaboury.sigui.Component;
+import com.github.wilgaboury.sigui.JSiguiComponent;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
 import io.github.humbleui.skija.paragraph.Paragraph;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-public class Para extends Component {
+@JSiguiComponent
+public class Para implements Renderable {
   private final Supplier<Paragraph> para;
 
   public Para(Paragraph para) {
@@ -20,7 +22,7 @@ public class Para extends Component {
   }
 
   @Override
-  protected Nodes render() {
+  public Nodes render() {
     return Node.builder()
       .layout(yoga -> {
         Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f);

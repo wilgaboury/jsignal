@@ -20,7 +20,8 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
-public class Image extends Component {
+@JSiguiComponent
+public class Image implements Renderable {
     private final static Logger logger = LoggerFactory.getLogger(Image.class);
 
     private static final WeakHashMap<Blob, SVGDOM> svgDoms = new WeakHashMap<>();
@@ -52,7 +53,7 @@ public class Image extends Component {
     }
 
     @Override
-    protected Nodes render() {
+    public Nodes render() {
         return Node.builder()
           .layout(yoga -> {
               if (blob.get().getMime().is(MediaType.SVG_UTF_8)) {

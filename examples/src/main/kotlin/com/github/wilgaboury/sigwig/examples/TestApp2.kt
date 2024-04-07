@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigwig.examples
 
-import com.github.wilgaboury.jsignal.ReactiveUtil
 import com.github.wilgaboury.jsignal.Ref
 import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksigui.flex
@@ -20,7 +19,7 @@ fun main() {
     }
 }
 
-class App2 : Component() {
+class App2 : Renderable() {
     private val reference: Ref<MetaNode> = Ref();
 
     private val count = createSignal(0);

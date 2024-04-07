@@ -29,7 +29,7 @@ class Scroller(
     val yBarWidth: () -> Float = barWidth,
     val yBarOverlayWidth: () -> Float = { yBarWidth() / 2 },
     val children: () -> Nodes = { Nodes.empty() }
-) : Component() {
+) : Renderable() {
     private val xOffset = createSignal(0f)
     private val yOffset = createSignal(0f)
 
@@ -265,7 +265,7 @@ class ScrollButton(
     val size: () -> Float = { DEFAULT_WIDTH },
     val show: () -> Boolean = { true },
     val action: () -> Unit = {}
-) : Component() {
+) : Renderable() {
     val mouseDown = createSignal(false)
 
     override fun render(): Nodes {

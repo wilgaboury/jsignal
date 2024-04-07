@@ -6,9 +6,9 @@ import com.github.wilgaboury.jsignal.interfaces.SignalLike
 import com.github.wilgaboury.ksigui.listen
 import com.github.wilgaboury.ksigui.node
 import com.github.wilgaboury.ksigui.ref
-import com.github.wilgaboury.sigui.Component
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Nodes
+import com.github.wilgaboury.sigui.Renderable
 import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import io.github.humbleui.types.Rect
@@ -17,12 +17,12 @@ import kotlin.math.max
 import kotlin.math.min
 
 class Button(
-        val color: () -> Int = { EzColors.BLUE_400 },
-        val text: () -> String = { "" },
-        val size: () -> Size = { Size.MD },
-        val action: () -> Unit = {},
-        val icon: Nodes = Nodes.empty()
-) : Component() {
+    val color: () -> Int = { EzColors.BLUE_400 },
+    val text: () -> String = { "" },
+    val size: () -> Size = { Size.MD },
+    val action: () -> Unit = {},
+    val icon: Nodes = Nodes.empty()
+) : Renderable {
     private val mouseOver: SignalLike<Boolean> = createSignal(false)
     private val mouseDown: SignalLike<Boolean> = createSignal(false)
 
@@ -101,8 +101,8 @@ class Button(
             val pressScale = 0.95f
             canvas.scale(pressScale, pressScale)
             canvas.translate(
-                    size.x * (1f - pressScale) / 2f,
-                    size.y * (1f - pressScale) / 2f
+                size.x * (1f - pressScale) / 2f,
+                size.y * (1f - pressScale) / 2f
             )
         }
         Paint().use { paint ->

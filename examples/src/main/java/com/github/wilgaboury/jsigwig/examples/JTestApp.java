@@ -11,7 +11,7 @@ import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
-public class JTestApp extends Component {
+public class JTestApp extends Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();

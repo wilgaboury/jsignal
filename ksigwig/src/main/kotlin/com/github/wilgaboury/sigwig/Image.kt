@@ -23,7 +23,7 @@ class Image(
     val fit: () -> Fit = { Fit.CONTAIN },
     val width: () -> MaybePercent<Float>? = { null },
     val height: () -> MaybePercent<Float>? = { null }
-) : Component() {
+) : Renderable() {
     init {
         val localWidth = untrack(width);
         val localHeight = untrack(height);

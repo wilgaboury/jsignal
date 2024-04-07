@@ -7,7 +7,7 @@ import io.github.humbleui.skija.*
 import io.github.humbleui.skija.paragraph.*
 import com.github.wilgaboury.ksigui.node
 import com.github.wilgaboury.ksigui.ref
-import com.github.wilgaboury.sigui.Component
+import com.github.wilgaboury.sigui.Renderable
 import org.lwjgl.util.yoga.Yoga
 import java.io.IOException
 import java.util.logging.Level
@@ -55,7 +55,7 @@ object Text {
 }
 
 
-class Para(val para: () -> Paragraph): Component() {
+class Para(val para: () -> Paragraph): Renderable() {
     companion object {
         fun basic(text: String, color: Int, size: Float): () -> Paragraph {
             val style = TextStyle()
@@ -103,7 +103,7 @@ class Para(val para: () -> Paragraph): Component() {
 class Line(
     val line: () -> TextLine,
     val color: () -> Int
-) : Component() {
+) : Renderable() {
     companion object {
         fun basic(string: String?, size: Float): TextLine {
             val font = Font()

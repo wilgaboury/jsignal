@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigui.hotswap.agent;
 
-import com.github.wilgaboury.sigui.Component;
+import com.github.wilgaboury.sigui.JSiguiComponent;
+import com.github.wilgaboury.sigui.Renderable;
 import org.hotswap.agent.annotation.Init;
 import org.hotswap.agent.annotation.LoadEvent;
 import org.hotswap.agent.annotation.OnClassLoadEvent;
@@ -13,7 +14,9 @@ import org.hotswap.agent.javassist.NotFoundException;
 import org.hotswap.agent.logging.AgentLogger;
 import org.hotswap.agent.util.PluginManagerInvoker;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Important caveat is that classes cannot be renamed
@@ -46,31 +49,10 @@ public class HotswapAgentSiguiPlugin {
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void rerenderComponents(CtClass ct, ClassLoader loader, Class<?> prev) {
+    public void rerenderComponents(CtClass ct, Class<?> clazz) {
         // TODO: check if field has been added, if so parent needs to be reloaded or field will be null
-        if (isComponentChildClass(ct)) {
+        if (clazz.isAnnotationPresent(JSiguiComponent.class)) {
             scheduler.scheduleCommand(new RerenderCommand(classLoader, ct.getName()), 100);
         }
-    }
-
-    public static boolean isComponentChildClass(CtClass ct) {
-        return isChildClass(ct, Component.class.getName());
-    }
-
-    public static boolean isChildClass(CtClass ct, String name) {
-        if (ct.getName().equals(name))
-            return false;
-
-        HashSet<String> hierarchy = new HashSet<>();
-        CtClass itr = ct;
-        while (itr != null) {
-            hierarchy.add(itr.getName());
-            try {
-                itr = itr.getSuperclass();
-            } catch (NotFoundException e) {
-                return false;
-            }
-        }
-        return hierarchy.contains(name);
     }
 }

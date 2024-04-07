@@ -3,7 +3,7 @@ package com.github.wilgaboury.sigwig.examples
 import com.github.wilgaboury.ksignal.createSignal
 import com.github.wilgaboury.ksigui.flex
 import com.github.wilgaboury.ksigui.node
-import com.github.wilgaboury.sigui.Component
+import com.github.wilgaboury.sigui.Renderable
 import com.github.wilgaboury.sigui.Nodes
 import com.github.wilgaboury.sigui.SiguiUtil
 import com.github.wilgaboury.sigui.SiguiWindow
@@ -20,7 +20,7 @@ fun main() {
     }
 }
 
-class Counter : Component() {
+class Counter : Renderable() {
     private val count = createSignal(0)
 
     override fun render(): Nodes {

@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigwig
 
-import com.github.wilgaboury.sigui.Component
+import com.github.wilgaboury.sigui.Renderable
 import com.github.wilgaboury.sigui.MetaNode
 import com.github.wilgaboury.sigui.Node
 import com.github.wilgaboury.sigui.Nodes
@@ -8,7 +8,7 @@ import io.github.humbleui.skija.Canvas
 import io.github.humbleui.skija.Paint
 import org.lwjgl.util.yoga.Yoga
 
-class Circle(private val radius: () -> Float) : Component() {
+class Circle(private val radius: () -> Float) : Renderable() {
     override fun render(): Nodes {
         return Node.builder()
             .layout { yoga: Long ->

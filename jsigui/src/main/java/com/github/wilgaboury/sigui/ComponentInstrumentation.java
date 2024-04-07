@@ -7,7 +7,7 @@ import static com.github.wilgaboury.jsignal.Provide.createContext;
 public interface ComponentInstrumentation {
     Context<ComponentInstrumentation> context = createContext(ComponentInstrumentation.empty());
 
-    Nodes instrument(Component component, NodesSupplier render);
+    Nodes instrument(Renderable component, NodesSupplier render);
 
     default ComponentInstrumentation addOuter(ComponentInstrumentation that) {
         return (component, render) -> that.instrument(component, () -> this.instrument(component, render));

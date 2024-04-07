@@ -4,7 +4,7 @@ import io.github.humbleui.types.Point;
 
 import java.util.List;
 
-public class CustomLayout extends Component {
+public class CustomLayout extends Renderable {
     private final Positioner positioner;
     private final Nodes children;
 

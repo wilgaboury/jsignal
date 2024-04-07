@@ -39,7 +39,7 @@ public class SiguiWindow {
 
     private final Signal<Point> mousePosition = createSignal(new Point(0, 0));
 
-    public SiguiWindow(Window window, Supplier<Component> root) {
+    public SiguiWindow(Window window, Supplier<Renderable> root) {
         this.window = window;
         this.nodeRegistry = new NodeRegistry();
 

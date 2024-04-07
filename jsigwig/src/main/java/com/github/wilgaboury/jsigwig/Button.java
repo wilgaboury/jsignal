@@ -12,7 +12,8 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 
-public class Button extends Component {
+@JSiguiComponent
+public class Button implements Renderable {
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
@@ -29,7 +30,7 @@ public class Button extends Component {
   }
 
   @Override
-  protected Nodes render() {
+  public Nodes render() {
     return Node.builder()
       .reference(node -> node.listen(
         EventListener.onMouseOver(e -> mouseOver.accept(true)),
