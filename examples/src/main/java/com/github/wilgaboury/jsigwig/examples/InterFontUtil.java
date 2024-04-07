@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigwig.examples;
+package com.github.wilgaboury.jsigwig.examples;
 
 import io.github.humbleui.skija.Data;
 import io.github.humbleui.skija.Font;

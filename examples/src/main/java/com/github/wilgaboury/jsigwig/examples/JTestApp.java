@@ -5,13 +5,13 @@ import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.jsigwig.*;
 import com.github.wilgaboury.jsigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigwig.examples.InterFontUtil;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
-public class JTestApp extends Renderable {
+@JSiguiComponent
+public class JTestApp implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
@@ -35,7 +35,7 @@ public class JTestApp extends Renderable {
   private final Random rand = new Random();
 
   @Override
-  protected Nodes render() {
+  public Nodes render() {
     return Node.builder()
       .layout(Flex.builder()
         .stretch()
