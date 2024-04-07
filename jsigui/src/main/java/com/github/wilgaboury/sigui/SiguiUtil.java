@@ -26,20 +26,36 @@ public class SiguiUtil {
     private static long clearNodeStyle;
 
     public static void start(Runnable runnable) {
-        new HotswapRerenderService();
-        App.start(() ->
-            Provide.provide(
-                    Provider.Entry.create(ComponentInstrumentation.context, HotswapComponent.createInstrumentation()),
-                    () -> startInner(runnable)
-            )
-        );
-    }
-
-    private static void startInner(Runnable runnable) {
         logger.trace("starting sigui application thread");
 
+        // calling new here provides hook for hotswap agent plugin initialization
+        new HotswapRerenderService();
+
         clearNodeStyle = Yoga.YGNodeNew();
-        runnable.run();
+
+        App.start(runnable);
+    }
+
+    public static void conditionallyProvideHotswapInstrumentation(Runnable runnable) {
+        conditionallyProvideHotswapInstrumentation("jsignal.hotswap", runnable);
+    }
+
+        public static void conditionallyProvideHotswapInstrumentation(String property, Runnable runnable) {
+        String prop = System.getProperty(property);
+        boolean shouldUseHotswap = false;
+
+        if (prop != null) {
+            shouldUseHotswap = Boolean.parseBoolean(prop);
+        }
+
+        if (shouldUseHotswap) {
+            Provide.provide(
+              Provider.Entry.create(ComponentInstrumentation.context, HotswapComponent.createInstrumentation()),
+              runnable
+            );
+        } else {
+            runnable.run();
+        }
     }
 
     public static void createEffectLater(Runnable runnable) {

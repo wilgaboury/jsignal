@@ -3,15 +3,15 @@ package com.github.wilgaboury.sigui;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Ref;
 import io.github.humbleui.jwm.App;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class SiguiExecutor {
-    private static final Logger logger = Logger.getLogger(SiguiExecutor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SiguiExecutor.class);
     private static final long MAX_EXECUTION_MILLIS = 1000 / 30;
 
     private static final AtomicBoolean willRun = new AtomicBoolean(false);
@@ -48,7 +48,7 @@ public class SiguiExecutor {
                     try {
                         queue.poll().run();
                     } catch (Exception e) {
-                        logger.log(Level.SEVERE, "failure on ui thread", e);
+                        logger.error("uncaught exception on ui thread", e);
                     }
 
                     checkExecutionTime.run();

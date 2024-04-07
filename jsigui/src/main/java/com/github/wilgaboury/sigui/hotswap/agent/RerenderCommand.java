@@ -7,11 +7,11 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class HaRerenderCommand extends MergeableCommand {
+public class RerenderCommand extends MergeableCommand {
     private final ClassLoader classLoader;
     private final String className;
 
-    public HaRerenderCommand(ClassLoader classLoader, String className) {
+    public RerenderCommand(ClassLoader classLoader, String className) {
         this.classLoader = classLoader;
         this.className = className;
     }
@@ -23,9 +23,9 @@ public class HaRerenderCommand extends MergeableCommand {
     @Override
     public void executeCommand() {
         List<String> classNames = Stream.concat(Stream.of(this), getMergedCommands().stream()
-                        .filter(HaRerenderCommand.class::isInstance)
-                        .map(HaRerenderCommand.class::cast))
-                .map(HaRerenderCommand::getClassName)
+                        .filter(RerenderCommand.class::isInstance)
+                        .map(RerenderCommand.class::cast))
+                .map(RerenderCommand::getClassName)
                 .toList();
         try {
             Method m = classLoader.loadClass(HotswapRerenderService.class.getName()).getDeclaredMethod("rerender", List.class);
@@ -39,11 +39,11 @@ public class HaRerenderCommand extends MergeableCommand {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof HaRerenderCommand;
+        return obj instanceof RerenderCommand;
     }
 
     @Override
     public int hashCode() {
-        return HaRerenderCommand.class.getName().hashCode();
+        return RerenderCommand.class.getName().hashCode();
     }
 }
