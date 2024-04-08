@@ -2,6 +2,12 @@
 
 A modern, declarative GUI library for Java desktop applications. This library takes strong inspiration from [SolidJS](https://www.solidjs.com/).
 
+## Module Disambiguation
+
+- JSignal - signal/effect reactive primitive library
+- Sigui - desktop graphical user interface library built on top of JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), and [JWM](https://github.com/HumbleUI/JWM)
+- Sigwig - component library for Sigui
+
 ## Obligatory Counter Example
 
 ```java
