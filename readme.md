@@ -11,7 +11,7 @@ A modern, declarative GUI library for Java desktop applications. This library ta
 ## Obligatory Counter Example
 
 ```java
-@JSignalComponent
+@SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> {
@@ -54,14 +54,17 @@ public class Counter implements Renderable {
 
 ## Hotswap
 
+One of Sigui's main features is it's built in support for hotswap development, as in it can apply certain code changes to the user interface without having to restart a running application. Currently, this is reliant on the DCEVM JVM patch and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent). Instruction for setting this up in Intellij Idea CE are below:
+
+- Download and use the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK 21, which contains the DCEVM JVM patch
 - set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
 - disable `Build, Execution, Deployment > Debugger > HotSwap > Build project before reloading classes`
-- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
-
+- use the following VM command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
+- change your application initialization code to look like: `SiguiUtil.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> { ... }));`
 
 ## Signals and Effects
 
-Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is essentially just the observer pattern, but with an added layer of indirection and significantly better developer ergonomics.
+Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access and mutation. Effects are procedures that re-execute when the signals that they depend on change. This "reactive" paradigm is fundamentally the classic observer pattern, but with an added layer of indirection and significantly better developer ergonomics.
 
 ### Brief Example
 
@@ -91,7 +94,7 @@ effect = createEffect(on(squared, (cur, prev) -> System.out.println(cur + ", " +
 value.accept(12); // prints 144, 121
 ```
 
-One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the garbage collector if there is no longer a strong reference to the `Effecteffect`. This makes it easier to add reactivity to objects because there is no need to worry about manual clean up.
+One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the garbage collector if there is no longer a strong reference to the effect. This is a convenience feature that makes it easier to add reactivity to objects without having to worry about cleanup procedures. Another thing to note is that in most Sigui code, there is no need to manually create strong references to effects. When effects are created inside another effect, the outer one will automatically hold a strong reference to the inner one. The entire component tree of Sigui is computed inside an effect, which makes handles unnecessary.
 
 ### Update Equality Check
 
@@ -99,9 +102,9 @@ One of the optional inputs when creating signals is an "equals" function. This m
 
 ### Clone
 
-Another optional argument provided to is a "clone" function. This function is run on data before returning it from a signal's get method. While the default "clone" function does not do anything, it is intended to allow user's to prevent leaking mutable references to the data inside a signal.
+Another optional argument provided when creating effects is the "clone" function. This function is run on data before returning it from a signal's get method. While the default "clone" function does nothing, its intention is to prevent leaking mutable references to the data inside a signal.
 
-A good example would be a signal of type `Signal<List<T>>`, which can have its internal list mutated via the get method (i.e., `signal.get().add(elem)`). Modifying the data in this way will not notify any of the effects. A remedy in this case would be using `Collections::unmodifiableList` as the "clone" argument.
+A good example would be a signal of type `Signal<List<T>>`, which can have its internal list mutated via the get method (i.e., `signal.get().add(elem)`). Modifying the data in this way will not notify any of the effects. A remedy in this case would be using `Collections::unmodifiableList` as the "clone" argument. In such a case, the only way to modify the internal data would be using the `accept` or `mutate` methods, like so `signal.mutate(list -> list.add(elem))`.
 
 ### Synchronicity
 
@@ -127,7 +130,7 @@ Effect effect = createEffect(() -> {
 });
 ```
 
-Asynchronous effects are internally executed in a synchronize block so that a given asynchronous effect never has its logic executed in parallel. This is done to ease the mental burden on developers when reasoning about what asynchronous reactive code is doing.
+Asynchronous effects are executed in a synchronize block, meaning that a given asynchronous effect will never have its logic executed in parallel. This makes the implementation of asynchronous effects much cleaner. It also eases the mental burden on developers when trying to reason about asynchronous reactive code.
 
 ### Flow/Reactor/RxJava
 

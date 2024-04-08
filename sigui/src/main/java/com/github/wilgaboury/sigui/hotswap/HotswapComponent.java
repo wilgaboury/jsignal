@@ -4,9 +4,9 @@ import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Provide;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Trigger;
-import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.ComponentInstrumentation;
 import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
 
 import java.util.*;
 
@@ -29,7 +29,7 @@ public class HotswapComponent {
     private final Trigger rerender;
 
     public HotswapComponent(Renderable component) {
-        this.parent = Provide.useContext(haComponentContext).orElse(null);
+        this.parent = haComponentContext.use().orElse(null);
         this.rerender = ReactiveUtil.createTrigger();
 
         classNameToHotswap.computeIfAbsent(component.getClass().getName(), k -> new LinkedHashSet<>()).add(this);

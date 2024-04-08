@@ -22,92 +22,98 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class SiguiUtil {
-    private static final Logger logger = LoggerFactory.getLogger(SiguiUtil.class);
-    private static long clearNodeStyle;
+  private static final Logger logger = LoggerFactory.getLogger(SiguiUtil.class);
+  private static long clearNodeStyle;
 
-    public static void start(Runnable runnable) {
-        logger.trace("starting sigui application thread");
+  public static void start(Runnable runnable) {
+    logger.trace("starting sigui application thread");
 
-        // calling new here provides hook for hotswap agent plugin initialization
-        new HotswapRerenderService();
+    // calling new here provides hook for hotswap agent plugin initialization
+    new HotswapRerenderService();
 
-        clearNodeStyle = Yoga.YGNodeNew();
+    clearNodeStyle = Yoga.YGNodeNew();
 
-        App.start(runnable);
+    App.start(runnable);
+  }
+
+  public static void provideHotswapInstrumentation(Runnable runnable) {
+    Provide.provide(
+      ComponentInstrumentation.context.with(
+        current -> current.addInner(HotswapComponent.createInstrumentation())),
+      runnable
+    );
+  }
+
+  public static void conditionallyProvideHotswapInstrumentation(Runnable runnable) {
+    conditionallyProvideHotswapInstrumentation("jsignal.hotswap", runnable);
+  }
+
+  public static void conditionallyProvideHotswapInstrumentation(String property, Runnable runnable) {
+    String prop = System.getProperty(property);
+    boolean shouldUseHotswap = false;
+
+    if (prop != null) {
+      shouldUseHotswap = Boolean.parseBoolean(prop);
     }
 
-    public static void conditionallyProvideHotswapInstrumentation(Runnable runnable) {
-        conditionallyProvideHotswapInstrumentation("jsignal.hotswap", runnable);
+    if (shouldUseHotswap) {
+      provideHotswapInstrumentation(runnable);
+    } else {
+      runnable.run();
     }
+  }
 
-        public static void conditionallyProvideHotswapInstrumentation(String property, Runnable runnable) {
-        String prop = System.getProperty(property);
-        boolean shouldUseHotswap = false;
+  public static void createEffectLater(Runnable runnable) {
+    Provider provider = Provide.currentProvider();
+    SiguiExecutor.invokeLater(() ->
+      Provide.provide(provider, () ->
+        ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
+      )
+    );
+  }
 
-        if (prop != null) {
-            shouldUseHotswap = Boolean.parseBoolean(prop);
-        }
+  public static boolean onThread() {
+    return App._onUIThread();
+  }
 
-        if (shouldUseHotswap) {
-            Provide.provide(
-              Provider.Entry.create(ComponentInstrumentation.context, HotswapComponent.createInstrumentation()),
-              runnable
-            );
-        } else {
-            runnable.run();
-        }
+  public static Window createWindow() {
+    return App.makeWindow();
+  }
+
+  public static void requestFrame() {
+    for (var window : SiguiWindow.getWindows()) {
+      window.requestFrame();
     }
+  }
 
-    public static void createEffectLater(Runnable runnable) {
-        Provider provider = Provide.currentProvider();
-        SiguiExecutor.invokeLater(() ->
-            Provide.provide(provider, () ->
-                    ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
-            )
-        );
+  public static void requestLayout() {
+    for (var window : SiguiWindow.getWindows()) {
+      window.requestLayout();
     }
+  }
 
-    public static boolean onThread() {
-        return App._onUIThread();
-    }
+  public static void clearNodeStyle(long node) {
+    Yoga.YGNodeCopyStyle(node, clearNodeStyle);
+  }
 
-    public static Window createWindow() {
-        return App.makeWindow();
-    }
+  private static final EnumMap<Platform, List<Supplier<? extends Layer>>> LAYER_INITIALIZERS = new EnumMap<>(Platform.class);
 
-    public static void requestFrame() {
-        for (var window : SiguiWindow.getWindows()) {
-            window.requestFrame();
-        }
-    }
+  static {
+    LAYER_INITIALIZERS.put(Platform.MACOS, List.of(LayerMetalSkija::new, LayerGLSkija::new, LayerRasterSkija::new));
+    LAYER_INITIALIZERS.put(Platform.WINDOWS, List.of(LayerD3D12Skija::new, LayerGLSkija::new, LayerRasterSkija::new));
+    LAYER_INITIALIZERS.put(Platform.X11, List.of(LayerGLSkija::new, LayerRasterSkija::new));
+  }
 
-    public static void requestLayout() {
-        for (var window : SiguiWindow.getWindows()) {
-            window.requestLayout();
-        }
+  public static Layer createLayer() {
+    for (var initializers : LAYER_INITIALIZERS.get(Platform.CURRENT)) {
+      try {
+        var layer = initializers.get();
+        logger.trace("using layer type: {}", layer.getClass().getSimpleName());
+        return layer;
+      } catch (Exception e) {
+        // no-op
+      }
     }
-
-    public static void clearNodeStyle(long node) {
-        Yoga.YGNodeCopyStyle(node, clearNodeStyle);
-    }
-
-    private static final EnumMap<Platform, List<Supplier<? extends Layer>>> LAYER_INITIALIZERS = new EnumMap<>(Platform.class);
-    static {
-        LAYER_INITIALIZERS.put(Platform.MACOS, List.of(LayerMetalSkija::new, LayerGLSkija::new, LayerRasterSkija::new));
-        LAYER_INITIALIZERS.put(Platform.WINDOWS, List.of(LayerD3D12Skija::new, LayerGLSkija::new, LayerRasterSkija::new));
-        LAYER_INITIALIZERS.put(Platform.X11, List.of(LayerGLSkija::new, LayerRasterSkija::new));
-    }
-
-    public static Layer createLayer() {
-        for (var initializers : LAYER_INITIALIZERS.get(Platform.CURRENT)) {
-            try {
-                var layer = initializers.get();
-                logger.trace("using layer type: {}", layer.getClass().getSimpleName());
-                return layer;
-            } catch (Exception e) {
-                // no-op
-            }
-        }
-        throw new RuntimeException(String.format("failed to initialize layer for platform %s", Platform.CURRENT));
-    }
+    throw new RuntimeException(String.format("failed to initialize layer for platform %s", Platform.CURRENT));
+  }
 }

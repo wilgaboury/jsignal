@@ -10,12 +10,12 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiUtil.start(() -> {
+    SiguiUtil.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new SiguiWindow(window, Counter::new);
-    });
+    }));
   }
 
   private final Signal<Integer> count = createSignal(0);

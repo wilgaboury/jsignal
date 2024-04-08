@@ -16,11 +16,7 @@ import static com.github.wilgaboury.jsignal.Provide.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class SiguiWindow {
-    private static final Context<SiguiWindow> WINDOW = createContext(null);
-
-    public static SiguiWindow useWindow() {
-        return useContext(WINDOW);
-    }
+    public static final Context<SiguiWindow> context = createContext(null);
 
     private static final Set<SiguiWindow> windows = new HashSet<>();
 
@@ -49,7 +45,7 @@ public class SiguiWindow {
 
         windows.add(this);
         this.rootCleanups = createCleanups();
-        this.root = provide(List.of(WINDOW.with(this), cleanupsContext.with(Optional.of(rootCleanups))),
+        this.root = provide(List.of(context.with(this), cleanupsContext.with(Optional.of(rootCleanups))),
                 () -> MetaNode.createRoot(root));
 
         var layer = SiguiUtil.createLayer();

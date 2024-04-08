@@ -1,8 +1,9 @@
 package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Context;
+import com.github.wilgaboury.jsignal.Provide;
 
-import static com.github.wilgaboury.jsignal.Provide.createContext;
+import static com.github.wilgaboury.jsignal.Provide.*;
 
 public interface ComponentInstrumentation {
     Context<ComponentInstrumentation> context = createContext(ComponentInstrumentation.empty());

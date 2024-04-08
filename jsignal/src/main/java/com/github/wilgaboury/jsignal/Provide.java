@@ -72,7 +72,7 @@ public class Provide {
         }
     }
 
-    public static <T> T useContext(Context<T> context) {
+    public static <T> T use(Context<T> context) {
         return providers.get().use(context);
     }
 

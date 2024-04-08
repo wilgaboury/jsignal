@@ -115,7 +115,7 @@ public class ReactiveUtil {
     }
 
     public static @NotNull Optional<@NotNull EffectLike> useEffect() {
-        return useContext(Effect.effectContext);
+        return use(Effect.effectContext);
     }
 
     public static @NotNull Effect createEffect(@NotNull Runnable inner) {
@@ -135,7 +135,7 @@ public class ReactiveUtil {
     }
 
     public static @NotNull Executor useExecutor() {
-        return useContext(executorContext);
+        return use(executorContext);
     }
 
     public static void provideExecutor(Executor executor, Runnable inner) {
@@ -171,7 +171,7 @@ public class ReactiveUtil {
     }
 
     public static Optional<Cleanups> useCleanups() {
-        return useContext(cleanupsContext);
+        return use(cleanupsContext);
     }
 
     public static void provideCleanups(Cleanups cleanups, Runnable inner) {
@@ -198,7 +198,7 @@ public class ReactiveUtil {
     }
 
     public static void onCleanup(Runnable cleanup) {
-        useContext(cleanupsContext).ifPresent(c -> c.getQueue().add(cleanup));
+        use(cleanupsContext).ifPresent(c -> c.getQueue().add(cleanup));
     }
 
     public static void batch(Runnable inner) {
@@ -288,7 +288,7 @@ public class ReactiveUtil {
     }
 
     public static <T> Cleanups createSubscriber(SignalLike<T> signal, Flow.Publisher<T> publisher) {
-        Cleanups cleanups = useContext(cleanupsContext).orElseGet(Cleanups::new);
+        Cleanups cleanups = use(cleanupsContext).orElseGet(Cleanups::new);
         publisher.subscribe(new SubscriberAdapter<T>(signal, cleanups));
         return cleanups;
     }
