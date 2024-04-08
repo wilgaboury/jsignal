@@ -1,5 +1,6 @@
 package com.github.wilgaboury.jsigwig.examples;
 
+import com.github.wilgaboury.jsigwig.Button;
 import io.github.humbleui.skija.Data;
 import io.github.humbleui.skija.Font;
 import io.github.humbleui.skija.TextLine;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 public class InterFontUtil {
   private static final Logger logger = LoggerFactory.getLogger(InterFontUtil.class);
@@ -41,7 +43,7 @@ public class InterFontUtil {
           throw new RuntimeException("inter-regular font resource is missing");
         }
       }
-    } catch (IOException e){
+    } catch (IOException e) {
       logger.error("failed to load inter font");
       throw new RuntimeException(e);
     }
@@ -73,5 +75,16 @@ public class InterFontUtil {
     font.setTypeface(interRegular);
     font.setSize(size);
     return TextLine.make(string, font);
+  }
+
+  public static Button.Children createButtonText(String string) {
+    return createButtonText(() -> string);
+  }
+
+    public static Button.Children createButtonText(Supplier<String> string) {
+    return (textSize, textColor) -> com.github.wilgaboury.jsigwig.text.TextLine.builder()
+      .setLine(() -> createTextLine(string.get(), textSize.get()))
+      .setColor(textColor)
+      .build();
   }
 }

@@ -1,9 +1,12 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.jsigwig.EzColors;
-import com.github.wilgaboury.jsigwig.Scroll;
+import com.github.wilgaboury.jsigwig.*;
+import com.github.wilgaboury.jsigwig.text.Para;
+import com.github.wilgaboury.jsigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
+import com.google.common.net.MediaType;
+import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
@@ -13,6 +16,15 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 public class TestApp implements Renderable {
   private static final String LOREM =
     "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit.";
+
+  private static final Blob penguin;
+  static {
+    try {
+      penguin = Blob.fromResource("/peng.png", MediaType.PNG);
+    } catch (BlobException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public static void main(String[] args) {
     SiguiUtil.start(() -> {
@@ -47,9 +59,77 @@ public class TestApp implements Renderable {
             .widthPercent(100f)
             .build()
           )
+          .paint(BasicPainter.builder()
+            .setRadius(50)
+            .setBorder(10)
+            .setBackgroundColor(EzColors.AMBER_300)
+            .setBorderColor(EzColors.EMERALD_700)
+            .build()
+          )
+          .children(
+            TextLine.builder()
+              .setLine(() -> InterFontUtil.createTextLine(String.format(
+                  "Count: %s",
+                  count.get()
+                ),
+                20f
+              ))
+              .setColor(EzColors.GRAY_700)
+              .build(),
+            Node.builder()
+              .layout(Flex.builder()
+                .row()
+                .wrap()
+                .gap(10f)
+                .build())
+              .children(
+                Button.builder()
+                  .setColor(EzColors.BLUE_300)
+                  .setAction(() -> count.accept(c -> c + 1))
+                  .setChildren(InterFontUtil.createButtonText("Increase"))
+                  .build(),
+                Button.builder()
+                  .setColor(EzColors.BLUE_700)
+                  .setAction(() -> count.accept(c -> c - 1))
+                  .setChildren(InterFontUtil.createButtonText("Decrease"))
+                  .build(),
+                Button.builder()
+                  .setColor(EzColors.RED_300)
+                  .setAction(() -> count.accept(c -> c * 2))
+                  .setChildren(InterFontUtil.createButtonText("Multiply"))
+                  .build(),
+                Button.builder()
+                  .setColor(EzColors.RED_700)
+                  .setAction(() -> count.accept(c -> c / 2))
+                  .setChildren(InterFontUtil.createButtonText("Divide"))
+                  .build()
+              )
+              .build(),
+            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 12f)),
+            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 10f)),
+            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 8f)),
+            Button.builder()
+              .setColor(buttonColor)
+              .setAction(() -> {
+                buttonColor.accept(Color.withA(rand.nextInt(), 255));
+                showFire.accept(show -> !show);
+              })
+              .setChildren(InterFontUtil.createButtonText(this::buttonText))
+              .build(),
+            Image.builder()
+              .setBlob(penguin)
+              .setHeight(LayoutValue.pixel(300))
+              .setWidth(LayoutValue.pixel(200))
+              .setFit(Image.Fit.COVER)
+              .build()
+          )
           .build()
       )
       .build()
       .getNodes();
+  }
+
+  private String buttonText() {
+    return showFire.get() ? "Hide Fire" : "Show File";
   }
 }

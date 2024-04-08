@@ -1,40 +1,46 @@
 # JSignal
 
-A modern, declarative GUI library for Java and Kotlin desktop applications. This library takes strong inspiration from [SolidJS](https://www.solidjs.com/).
+A modern, declarative GUI library for Java desktop applications. This library takes strong inspiration from [SolidJS](https://www.solidjs.com/).
 
 ## Obligatory Counter Example
 
-```kotlin
-fun main() {
-    SiguiUtil.start {
-        val window = SiguiUtil.createWindow()
-        window.setTitle("Counter")
-        window.setContentSize(250, 250)
-        SiguiWindow(window) { Counter() }
-    }
-}
+```java
+@JSiguiComponent
+public class Counter implements Renderable {
+  public static void main(String[] args) {
+    SiguiUtil.start(() -> {
+      var window = SiguiUtil.createWindow();
+      window.setTitle("Counter");
+      window.setContentSize(250, 250);
+      new SiguiWindow(window, Counter::new);
+    });
+  }
 
-class Counter : Component() {
-    private val count = createSignal(0)
+  private final Signal<Integer> count = createSignal(0);
 
-    override fun render(): Nodes {
-        return node {
-            layout(flex {
-                stretch()
-                center()
-                column()
-                gap(10f)
-            })
-            children(
-                Line({ Line.basic("Count: ${count.get()}", 20f) }, { EzColors.BLUE_500 }),
-                Button(
-                    color = { EzColors.BLUE_300 },
-                    text = { "Increment" },
-                    action = { count.accept { c -> c + 1 } }
-                )
-            )
-        }
-    }
+  @Override
+  public Nodes render() {
+    return Node.builder()
+      .layout(Flex.builder()
+        .stretch()
+        .center()
+        .column()
+        .gap(10f)
+        .build()
+      )
+      .children(
+        TextLine.builder()
+          .setLine(() -> InterFontUtil.createTextLine("Count: " + count.get(), 20f))
+          .setColor(EzColors.BLUE_500)
+          .build(),
+        Button.builder()
+          .setColor(EzColors.BLUE_300)
+          .setAction(() -> count.accept(c -> c + 1))
+          .setChildren(InterFontUtil.createButtonText("Increment"))
+          .build()
+      )
+      .build();
+  }
 }
 ```
 
