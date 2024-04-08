@@ -1,4 +1,4 @@
-# JSignal
+# JSignal/Sigui
 
 A modern, declarative GUI library for Java desktop applications. This library takes strong inspiration from [SolidJS](https://www.solidjs.com/).
 
