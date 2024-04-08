@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsigwig.text;
 
-import com.github.wilgaboury.sigui.JSiguiComponent;
+import com.github.wilgaboury.sigui.JSignalComponent;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
@@ -9,7 +9,7 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-@JSiguiComponent
+@JSignalComponent
 public class TextLine implements Renderable {
   private final Supplier<io.github.humbleui.skija.TextLine> line;
   private final Supplier<Integer> color;

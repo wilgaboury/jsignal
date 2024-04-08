@@ -10,7 +10,7 @@ import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
-@JSiguiComponent
+@JSignalComponent
 public class JTestApp implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {

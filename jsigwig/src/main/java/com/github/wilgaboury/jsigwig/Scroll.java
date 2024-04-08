@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 import static com.github.wilgaboury.sigui.SiguiUtil.createEffectLater;
 
-@JSiguiComponent
+@JSignalComponent
 public class Scroll implements Renderable {
   private static final float DEFAULT_WIDTH = 15f;
 
@@ -354,7 +354,7 @@ public class Scroll implements Renderable {
     }
   }
 
-  @JSiguiComponent
+  @JSignalComponent
   private static class ScrollButton implements Renderable {
     private final Supplier<Float> size;
     private final Supplier<Boolean> show;

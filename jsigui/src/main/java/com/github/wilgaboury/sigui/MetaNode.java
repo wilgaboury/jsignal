@@ -342,7 +342,7 @@ public class MetaNode {
   /**
    * provide hook for hotswap instrumentation at root
    */
-  @JSiguiComponent
+  @JSignalComponent
   private record RootComponent(Supplier<Renderable> child) implements Renderable {
     @Override
     public Nodes render() {

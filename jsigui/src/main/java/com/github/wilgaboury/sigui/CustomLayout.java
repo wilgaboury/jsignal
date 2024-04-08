@@ -4,7 +4,7 @@ import io.github.humbleui.types.Point;
 
 import java.util.List;
 
-@JSiguiComponent
+@JSignalComponent
 public class CustomLayout implements Renderable {
     private final Positioner positioner;
     private final Nodes children;

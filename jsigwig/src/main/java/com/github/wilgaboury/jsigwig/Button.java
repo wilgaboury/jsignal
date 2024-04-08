@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 
-@JSiguiComponent
+@JSignalComponent
 public class Button implements Renderable {
   private final Supplier<Integer> color;
   private final Supplier<Size> size;

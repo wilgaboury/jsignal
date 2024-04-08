@@ -5,7 +5,7 @@ A modern, declarative GUI library for Java desktop applications. This library ta
 ## Obligatory Counter Example
 
 ```java
-@JSiguiComponent
+@JSignalComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> {

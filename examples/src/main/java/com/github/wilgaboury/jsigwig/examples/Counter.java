@@ -7,7 +7,7 @@ import com.github.wilgaboury.jsigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-@JSiguiComponent
+@JSignalComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> {

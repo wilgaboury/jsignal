@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
-@JSiguiComponent
+@JSignalComponent
 public class Image implements Renderable {
     private final static Logger logger = LoggerFactory.getLogger(Image.class);
 

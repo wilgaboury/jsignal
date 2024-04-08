@@ -1,7 +1,6 @@
 package com.github.wilgaboury.sigui.hotswap.agent;
 
-import com.github.wilgaboury.sigui.JSiguiComponent;
-import com.github.wilgaboury.sigui.Renderable;
+import com.github.wilgaboury.sigui.JSignalComponent;
 import org.hotswap.agent.annotation.Init;
 import org.hotswap.agent.annotation.LoadEvent;
 import org.hotswap.agent.annotation.OnClassLoadEvent;
@@ -10,13 +9,8 @@ import org.hotswap.agent.command.Scheduler;
 import org.hotswap.agent.javassist.CannotCompileException;
 import org.hotswap.agent.javassist.CtClass;
 import org.hotswap.agent.javassist.CtConstructor;
-import org.hotswap.agent.javassist.NotFoundException;
 import org.hotswap.agent.logging.AgentLogger;
 import org.hotswap.agent.util.PluginManagerInvoker;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Important caveat is that classes cannot be renamed
@@ -51,7 +45,7 @@ public class HotswapAgentSiguiPlugin {
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
     public void rerenderComponents(CtClass ct, Class<?> clazz) {
         // TODO: check if field has been added, if so parent needs to be reloaded or field will be null
-        if (clazz.isAnnotationPresent(JSiguiComponent.class)) {
+        if (clazz.isAnnotationPresent(JSignalComponent.class)) {
             scheduler.scheduleCommand(new RerenderCommand(classLoader, ct.getName()), 100);
         }
     }

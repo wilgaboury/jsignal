@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsigwig.text;
 
-import com.github.wilgaboury.sigui.JSiguiComponent;
+import com.github.wilgaboury.sigui.JSignalComponent;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.Renderable;
@@ -9,7 +9,7 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-@JSiguiComponent
+@JSignalComponent
 public class Para implements Renderable {
   private final Supplier<Paragraph> para;
 
