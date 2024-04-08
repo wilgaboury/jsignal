@@ -1,9 +1,9 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.jsigwig.*;
-import com.github.wilgaboury.jsigwig.text.Para;
-import com.github.wilgaboury.jsigwig.text.TextLine;
+import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigwig.text.Para;
+import com.github.wilgaboury.sigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
@@ -12,7 +12,7 @@ import java.util.Random;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 
-@JSignalComponent
+@SiguiComponent
 public class TestApp implements Renderable {
   private static final String LOREM =
     "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit.";

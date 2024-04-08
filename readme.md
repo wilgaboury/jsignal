@@ -50,7 +50,7 @@ public class Counter implements Renderable {
 
 - set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
 - disable `Build, Execution, Deployment > Debugger > HotSwap > Build project before reloading classes`
-- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:jsigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
+- run the program with the following command line arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
 
 
 ## Signals and Effects

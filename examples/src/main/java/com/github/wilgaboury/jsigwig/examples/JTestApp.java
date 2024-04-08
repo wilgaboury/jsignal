@@ -2,15 +2,15 @@ package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.jsigwig.*;
-import com.github.wilgaboury.jsigwig.text.TextLine;
+import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
-@JSignalComponent
+@SiguiComponent
 public class JTestApp implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {

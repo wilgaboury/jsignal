@@ -2,5 +2,5 @@ rootProject.name = "jsignal-parent"
 
 include("examples")
 include("jsignal")
-include("jsigui")
-include("jsigwig")
+include("sigui")
+include("sigwig")

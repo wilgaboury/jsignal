@@ -1,13 +1,13 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.jsigwig.Button;
-import com.github.wilgaboury.jsigwig.EzColors;
-import com.github.wilgaboury.jsigwig.text.TextLine;
+import com.github.wilgaboury.sigwig.Button;
+import com.github.wilgaboury.sigwig.EzColors;
+import com.github.wilgaboury.sigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
-@JSignalComponent
+@SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
     SiguiUtil.start(() -> {

@@ -1,10 +1,7 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.jsigwig.Button;
-import io.github.humbleui.skija.Data;
-import io.github.humbleui.skija.Font;
-import io.github.humbleui.skija.TextLine;
-import io.github.humbleui.skija.Typeface;
+import com.github.wilgaboury.sigwig.Button;
+import io.github.humbleui.skija.*;
 import io.github.humbleui.skija.paragraph.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +25,12 @@ public class InterFontUtil {
   private static final FontCollection fontCollection = new FontCollection();
 
   static {
+    FontMgr mgr = FontMgr.getDefault();
+    int families = mgr.getFamiliesCount();
+    for (int i = 0; i < families; i++) {
+      System.out.println(mgr.getFamilyName(i));
+    }
+
     try {
       for (var location : interResourceLocations) {
         try (InputStream resource = InterFontUtil.class.getResourceAsStream(location)) {
@@ -82,7 +85,7 @@ public class InterFontUtil {
   }
 
     public static Button.Children createButtonText(Supplier<String> string) {
-    return (textSize, textColor) -> com.github.wilgaboury.jsigwig.text.TextLine.builder()
+    return (textSize, textColor) -> com.github.wilgaboury.sigwig.text.TextLine.builder()
       .setLine(() -> createTextLine(string.get(), textSize.get()))
       .setColor(textColor)
       .build();

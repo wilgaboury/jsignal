@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    id("java-library")
 }
 
 repositories {
@@ -8,5 +8,7 @@ repositories {
 
 dependencies {
     implementation("org.slf4j:slf4j-api:2.0.12")
-    implementation(project(":sigwig"))
+
+    api(project(":sigui"))
+    api("com.google.guava:guava:32.1.3-jre")
 }
