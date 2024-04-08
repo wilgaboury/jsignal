@@ -4,7 +4,7 @@ A modern, declarative GUI library for Java desktop applications. This library ta
 
 ## Motivation
 
-Even though we live in an era of declarative UI libraries (React, Flutter, SwiftUI, Jetpack Compose, etc.), there seems to be a lack of options when it comes to Java, and libraries like Swing, JavaFX and SWT feel quite outdated in comparison. Considering that Java is used extensivley in educational settings and for enterprise software development, this project is an attempt to give the language a modern library for developing desktop applications.
+After decades of different approaches to UI design patterns and abstractions, the software landscape seems to have almost definitely settled on declarative/reactive UI libraries (React, Flutter, SwiftUI, Jetpack Compose, etc.). Although, when it comes to Java there is a clear lack of options, and libraries like Swing, JavaFX and SWT feel quite outdated in comparison to other frameworks. Considering that Java is used extensively in educational settings and for enterprise software development, this project is an attempt at creating a modern library for developing desktop applications.
 
 ## Module Disambiguation
 
