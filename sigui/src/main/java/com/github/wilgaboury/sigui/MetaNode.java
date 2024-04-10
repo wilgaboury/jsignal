@@ -45,7 +45,7 @@ public class MetaNode {
   private final Supplier<List<MetaNode>> children;
 
   private MetaNode(MetaNode parent, Node node) {
-    this.window = SiguiWindow.useWindow();
+    this.window = SiguiWindow.context.use();
     this.published = new MutableProvider();
 
     this.parent = parent;

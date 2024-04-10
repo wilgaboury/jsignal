@@ -4,6 +4,9 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://releases.usethesource.io/maven")
+    }
 }
 
 dependencies {

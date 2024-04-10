@@ -2,17 +2,7 @@ package com.github.wilgaboury.jsignal;
 
 import java.util.function.Function;
 
-public class Context<T> {
-    private final T defaultValue;
-
-    Context(T defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
-    public T getDefaultValue() {
-        return defaultValue;
-    }
-
+public record Context<T>(T defaultValue) {
     public T use() {
         return Provide.currentProvider().use(this);
     }

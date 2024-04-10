@@ -9,11 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.Provide.*;
+import static com.github.wilgaboury.jsignal.Provide.currentProvider;
+import static com.github.wilgaboury.jsignal.Provide.provide;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Effect implements EffectLike {
-    static final Context<Optional<EffectLike>> effectContext = createContext(Optional.empty());
+    static final Context<Optional<EffectLike>> effectContext = new Context<>(Optional.empty());
     protected static final AtomicInteger nextId = new AtomicInteger(0);
 
     protected final int id;

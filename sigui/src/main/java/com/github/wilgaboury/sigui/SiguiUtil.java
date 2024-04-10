@@ -37,11 +37,9 @@ public class SiguiUtil {
   }
 
   public static void provideHotswapInstrumentation(Runnable runnable) {
-    Provide.provide(
-      ComponentInstrumentation.context.with(
-        current -> current.addInner(HotswapComponent.createInstrumentation())),
-      runnable
-    );
+    ComponentInstrumentation.context.with(
+        current -> current.addInner(HotswapComponent.createInstrumentation()))
+      .provide(runnable);
   }
 
   public static void conditionallyProvideHotswapInstrumentation(Runnable runnable) {

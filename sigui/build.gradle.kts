@@ -29,6 +29,9 @@ val lwjglNatives = Pair(
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://releases.usethesource.io/maven")
+    }
 }
 
 dependencies {
@@ -47,8 +50,6 @@ dependencies {
 
     // 2024-03-26
     compileOnly(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
-
-    implementation("io.github.classgraph:classgraph:4.8.168")
 
     implementation("org.jetbrains:annotations:24.0.0")
 

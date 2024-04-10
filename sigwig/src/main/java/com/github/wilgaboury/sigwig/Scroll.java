@@ -60,7 +60,7 @@ public class Scroll implements Renderable {
 
   @Override
   public Nodes render() {
-    var window = SiguiWindow.useWindow();
+    var window = SiguiWindow.context.use();
 
     createEffectLater(() -> {
       if (xBarMouseDown.get()) {
