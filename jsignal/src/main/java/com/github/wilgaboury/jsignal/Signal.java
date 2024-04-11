@@ -113,6 +113,16 @@ public class Signal<T> implements SignalLike<T> {
     return new Builder<T>().setValue(value);
   }
 
+  public static BuilderSetValue builder() {
+    return new BuilderSetValue();
+  }
+
+  public static class BuilderSetValue {
+    public <T> Builder<T> setValue(T value) {
+      return builder(value);
+    }
+  }
+
   public static class Builder<T> {
     protected T value;
     protected boolean isSync = true;
