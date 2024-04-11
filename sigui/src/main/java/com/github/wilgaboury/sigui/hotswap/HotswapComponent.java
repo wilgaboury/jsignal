@@ -1,7 +1,6 @@
 package com.github.wilgaboury.sigui.hotswap;
 
 import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.Provide;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Trigger;
 import com.github.wilgaboury.sigui.ComponentInstrumentation;
@@ -13,7 +12,7 @@ import java.util.*;
 public class HotswapComponent {
   private static final Map<String, Set<HotswapComponent>> classNameToHotswap = new LinkedHashMap<>();
   private static final Map<Renderable, HotswapComponent> componentToHotswap = new LinkedHashMap<>();
-  private static final Context<Optional<HotswapComponent>> haComponentContext = Provide.createContext(Optional.empty());
+  private static final Context<Optional<HotswapComponent>> haComponentContext = new Context<>(Optional.empty());
 
   public static Map<String, Set<HotswapComponent>> getClassNameToHotswap() {
     return Collections.unmodifiableMap(classNameToHotswap);

@@ -3,15 +3,18 @@ package com.github.wilgaboury.jsignal;
 import io.usethesource.capsule.Map;
 import io.usethesource.capsule.core.PersistentTrieMap;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Provider {
+  private final static ThreadLocal<Provider> providers = ThreadLocal.withInitial(Provider::new);
+
   private final Map.Immutable<Context<?>, Object> contexts;
+
+  public static Provider get() {
+    return providers.get();
+  }
 
   public Provider() {
     this(PersistentTrieMap.of());
@@ -29,12 +32,26 @@ public class Provider {
     return add(entries(entries));
   }
 
-  private Provider add(Entries entries) {
-    return new Provider(contexts.__putAll(entries.contexts));
+  private Provider add(java.util.Map<Context<?>, Object> entries) {
+    return new Provider(contexts.__putAll(entries));
   }
 
   public <T> T use(Context<T> context) {
-    return (T) Optional.ofNullable(contexts.get(context)).orElseGet(context::defaultValue);
+    return Optional.ofNullable((T)contexts.get(context)).orElseGet(context::getDefaultValue);
+  }
+
+  public void provide(Runnable runnable) {
+    provide(ReactiveUtil.toSupplier(runnable));
+  }
+
+  public <T> T provide(Supplier<T> supplier) {
+    var prev = get();
+    providers.set(this);
+    try {
+      return supplier.get();
+    } finally {
+      providers.set(prev);
+    }
   }
 
   public static class Entry {
@@ -59,42 +76,26 @@ public class Provider {
     }
 
     public void provide(Runnable runnable) {
-      Provide.provide(Provide.currentProvider().add(this), runnable);
+      get().add(this).provide(runnable);
     }
 
     public <T> T provide(Supplier<T> supplier) {
-      return Provide.provide(Provide.currentProvider().add(this), supplier);
+      return get().add(this).provide(supplier);
     }
   }
 
-  public static class Entries {
-    private final java.util.Map<Context<?>, Object> contexts;
-
-    public Entries() {
-      contexts = new HashMap<>();
-    }
-
-    public void provide(Runnable runnable) {
-      Provide.provide(Provide.currentProvider().add(this), runnable);
-    }
-
-    public <T> T provide(Supplier<T> supplier) {
-      return Provide.provide(Provide.currentProvider().add(this), supplier);
-    }
-  }
-
-  public static Entries entries(Entry... entries) {
-    var result = new Entries();
+  private static java.util.Map<Context<?>, Object> entries(Entry... entries) {
+    var result = new HashMap<Context<?>, Object>();
     for (var entry : entries) {
-      result.contexts.put(entry.context, entry.value);
+      result.put(entry.context, entry.value);
     }
     return result;
   }
 
-  public static Entries entries(Iterable<Entry> entries) {
-    var result = new Entries();
+  private static java.util.Map<Context<?>, Object> entries(Iterable<Entry> entries) {
+    var result = new HashMap<Context<?>, Object>();
     for (var entry : entries) {
-      result.contexts.put(entry.context, entry.value);
+      result.put(entry.context, entry.value);
     }
     return result;
   }

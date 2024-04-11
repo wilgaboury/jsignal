@@ -18,7 +18,7 @@ public class Counter implements Renderable {
     }));
   }
 
-  private final Signal<Integer> count = createSignal(0);
+  private final Signal<Integer> count = Signal.create(0);
 
   @Override
   public Nodes render() {

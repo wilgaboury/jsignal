@@ -7,22 +7,22 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class EffectRef implements Runnable {
+    private final int id;
     private final WeakReference<EffectLike> effect;
     private final Executor executor;
-    private final int id;
 
     public EffectRef(EffectLike effect, Executor executor) {
+        this.id = effect.getId();
         this.effect = new WeakReference<>(effect);
         this.executor = executor;
-        this.id = effect.getId();
-    }
-
-    public Optional<EffectLike> getEffect() {
-        return Optional.ofNullable(effect.get());
     }
 
     public int getId() {
         return id;
+    }
+
+    public Optional<EffectLike> getEffect() {
+        return Optional.ofNullable(effect.get());
     }
 
     public void run() {

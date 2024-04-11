@@ -1,10 +1,10 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.*;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import static com.github.wilgaboury.jsignal.ReactiveUtil.useEffect;
@@ -15,67 +15,162 @@ import static com.github.wilgaboury.jsignal.ReactiveUtil.useExecutor;
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
+  protected T value;
 
-    protected final Effects effects;
+  protected final ThreadBound threadBound;
+  protected final Equals<T> equals;
+  protected final Clone<T> clone;
+  protected final @Nullable Executor defaultExecutor;
+
+  protected final Map<Integer, EffectRef> effects;
+
+  public Signal(Builder<T> builder) {
+    this.value = builder.value;
+    this.threadBound = new ThreadBound(builder.isSync);
+    this.equals = builder.equals;
+    this.clone = builder.clone;
+    this.defaultExecutor = builder.defaultExecutor;
+
+    this.effects = new LinkedHashMap<>();
+  }
+
+  protected void assertThread() {
+    assert threadBound.isCurrentThread() : "using signal in wrong thread";
+  }
+
+  @Override
+  public void track() {
+    assertThread();
+    useEffect().ifPresent(effect -> {
+      assert threadBound.getThreadId() == null ||
+        (effect instanceof Effect e && Objects.equals(threadBound.getThreadId(), e.getThreadId()))
+        : "signal thread does not match effect thread";
+      threadBound.maybeSynchronize(() -> {
+        effects.computeIfAbsent(effect.getId(), k -> new EffectRef(effect, getExecutor()));
+      });
+      effect.onTrack(this);
+    });
+  }
+
+  private Executor getExecutor() {
+    return useExecutor().orElseGet(() -> Optional.ofNullable(defaultExecutor).orElse(Runnable::run));
+  }
+
+  @Override
+  public void untrack() {
+    useEffect().ifPresent(effect -> {
+      threadBound.maybeSynchronize(() -> {
+        effects.remove(effect.getId());
+      });
+      effect.onUntrack(this);
+    });
+  }
+
+  @Override
+  public T get() {
+    track();
+    return clone.clone(value);
+  }
+
+  @Override
+  public void accept(Function<T, T> transform) {
+    mutate(oldValue -> {
+      value = transform.apply(oldValue);
+      return !equals.apply(oldValue, value);
+    });
+  }
+
+  @Override
+  public void mutate(Mutate<T> mutate) {
+    assertThread();
+
+    if (mutate.mutate(value)) {
+      runEffects();
+    }
+  }
+
+  protected void runEffects() {
+    var batch = Batch.batch.get();
+    batch.run(() -> threadBound.maybeSynchronize(() -> {
+      Iterator<EffectRef> itr = effects.values().iterator();
+      while (itr.hasNext()) {
+        EffectRef ref = itr.next();
+        Optional<EffectLike> effect = ref.getEffect();
+
+        if (effect.isEmpty() || effect.get().isDisposed())
+          itr.remove();
+        else
+          batch.add(ref);
+      }
+    }));
+  }
+
+  public static <T> Signal<T> create(T value) {
+    return builder(value).build();
+  }
+
+  public static <T> Builder<T> builder(T value) {
+    return new Builder<T>().setValue(value);
+  }
+
+  public static class Builder<T> {
     protected T value;
-    protected final Equals<T> equals;
-    protected final Clone<T> clone;
-    protected final Long threadId;
+    protected boolean isSync = true;
+    protected Equals<T> equals = Objects::deepEquals;
+    protected Clone<T> clone = Clone::identity;
+    protected Executor defaultExecutor = Runnable::run;
 
-    public Signal(T value, Equals<T> equals, Clone<T> clone, boolean isSync) {
-        this.effects = new Effects(isSync ? new LinkedHashMap<>() : new ConcurrentHashMap<>());
-        this.value = value;
-        this.equals = equals;
-        this.clone = clone;
-        this.threadId = isSync ? Thread.currentThread().getId() : null;
+    public T getValue() {
+      return value;
     }
 
-    protected void assertThread() {
-        assert threadId == null || this.threadId == Thread.currentThread().getId()
-                : "using signal in wrong thread";
+    public Builder<T> setValue(T value) {
+      this.value = value;
+      return this;
     }
 
-    @Override
-    public void track() {
-        assertThread();
-        useEffect().ifPresent(effect -> {
-            assert threadId == null ||
-                    (effect instanceof Effect e && Objects.equals(threadId, e.getThreadId()))
-                    : "signal thread does not match effect thread";
-            effects.effects().computeIfAbsent(effect.getId(), k -> new EffectRef(effect, useExecutor()));
-            effect.onTrack(this);
-        });
+    public boolean isSync() {
+      return isSync;
     }
 
-    @Override
-    public void untrack() {
-        useEffect().ifPresent(effect -> {
-            effects.effects().remove(effect.getId());
-            effect.onUntrack(this);
-        });
+    public Builder<T> setSync(boolean sync) {
+      isSync = sync;
+      return this;
     }
 
-    @Override
-    public T get() {
-        track();
-        return clone.clone(value);
+    public Equals<T> getEquals() {
+      return equals;
     }
 
-    @Override
-    public void accept(Function<T, T> transform) {
-        assertThread();
-
-        T oldValue = value;
-        value = transform.apply(value);
-        if (!equals.apply(oldValue, value))
-            effects.run();
+    public Builder<T> setEquals(Equals<T> equals) {
+      this.equals = equals;
+      return this;
     }
 
-    @Override
-    public void mutate(Mutate<T> mutate) {
-        assertThread();
-
-        if (mutate.mutate(value))
-            effects.run();
+    public Clone<T> getClone() {
+      return clone;
     }
+
+    public Builder<T> setClone(Clone<T> clone) {
+      this.clone = clone;
+      return this;
+    }
+
+    public Executor getDefaultExecutor() {
+      return defaultExecutor;
+    }
+
+    public Builder<T> setDefaultExecutor(Executor defaultExecutor) {
+      this.defaultExecutor = defaultExecutor;
+      return this;
+    }
+
+    public Signal<T> build() {
+      return new Signal<>(this);
+    }
+
+    public AtomicSignal<T> buildAtomic() {
+      return new AtomicSignal<>(this);
+    }
+  }
 }

@@ -8,7 +8,7 @@ public class ThreadBound {
     private final Long threadId;
 
     public ThreadBound(boolean isSync) {
-        this.threadId = isSync ? Thread.currentThread().getId() : null;
+        this.threadId = isSync ? Thread.currentThread().threadId() : null;
     }
 
     public @Nullable Long getThreadId() {
@@ -24,7 +24,7 @@ public class ThreadBound {
 
     public <T> T maybeSynchronize(Supplier<T> inner) {
         if (threadId != null) {
-            assert threadId == Thread.currentThread().getId() : "code run in wrong thread";
+            assert threadId == Thread.currentThread().threadId() : "code run in wrong thread";
 
             return inner.get();
         } else {
@@ -32,5 +32,9 @@ public class ThreadBound {
                 return inner.get();
             }
         }
+    }
+
+    public boolean isCurrentThread() {
+        return threadId == null || threadId == Thread.currentThread().threadId();
     }
 }

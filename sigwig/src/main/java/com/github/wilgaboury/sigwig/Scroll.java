@@ -28,24 +28,24 @@ public class Scroll implements Renderable {
   private final Supplier<Float> yBarOverlayWidth;
   private final Supplier<NodesSupplier> children;
 
-  private final Signal<Float> xOffset = createSignal(0f);
-  private final Signal<Float> yOffset = createSignal(0f);
-  private final Signal<Boolean> xBarMouseDown = createSignal(false);
-  private final Signal<Boolean> yBarMouseDown = createSignal(false);
+  private final Signal<Float> xOffset = Signal.create(0f);
+  private final Signal<Float> yOffset = Signal.create(0f);
+  private final Signal<Boolean> xBarMouseDown = Signal.create(false);
+  private final Signal<Boolean> yBarMouseDown = Signal.create(false);
 
   private float xMouseDownOffset = 0f;
   private float yMouseDownOffset = 0f;
 
-  private final Signal<Boolean> xBarMouseOver = createSignal(false);
-  private final Signal<Boolean> yBarMouseOver = createSignal(false);
+  private final Signal<Boolean> xBarMouseOver = Signal.create(false);
+  private final Signal<Boolean> yBarMouseOver = Signal.create(false);
 
   private final Ref<MetaNode> content = new Ref<>();
   private final Ref<MetaNode> view = new Ref<>();
   private final Ref<MetaNode> xBar = new Ref<>();
   private final Ref<MetaNode> yBar = new Ref<>();
 
-  private final Signal<Float> xScale = createSignal(0f);
-  private final Signal<Float> yScale = createSignal(0f);
+  private final Signal<Float> xScale = Signal.create(0f);
+  private final Signal<Float> yScale = Signal.create(0f);
   private final Computed<Boolean> shouldShowSidebar;
 
   public Scroll(Builder builder) {
@@ -370,7 +370,7 @@ public class Scroll implements Renderable {
       this.action = action;
     }
 
-    private final Signal<Boolean> mouseDown = createSignal(false);
+    private final Signal<Boolean> mouseDown = Signal.create(false);
 
     @Override
     public Nodes render() {

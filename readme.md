@@ -26,7 +26,7 @@ public class Counter implements Renderable {
     });
   }
 
-  private final Signal<Integer> count = createSignal(0);
+  private final Signal<Integer> count = Signal.create(0);
 
   @Override
   public Nodes render() {
@@ -73,7 +73,7 @@ Fundamentally, a `Signal` is a wrapper around another object providing it with a
 ### Brief Example
 
 ```java
-Signal<Integer> value = createSignal(5);
+Signal<Integer> value = Signal.create(5);
 Effect effect = createEffect(() -> System.out.println(value.get()));
 // prints 5
 value.accept(6); // prints 6

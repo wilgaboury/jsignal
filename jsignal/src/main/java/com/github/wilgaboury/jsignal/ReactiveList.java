@@ -33,7 +33,7 @@ public class ReactiveList {
                     var cleaner = useCleanups();
                     assert cleaner.isPresent();
                     cleaners.set(j, cleaner.get());
-                    var sig = createSignal(j);
+                    var sig = Signal.create(j);
                     indexes.set(j, sig);
                     return map.apply(newItems.get(j), sig);
                 };

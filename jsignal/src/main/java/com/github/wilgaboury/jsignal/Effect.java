@@ -9,8 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.Provide.currentProvider;
-import static com.github.wilgaboury.jsignal.Provide.provide;
 import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 public class Effect implements EffectLike {
@@ -29,7 +27,7 @@ public class Effect implements EffectLike {
         this.id = nextId();
         this.effect = effect;
         this.cleanups = createCleanups();
-        this.provider = currentProvider().add(
+        this.provider = Provider.get().add(
                 cleanupsContext.with(Optional.of(cleanups)),
                 effectContext.with(Optional.of(this))
         );
@@ -91,7 +89,7 @@ public class Effect implements EffectLike {
             if (disposed)
                 return;
 
-            batch(() -> provide(provider, () -> {
+            batch(() -> provider.provide(() -> {
                 clear();
                 inner.run();
             }));

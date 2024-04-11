@@ -1,16 +1,14 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
 import com.github.wilgaboury.sigwig.text.Para;
 import com.github.wilgaboury.sigwig.text.TextLine;
-import com.github.wilgaboury.sigui.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 
 import java.util.Random;
-
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
 
 @SiguiComponent
 public class TestApp implements Renderable {
@@ -37,9 +35,9 @@ public class TestApp implements Renderable {
 
   private final Random rand = new Random();
 
-  private Signal<Integer> buttonColor = createSignal(EzColors.BLACK);
-  private Signal<Boolean> showFire = createSignal(false);
-  private Signal<Integer> count = createSignal(0);
+  private Signal<Integer> buttonColor = Signal.create(EzColors.BLACK);
+  private Signal<Boolean> showFire = Signal.create(false);
+  private Signal<Integer> count = Signal.create(0);
 
   @Override
   public Nodes render() {

@@ -3,11 +3,8 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 
-import static com.github.wilgaboury.jsignal.Provide.createContext;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
-
 public class Theme {
-  public static final Context<Signal<Theme>> context = createContext(createSignal(Theme.builder().build()));
+  public static final Context<Signal<Theme>> context = Context.create(Signal.create(Theme.builder().build()));
 
   private final int light;
   private final int dark;

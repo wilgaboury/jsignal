@@ -10,8 +10,6 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createSignal;
-
 @SiguiComponent
 public class Button implements Renderable {
   private final Supplier<Integer> color;
@@ -19,8 +17,8 @@ public class Button implements Renderable {
   private final Supplier<Runnable> action;
   private final Children children;
 
-  private final Signal<Boolean> mouseOver = createSignal(false);
-  private final Signal<Boolean> mouseDown = createSignal(false);
+  private final Signal<Boolean> mouseOver = Signal.create(false);
+  private final Signal<Boolean> mouseDown = Signal.create(false);
 
   public Button(Builder builder) {
     this.color = builder.color;

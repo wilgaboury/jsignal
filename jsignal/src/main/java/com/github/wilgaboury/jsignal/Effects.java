@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
+// TODO: delete class and simply move into Signal
 public record Effects(Map<Integer, EffectRef> effects) implements Runnable {
     @Override
     public void run() {

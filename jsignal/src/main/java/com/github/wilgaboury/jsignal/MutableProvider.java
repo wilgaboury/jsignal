@@ -31,6 +31,6 @@ public class MutableProvider {
         if (obj != null)
             return (T) obj;
         else
-            return context.defaultValue();
+            return context.getDefaultValue();
     }
 }

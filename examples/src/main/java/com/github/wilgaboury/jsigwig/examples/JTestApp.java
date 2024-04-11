@@ -30,8 +30,8 @@ public class JTestApp implements Renderable {
     }
   }
 
-  private final Signal<Boolean> show = ReactiveUtil.createSignal(false);
-  private final Signal<Integer> buttonColor = ReactiveUtil.createSignal(EzColors.BLACK);
+  private final Signal<Boolean> show = Signal.create(false);
+  private final Signal<Integer> buttonColor = Signal.create(EzColors.BLACK);
   private final Random rand = new Random();
 
   @Override

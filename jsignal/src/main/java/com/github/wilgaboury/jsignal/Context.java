@@ -2,9 +2,20 @@ package com.github.wilgaboury.jsignal;
 
 import java.util.function.Function;
 
-public record Context<T>(T defaultValue) {
+// cannot be a record because each object instance needs to be hashable by object
+public final class Context<T> {
+    private final T defaultValue;
+
+    public Context(T defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public T getDefaultValue() {
+        return defaultValue;
+    }
+
     public T use() {
-        return Provide.currentProvider().use(this);
+        return Provider.get().use(this);
     }
 
     public Provider.Entry with(T value) {
@@ -13,5 +24,9 @@ public record Context<T>(T defaultValue) {
 
     public Provider.Entry with(Function<T, T> transform) {
         return this.with(transform.apply(use()));
+    }
+
+    public static <T> Context<T> create(T defaultValue) {
+        return new Context<>(defaultValue);
     }
 }

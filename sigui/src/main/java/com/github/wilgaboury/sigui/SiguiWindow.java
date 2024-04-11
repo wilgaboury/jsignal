@@ -33,7 +33,7 @@ public class SiguiWindow {
   private MetaNode hovered = null;
   private MetaNode focus = null;
 
-  private final Signal<Point> mousePosition = createSignal(new Point(0, 0));
+  private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
   public SiguiWindow(Window window, Supplier<Renderable> root) {
     this.window = window;
@@ -45,7 +45,7 @@ public class SiguiWindow {
 
     windows.add(this);
     this.rootCleanups = createCleanups();
-    this.root = Provider.entries(
+    this.root = Provider.get().add(
         context.with(this),
         cleanupsContext.with(Optional.of(rootCleanups))
       )

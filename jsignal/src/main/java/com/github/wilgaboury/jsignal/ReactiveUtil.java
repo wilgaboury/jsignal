@@ -4,7 +4,6 @@ import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
 import com.github.wilgaboury.jsignal.interfaces.*;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
@@ -18,73 +17,17 @@ import java.util.function.Supplier;
 
 public class ReactiveUtil {
   public static final Context<Optional<Cleanups>> cleanupsContext = new Context<>(Optional.empty());
-  public static final Context<Executor> executorContext = new Context<>(Runnable::run);
+  public static final Context<Optional<Executor>> executorContext = new Context<>(Optional.empty());
 
   private ReactiveUtil() {
   }
 
-  public static <T> Signal<T> createSignal(T value) {
-    return createSignal(value, Objects::deepEquals, Clone::identity);
-  }
-
-  public static <T> Signal<T> createSignal(T value, Equals<T> equals) {
-    return createSignal(value, equals, Clone::identity);
-  }
-
-  public static <T> Signal<T> createSignal(T value, Clone<T> clone) {
-    return createSignal(value, Objects::deepEquals, clone);
-  }
-
-  public static <T> Signal<T> createSignal(T value, Equals<T> equals, Clone<T> clone) {
-    return new Signal<>(value, equals, clone, true);
-  }
-
-  public static <T> Signal<T> createAsyncSignal(T value) {
-    return createAsyncSignal(value, Objects::deepEquals, Clone::identity);
-  }
-
-  public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals) {
-    return createAsyncSignal(value, equals, Clone::identity);
-  }
-
-  public static <T> Signal<T> createAsyncSignal(T value, Clone<T> clone) {
-    return createAsyncSignal(value, Objects::deepEquals, clone);
-  }
-
-  /**
-   * This should only be used when the inner type is thread safe, otherwise use
-   * AtomicSignal which will wrap the value in a read-write lock.
-   */
-  public static <T> Signal<T> createAsyncSignal(T value, Equals<T> equals, Clone<T> clone) {
-    return new Signal<>(value, equals, clone, false);
-  }
-
-  public static <T> AtomicSignal<T> createAtomicSignal(T value) {
-    return createAtomicSignal(value, Objects::deepEquals, Clone::identity);
-  }
-
-  public static <T> AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals) {
-    return createAtomicSignal(value, equals, Clone::identity);
-  }
-
-  public static <T> AtomicSignal<T> createAtomicSignal(T value, Clone<T> clone) {
-    return createAtomicSignal(value, Objects::deepEquals, clone);
-  }
-
-  public static <T> AtomicSignal<T> createAtomicSignal(T value, Equals<T> equals, Clone<T> clone) {
-    return new AtomicSignal<>(value, equals, clone);
-  }
-
   public static Trigger createTrigger() {
-    return new Trigger(createSignal(null, Equals::never));
-  }
-
-  public static Trigger createAsyncTrigger() {
-    return new Trigger(createAsyncSignal(null, Equals::never));
+    return new Trigger(Signal.builder(null).setEquals(Equals::never).build());
   }
 
   public static <T> Computed<T> createComputed(Supplier<T> supplier) {
-    return createComputed(createSignal(null), supplier);
+    return createComputed(Signal.create(null), supplier);
   }
 
   public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
@@ -92,7 +35,7 @@ public class ReactiveUtil {
   }
 
   public static <T> Computed<T> createComputed(Function<T, T> inner) {
-    return createComputed(createSignal(null), inner);
+    return createComputed(Signal.create(null), inner);
   }
 
   public static <T> Computed<T> createComputed(SignalLike<T> signal, Function<T, T> inner) {
@@ -101,14 +44,6 @@ public class ReactiveUtil {
 
   public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
     return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
-  }
-
-  public static <T> Computed<T> createAsyncComputed(Supplier<T> supplier) {
-    return createAsyncComputed(createAsyncSignal(null), supplier);
-  }
-
-  public static <T> Computed<T> createAtomicComputed(Supplier<T> supplier) {
-    return createAsyncComputed(createAtomicSignal(null), supplier);
   }
 
   public static Optional<EffectLike> useEffect() {
@@ -131,7 +66,7 @@ public class ReactiveUtil {
     return new SideEffect(inner, true);
   }
 
-  public static Executor useExecutor() {
+  public static Optional<Executor> useExecutor() {
     return executorContext.use();
   }
 
@@ -140,7 +75,7 @@ public class ReactiveUtil {
   }
 
   public static <T> T provideExecutor(Executor executor, Supplier<T> inner) {
-    return executorContext.with(executor).provide(inner);
+    return executorContext.with(Optional.of(executor)).provide(inner);
   }
 
   public static void provideAsyncExecutor(Runnable inner) {
