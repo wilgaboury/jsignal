@@ -31,7 +31,7 @@ public class ReactiveUtil {
   }
 
   public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
-    return new Computed<>(signal, createEffect(() -> signal.accept(supplier)));
+    return new Computed<>(signal, Effect.create(() -> signal.accept(supplier)));
   }
 
   public static <T> Computed<T> createComputed(Function<T, T> inner) {
@@ -39,21 +39,15 @@ public class ReactiveUtil {
   }
 
   public static <T> Computed<T> createComputed(SignalLike<T> signal, Function<T, T> inner) {
-    return new Computed<>(signal, createEffect(() -> signal.accept(inner)));
+    return new Computed<>(signal, Effect.create(() -> signal.accept(inner)));
   }
 
   public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
-    return new Computed<>(signal, createAsyncEffect(() -> signal.accept(supplier)));
+    return new Computed<>(signal, Effect.createAsync(() -> signal.accept(supplier)));
   }
 
   public static Optional<EffectLike> useEffect() {
     return Effect.effectContext.use();
-  }
-
-  public static Effect createEffect(Runnable inner) {
-    var effect = new Effect(inner, true);
-    effect.run();
-    return effect;
   }
 
   public static Effect createAsyncEffect(Runnable inner) {

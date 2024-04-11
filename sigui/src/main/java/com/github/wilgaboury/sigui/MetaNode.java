@@ -62,7 +62,7 @@ public class MetaNode {
 
     cleanups = createCleanups(() -> {
       onCleanup(this::cleanup);
-      createEffect(this::layoutEffectInner);
+      Effect.create(this::layoutEffectInner);
     });
 
     this.paintEffect = provideCleanups(cleanups, () -> createSideEffect(this::paintEffectInner));
@@ -175,7 +175,7 @@ public class MetaNode {
           .toList(),
         (child, idx) -> {
           var meta = new MetaNode(this, child);
-          createEffect(on(idx, (cur, prev) -> {
+          Effect.create(on(idx, (cur, prev) -> {
             if (prev != null) {
               Yoga.YGNodeRemoveChild(yoga, meta.yoga);
             }

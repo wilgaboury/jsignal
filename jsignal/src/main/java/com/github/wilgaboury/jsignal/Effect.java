@@ -84,7 +84,7 @@ public class Effect implements EffectLike {
         run(effect);
     }
 
-    public void run(Runnable inner) {
+    protected void run(Runnable inner) {
         threadBound.maybeSynchronize(() -> {
             if (disposed)
                 return;
@@ -128,5 +128,17 @@ public class Effect implements EffectLike {
 
     public static int nextId() {
         return nextId.getAndIncrement();
+    }
+
+    public static Effect create(Runnable runnable) {
+        var effect = new Effect(runnable, true);
+        effect.run();
+        return effect;
+    }
+
+    public static Effect createAsync(Runnable runnable) {
+        var effect = new Effect(runnable, false);
+        effect.run();
+        return effect;
     }
 }

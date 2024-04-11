@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.sigui.hotswap.HotswapComponent;
@@ -64,7 +65,7 @@ public class SiguiUtil {
     Provider provider = Provider.get();
     SiguiExecutor.invokeLater(() ->
       provider.provide(() ->
-        ReactiveUtil.createEffect(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
+        Effect.create(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
       )
     );
   }

@@ -148,6 +148,11 @@ public class Signal<T> implements SignalLike<T> {
       return this;
     }
 
+    public Builder<T> setAsync() {
+      isSync = false;
+      return this;
+    }
+
     public Equals<T> getEquals() {
       return equals;
     }

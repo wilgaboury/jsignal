@@ -9,7 +9,7 @@ public class AtomicSignal<T> extends Signal<T> {
   private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
   public AtomicSignal(Builder<T> builder) {
-    super(builder.setSync(true));
+    super(builder.setAsync());
   }
 
   @Override
