@@ -140,17 +140,15 @@ the internal data would be using the `accept` or `mutate` methods, like so `sign
 
 ### Synchronicity
 
-Signals support both synchronous and asynchronous operation via the `Executor` interface. User's may specify an executor
-using the `withExecutor` or `useExecuter` methods, by default signals use a synchronous executor (`Runnable::run`). Here
-is an example:
+Signals support both synchronous and asynchronous operation via the `Executor` interface. User's may specify the
+executor by setting the default executor when building the signal, or by setting the `Signal.executorContext` when
+accessing a signal inside an effect. By default, signals use a synchronous executor (`Runnable::run`). Here is an
+example:
 
 ```java
 ExecutorService executor = Executors.newCachedThreadPool();
-Signal<Integer> value = AtomicSignal.create(0);
-Effect effect = Effect.createAsync(withExecutor(executor, () -> {
-    int val = value.get();
-    System.out.println("Printing " + val + " from a different thread");
-}));
+AtomicSignal<Integer> value = Signal.builder(0).setDefaultExecutor(executor).atomic();
+Effect effect = Effect.createAsync(() -> System.out.println("Printing from another thread: " + value.get()));
 value.accept(i -> i + 1);
 ```
 
@@ -163,7 +161,7 @@ access the signal inside the effect like so:
 ```java
 Signal<Integer> value = Signal.builder(0).setAsync().build();
 Effect effect = Effect.create(() -> {
-    var value = useExecutor(Swing::invokeLater, asyncSignal);
+    var value = Signal.executorContext.with(Swing::invokeLater).provide(asyncSignal);
     // do something with value
 });
 ```
@@ -174,5 +172,5 @@ burden on developers when trying to reason about asynchronous reactive code.
 
 ### Flow/Reactor/RxJava
 
-This library provides adapters (via the utility methods `createPublisher` and `createSubscriber`) for using signals as a
-source or sink for the standard reactive `Publisher/Subscriber` interface.
+This library provides adapters (via the `PublisherAdapter` and `SubscriberAdapter`) for using signals as a source or
+sink for reactive streams.
