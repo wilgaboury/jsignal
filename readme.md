@@ -19,7 +19,7 @@ educational settings and for enterprise software development, this project is an
 | [Sigui](./sigui)     | desktop graphical user interface library built on top of JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
 | [Sigwig](./sigwig)   | component library for Sigui                                                                                                                                                                                                |
 
-## Obligatory Counter Example
+## Obligatory Example
 
 ```java
 @SiguiComponent
