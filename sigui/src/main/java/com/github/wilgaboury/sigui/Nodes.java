@@ -1,7 +1,7 @@
 package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Computed;
-import com.github.wilgaboury.jsignal.JSigUtil;
+import com.github.wilgaboury.jsignal.JSignalUtil;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -44,7 +44,7 @@ public sealed interface Nodes extends NodesSupplier
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
-        var mapped = JSigUtil.createMapped(list, map);
+        var mapped = JSignalUtil.createMapped(list, map);
         var composed = Computed.create(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
         return new Dynamic(composed);
     }

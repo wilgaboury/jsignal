@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 
-public class JSigUtil {
-  private JSigUtil() {
+public class JSignalUtil {
+  private JSignalUtil() {
   }
 
   public static void batch(Runnable inner) {

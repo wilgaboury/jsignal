@@ -13,7 +13,7 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSigUtil.batch;
+import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class SiguiWindow {
   public static final Context<SiguiWindow> context = new Context<>(null);

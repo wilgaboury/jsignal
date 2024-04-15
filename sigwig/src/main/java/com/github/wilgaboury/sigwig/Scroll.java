@@ -15,7 +15,7 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSigUtil.untrack;
+import static com.github.wilgaboury.jsignal.JSignalUtil.untrack;
 import static com.github.wilgaboury.sigui.SiguiUtil.createEffectLater;
 
 @SiguiComponent

@@ -41,7 +41,7 @@ public class Provider {
   }
 
   public void provide(Runnable runnable) {
-    provide(JSigUtil.toSupplier(runnable));
+    provide(JSignalUtil.toSupplier(runnable));
   }
 
   public <T> T provide(Supplier<T> supplier) {

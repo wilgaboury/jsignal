@@ -17,8 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSigUtil.toSupplier;
-import static com.github.wilgaboury.jsignal.JSigUtil.on;
+import static com.github.wilgaboury.jsignal.JSignalUtil.toSupplier;
+import static com.github.wilgaboury.jsignal.JSignalUtil.on;
 
 public class MetaNode {
   private final SiguiWindow window;
@@ -171,7 +171,7 @@ public class MetaNode {
           return meta;
         }).toList());
       }
-      case Nodes.Dynamic dynamic -> JSigUtil.createMapped(
+      case Nodes.Dynamic dynamic -> JSignalUtil.createMapped(
         () -> dynamic.stream()
           .filter(Objects::nonNull)
           .toList(),

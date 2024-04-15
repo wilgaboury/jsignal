@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.JSigUtil.batch;
+import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class Effect implements EffectLike {
     static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
