@@ -17,7 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.SigUtil.constantSupplier;
+import static com.github.wilgaboury.jsignal.SigUtil.on;
 
 public class MetaNode {
   private final SiguiWindow window;
@@ -60,15 +61,16 @@ public class MetaNode {
 
     this.paintCacheStrategy = new PicturePaintCacheStrategy();
 
-    cleanups = createCleanups(() -> {
-      onCleanup(this::cleanup);
+    this.cleanups = Cleanups.create();
+    Cleanups.provide(cleanups, () -> {
+      Cleanups.onCleanup(this::cleanup);
       Effect.create(this::layoutEffectInner);
     });
 
-    this.paintEffect = provideCleanups(cleanups, () -> createSideEffect(this::paintEffectInner));
-    this.transformEffect = provideCleanups(cleanups, () -> createSideEffect(this::transformEffectInner));
-    this.children = provideCleanups(cleanups, this::createChildren);
-    provideCleanups(cleanups, () -> node.reference(this));
+    this.paintEffect = Cleanups.provide(cleanups, () -> SideEffect.create(this::paintEffectInner));
+    this.transformEffect = Cleanups.provide(cleanups, () -> SideEffect.create(this::transformEffectInner));
+    this.children = Cleanups.provide(cleanups, this::createChildren);
+    Cleanups.provide(cleanups, () -> node.reference(this));
   }
 
   private void cleanup() {
@@ -169,7 +171,7 @@ public class MetaNode {
           return meta;
         }).toList());
       }
-      case Nodes.Dynamic dynamic -> ReactiveList.createMapped(
+      case Nodes.Dynamic dynamic -> SigListUtil.createMapped(
         () -> dynamic.stream()
           .filter(Objects::nonNull)
           .toList(),
@@ -297,7 +299,7 @@ public class MetaNode {
       var listeners = this.listeners.computeIfAbsent(listener.getType(), k -> new LinkedHashSet<>());
       listeners.add(listener.getListener());
       Runnable dispose = () -> listeners.remove(listener.getListener());
-      onCleanup(dispose);
+      Cleanups.onCleanup(dispose);
     }
   }
 

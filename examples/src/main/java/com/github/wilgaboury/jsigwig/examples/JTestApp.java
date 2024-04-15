@@ -1,6 +1,5 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigwig.*;
 import com.github.wilgaboury.sigwig.text.TextLine;

@@ -13,7 +13,8 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.SigUtil.batch;
+import static com.github.wilgaboury.jsignal.SigUtil.cleanupsContext;
 
 public class SiguiWindow {
   public static final Context<SiguiWindow> context = new Context<>(null);
@@ -44,7 +45,7 @@ public class SiguiWindow {
     this.shouldTransformUpdate = false;
 
     windows.add(this);
-    this.rootCleanups = createCleanups();
+    this.rootCleanups = Cleanups.create();
     this.root = Provider.get().add(
         context.with(this),
         cleanupsContext.with(Optional.of(rootCleanups))

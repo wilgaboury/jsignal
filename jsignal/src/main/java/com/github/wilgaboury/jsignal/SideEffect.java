@@ -15,11 +15,11 @@ public class SideEffect extends Effect {
         super.run(runnable);
     }
 
-    public static Effect create(Runnable runnable) {
+    public static SideEffect create(Runnable runnable) {
         return new SideEffect(runnable, false);
     }
 
-    public static Effect createAsync(Runnable runnable) {
+    public static SideEffect createAsync(Runnable runnable) {
         return new SideEffect(runnable, false);
     }
 }

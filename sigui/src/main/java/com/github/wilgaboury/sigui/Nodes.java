@@ -1,14 +1,13 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.ReactiveList;
+import com.github.wilgaboury.jsignal.Computed;
+import com.github.wilgaboury.jsignal.SigListUtil;
 
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
 
 public sealed interface Nodes extends NodesSupplier
 {
@@ -38,30 +37,30 @@ public sealed interface Nodes extends NodesSupplier
     static Nodes compose(Collection<NodesSupplier> children) {
         var nodes = children.stream().map(NodesSupplier::getNodes).toList();
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
-            return new Dynamic(createComputed(() -> nodes.stream().flatMap(Nodes::stream).toList()));
+            return new Dynamic(Computed.create(() -> nodes.stream().flatMap(Nodes::stream).toList()));
         } else {
             return new Fixed(nodes.stream().flatMap(Nodes::stream).toList());
         }
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
-        var mapped = ReactiveList.createMapped(list, map);
-        var composed = createComputed(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
+        var mapped = SigListUtil.createMapped(list, map);
+        var composed = Computed.create(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
         return new Dynamic(composed);
     }
 
     static Dynamic compute(Supplier<Nodes> inner) {
-        return new Dynamic(createComputed(() -> inner.get().stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.get().stream().toList()));
     }
 
     static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
         var cache = new CacheOne();
-        return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).stream().toList()));
     }
 
     static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
         var cache = new CacheMany<K>(new HashMap<>());
-        return new Dynamic(createComputed(() -> inner.apply(cache).stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).stream().toList()));
     }
 
     record Fixed(Collection<? extends Node> children) implements Nodes {

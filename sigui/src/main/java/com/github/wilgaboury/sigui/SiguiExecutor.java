@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.ReactiveUtil;
+import com.github.wilgaboury.jsignal.SigUtil;
 import com.github.wilgaboury.jsignal.Ref;
 import com.google.common.collect.Queues;
 import io.github.humbleui.jwm.App;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SiguiExecutor {
@@ -23,7 +22,7 @@ public class SiguiExecutor {
 
     public static void invoke(Runnable runnable) {
         if (SiguiUtil.onThread()) {
-            ReactiveUtil.batch(runnable);
+            SigUtil.batch(runnable);
         } else {
             invokeLater(runnable);
         }
@@ -55,7 +54,7 @@ public class SiguiExecutor {
         };
 
         while (!queue.isEmpty() && !shouldExit.get()) {
-            ReactiveUtil.batch(() -> {
+            SigUtil.batch(() -> {
                 while (!queue.isEmpty() && !shouldExit.get()) {
                     try {
                         queue.poll().run();

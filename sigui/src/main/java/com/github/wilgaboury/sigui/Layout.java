@@ -9,8 +9,6 @@ import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
-
 /**
  * Tool to lazily create reactive layout measures
  */
@@ -40,12 +38,12 @@ public class Layout {
 
     public Layout(long yoga) {
         this.yoga = yoga;
-        this.cleanups = createCleanups();
-        this.update = createTrigger();
+        this.cleanups = Cleanups.create();
+        this.update = new Trigger();
     }
 
     private <T> Computed<T> create(Supplier<T> inner) {
-        return provideCleanups(cleanups, () -> createComputed(() -> {
+        return Cleanups.provide(cleanups, () -> Computed.create(() -> {
             update.track();
             return inner.get();
         }));

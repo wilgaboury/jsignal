@@ -7,14 +7,13 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.useEffect;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.useExecutor;
-
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
+  public static final Context<Optional<Executor>> executorContext = new Context<>(Optional.empty());
+
   protected T value;
 
   protected final ThreadBound threadBound;
@@ -41,7 +40,7 @@ public class Signal<T> implements SignalLike<T> {
   @Override
   public void track() {
     assertThread();
-    useEffect().ifPresent(effect -> {
+    Effect.context.use().ifPresent(effect -> {
       assert threadBound.getThreadId() == null ||
         (effect instanceof Effect e && Objects.equals(threadBound.getThreadId(), e.getThreadId()))
         : "signal thread does not match effect thread";
@@ -53,12 +52,12 @@ public class Signal<T> implements SignalLike<T> {
   }
 
   private Executor getExecutor() {
-    return useExecutor().orElseGet(() -> Optional.ofNullable(defaultExecutor).orElse(Runnable::run));
+    return executorContext.use().orElseGet(() -> Optional.ofNullable(defaultExecutor).orElse(Runnable::run));
   }
 
   @Override
   public void untrack() {
-    useEffect().ifPresent(effect -> {
+    Effect.context.use().ifPresent(effect -> {
       threadBound.maybeSynchronize(() -> {
         effects.remove(effect.getId());
       });
@@ -184,7 +183,7 @@ public class Signal<T> implements SignalLike<T> {
       return new Signal<>(this);
     }
 
-    public AtomicSignal<T> buildAtomic() {
+    public AtomicSignal<T> atomic() {
       return new AtomicSignal<>(this);
     }
   }

@@ -2,8 +2,7 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provider;
-import com.github.wilgaboury.jsignal.ReactiveUtil;
-import com.github.wilgaboury.sigui.hotswap.HotswapComponent;
+import com.github.wilgaboury.sigui.hotswap.HotswapInstrumentation;
 import com.github.wilgaboury.sigui.hotswap.HotswapRerenderService;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Layer;
@@ -38,7 +37,7 @@ public class SiguiUtil {
 
   public static void provideHotswapInstrumentation(Runnable runnable) {
     ComponentInstrumentation.context.with(
-        current -> current.addInner(HotswapComponent.createInstrumentation()))
+        current -> current.addInner(new HotswapInstrumentation()))
       .provide(runnable);
   }
 
@@ -63,11 +62,7 @@ public class SiguiUtil {
 
   public static void createEffectLater(Runnable runnable) {
     Provider provider = Provider.get();
-    SiguiExecutor.invokeLater(() ->
-      provider.provide(() ->
-        Effect.create(() -> ReactiveUtil.provideExecutor(SiguiExecutor::invokeLater, runnable))
-      )
-    );
+    SiguiExecutor.invokeLater(() -> provider.provide(() -> Effect.create(runnable)));
   }
 
   public static boolean onThread() {

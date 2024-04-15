@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.deferProvideAsyncExecutor;
+import static com.github.wilgaboury.jsignal.SigUtil.deferProvideAsyncExecutor;
 
 public class PublisherAdapter<T> implements Flow.Publisher<T> {
     private final SignalLike<T> signal;

@@ -41,7 +41,7 @@ public class Provider {
   }
 
   public void provide(Runnable runnable) {
-    provide(ReactiveUtil.toSupplier(runnable));
+    provide(SigUtil.toSupplier(runnable));
   }
 
   public <T> T provide(Supplier<T> supplier) {

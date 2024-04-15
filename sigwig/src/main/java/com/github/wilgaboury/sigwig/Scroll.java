@@ -15,7 +15,7 @@ import org.lwjgl.util.yoga.Yoga;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.SigUtil.untrack;
 import static com.github.wilgaboury.sigui.SiguiUtil.createEffectLater;
 
 @SiguiComponent
@@ -55,7 +55,7 @@ public class Scroll implements Renderable {
     this.yBarOverlayWidth = builder.yBarOverlayWidth;
     this.children = builder.children;
 
-    shouldShowSidebar = createComputed(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
+    shouldShowSidebar = Computed.create(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
   }
 
   @Override

@@ -9,10 +9,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
+import static com.github.wilgaboury.jsignal.SigUtil.batch;
+import static com.github.wilgaboury.jsignal.SigUtil.cleanupsContext;
 
 public class Effect implements EffectLike {
-    static final Context<Optional<EffectLike>> effectContext = new Context<>(Optional.empty());
+    static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
     protected static final AtomicInteger nextId = new AtomicInteger(0);
 
     protected final int id;
@@ -26,16 +27,16 @@ public class Effect implements EffectLike {
     public Effect(Runnable effect, boolean isSync) {
         this.id = nextId();
         this.effect = effect;
-        this.cleanups = createCleanups();
+        this.cleanups = Cleanups.create();
         this.provider = Provider.get().add(
                 cleanupsContext.with(Optional.of(cleanups)),
-                effectContext.with(Optional.of(this))
+                context.with(Optional.of(this))
         );
         this.threadBound = new ThreadBound(isSync);
         this.signals = new Flipper<>(HashSet::new);
         this.disposed = false;
 
-        onCleanup(this::dispose);
+        Cleanups.onCleanup(this::dispose);
     }
 
     /**

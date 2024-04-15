@@ -18,8 +18,6 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.ReactiveUtil.createComputed;
-
 @SiguiComponent
 public class Image implements Renderable {
     private final static Logger logger = LoggerFactory.getLogger(Image.class);
@@ -49,7 +47,7 @@ public class Image implements Renderable {
         this.width = builder.width;
         this.height = builder.height;
 
-        this.painter = createComputed(() -> createPainter(blob.get(), fit.get()));
+        this.painter = Computed.create(() -> createPainter(blob.get(), fit.get()));
     }
 
     @Override

@@ -2,12 +2,12 @@ package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.flow.PublisherAdapter;
 import com.github.wilgaboury.jsignal.flow.SubscriberAdapter;
-import com.github.wilgaboury.jsignal.interfaces.*;
+import com.github.wilgaboury.jsignal.interfaces.OnFn;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
+import com.github.wilgaboury.jsignal.interfaces.Trackable;
 
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -15,127 +15,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class ReactiveUtil {
+public class SigUtil {
   public static final Context<Optional<Cleanups>> cleanupsContext = new Context<>(Optional.empty());
-  public static final Context<Optional<Executor>> executorContext = new Context<>(Optional.empty());
 
-  private ReactiveUtil() {
-  }
-
-  public static Trigger createTrigger() {
-    return new Trigger(Signal.builder(null).setEquals(Equals::never).build());
-  }
-
-  public static <T> Computed<T> createComputed(Supplier<T> supplier) {
-    return createComputed(Signal.create(null), supplier);
-  }
-
-  public static <T> Computed<T> createComputed(SignalLike<T> signal, Supplier<T> supplier) {
-    return new Computed<>(signal, Effect.create(() -> signal.accept(supplier)));
-  }
-
-  public static <T> Computed<T> createComputed(Function<T, T> inner) {
-    return createComputed(Signal.create(null), inner);
-  }
-
-  public static <T> Computed<T> createComputed(SignalLike<T> signal, Function<T, T> inner) {
-    return new Computed<>(signal, Effect.create(() -> signal.accept(inner)));
-  }
-
-  public static <T> Computed<T> createAsyncComputed(SignalLike<T> signal, Supplier<T> supplier) {
-    return new Computed<>(signal, Effect.createAsync(() -> signal.accept(supplier)));
-  }
-
-  public static Optional<EffectLike> useEffect() {
-    return Effect.effectContext.use();
-  }
-
-  public static Effect createAsyncEffect(Runnable inner) {
-    var effect = new Effect(inner, false);
-    effect.run();
-    return effect;
-  }
-
-  public static SideEffect createSideEffect(Runnable inner) {
-    return new SideEffect(inner, true);
-  }
-
-  public static Optional<Executor> useExecutor() {
-    return executorContext.use();
-  }
-
-  public static void provideExecutor(Executor executor, Runnable inner) {
-    provideExecutor(executor, toSupplier(inner));
-  }
-
-  public static <T> T provideExecutor(Executor executor, Supplier<T> inner) {
-    return executorContext.with(Optional.of(executor)).provide(inner);
-  }
-
-  public static void provideAsyncExecutor(Runnable inner) {
-    provideExecutor(ForkJoinPool.commonPool(), inner);
-  }
-
-  public static <T> T provideAsyncExecutor(Supplier<T> inner) {
-    return provideExecutor(ForkJoinPool.commonPool(), inner);
-  }
-
-  public static Runnable deferProvideExecutor(Executor executor, Runnable inner) {
-    return () -> provideExecutor(executor, inner);
-  }
-
-  public static <T> Supplier<T> deferProvideExecutor(Executor executor, Supplier<T> inner) {
-    return () -> provideExecutor(executor, inner);
-  }
-
-  public static Runnable deferProvideAsyncExecutor(Runnable inner) {
-    return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
-  }
-
-  public static <T> Supplier<T> deferProvideAsyncExecutor(Supplier<T> inner) {
-    return deferProvideExecutor(ForkJoinPool.commonPool(), inner);
-  }
-
-  public static Optional<Cleanups> useCleanups() {
-    return cleanupsContext.use();
-  }
-
-  public static void provideCleanups(Cleanups cleanups, Runnable inner) {
-    provideCleanups(cleanups, toSupplier(inner));
-  }
-
-  public static <T> T provideCleanups(Cleanups cleanups, Supplier<T> inner) {
-    return cleanupsContext.with(Optional.of(cleanups)).provide(inner);
-  }
-
-  public static Cleanups createCleanups() {
-    return createCleanups(() -> {
-    });
-  }
-
-  public static Cleanups createCleanups(Runnable inner) {
-    var cleaner = new Cleanups();
-    useCleanups().ifPresent(c -> c.getQueue().add(cleaner));
-    cleanupsContext.with(Optional.of(cleaner)).provide(inner);
-    return cleaner;
-  }
-
-  public static <T> T createRootCleanups(Supplier<T> inner) {
-    return cleanupsContext.with(Optional.of(new Cleanups())).provide(inner);
-  }
-
-  public static void onCleanup(Runnable cleanup) {
-    cleanupsContext.use().ifPresent(c -> c.getQueue().add(cleanup));
+  private SigUtil() {
   }
 
   public static void batch(Runnable inner) {
     Batch.batch.get().run(inner);
-  }
-
-  public static void track(Iterable<? extends Trackable> deps) {
-    for (Trackable dep : deps) {
-      dep.track();
-    }
   }
 
   public static void untrack(Runnable inner) {
@@ -143,7 +30,7 @@ public class ReactiveUtil {
   }
 
   public static <T> T untrack(Supplier<T> signal) {
-    return Effect.effectContext.with(Optional.empty()).provide(signal);
+    return Effect.context.with(Optional.empty()).provide(signal);
   }
 
   public static <T> Runnable on(Supplier<T> dep, Runnable effect) {

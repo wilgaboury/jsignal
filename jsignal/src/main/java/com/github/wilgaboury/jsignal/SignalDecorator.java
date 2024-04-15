@@ -12,6 +12,10 @@ public class SignalDecorator<T> implements SignalLike<T> {
         this.signal = signal;
     }
 
+    public SignalLike<T> getSignal() {
+        return signal;
+    }
+
     @Override
     public void accept(Function<T, T> transform) {
         this.signal.accept(transform);

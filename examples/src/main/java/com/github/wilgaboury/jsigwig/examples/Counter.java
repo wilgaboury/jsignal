@@ -5,7 +5,6 @@ import com.github.wilgaboury.sigwig.Button;
 import com.github.wilgaboury.sigwig.EzColors;
 import com.github.wilgaboury.sigwig.text.TextLine;
 import com.github.wilgaboury.sigui.*;
-import static com.github.wilgaboury.jsignal.ReactiveUtil.*;
 
 @SiguiComponent
 public class Counter implements Renderable {
