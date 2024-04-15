@@ -17,8 +17,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.SigUtil.constantSupplier;
-import static com.github.wilgaboury.jsignal.SigUtil.on;
+import static com.github.wilgaboury.jsignal.JSigUtil.toSupplier;
+import static com.github.wilgaboury.jsignal.JSigUtil.on;
 
 public class MetaNode {
   private final SiguiWindow window;
@@ -164,14 +164,14 @@ public class MetaNode {
     return switch (children) {
       case Nodes.Fixed fixed -> {
         Ref<Integer> i = new Ref<>(0);
-        yield constantSupplier(fixed.stream().map(n -> {
+        yield toSupplier(fixed.stream().map(n -> {
           var meta = new MetaNode(this, n);
           Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
           i.set(i.get() + 1);
           return meta;
         }).toList());
       }
-      case Nodes.Dynamic dynamic -> SigListUtil.createMapped(
+      case Nodes.Dynamic dynamic -> JSigUtil.createMapped(
         () -> dynamic.stream()
           .filter(Objects::nonNull)
           .toList(),

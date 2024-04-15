@@ -1,6 +1,6 @@
 package com.github.wilgaboury.jsignal.interfaces;
 
-import com.github.wilgaboury.jsignal.SigUtil;
+import com.github.wilgaboury.jsignal.JSigUtil;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -10,11 +10,11 @@ public interface Acceptable<T> extends Consumer<T> {
     void accept(Function<T, T> transform);
 
     default void accept(Supplier<T> supplier) {
-        accept(SigUtil.toFunction(supplier));
+        accept(JSigUtil.toFunction(supplier));
     }
 
     @Override
     default void accept(T value) {
-        accept(SigUtil.toFunction(value));
+        accept(JSigUtil.toFunction(value));
     }
 }

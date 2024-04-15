@@ -9,8 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.wilgaboury.jsignal.SigUtil.batch;
-import static com.github.wilgaboury.jsignal.SigUtil.cleanupsContext;
+import static com.github.wilgaboury.jsignal.JSigUtil.batch;
 
 public class Effect implements EffectLike {
     static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
@@ -29,7 +28,7 @@ public class Effect implements EffectLike {
         this.effect = effect;
         this.cleanups = Cleanups.create();
         this.provider = Provider.get().add(
-                cleanupsContext.with(Optional.of(cleanups)),
+                Cleanups.context.with(Optional.of(cleanups)),
                 context.with(Optional.of(this))
         );
         this.threadBound = new ThreadBound(isSync);

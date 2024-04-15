@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.SigUtil;
+import com.github.wilgaboury.jsignal.JSigUtil;
 import com.github.wilgaboury.jsignal.Ref;
 import com.google.common.collect.Queues;
 import io.github.humbleui.jwm.App;
@@ -22,7 +22,7 @@ public class SiguiExecutor {
 
     public static void invoke(Runnable runnable) {
         if (SiguiUtil.onThread()) {
-            SigUtil.batch(runnable);
+            JSigUtil.batch(runnable);
         } else {
             invokeLater(runnable);
         }
@@ -54,7 +54,7 @@ public class SiguiExecutor {
         };
 
         while (!queue.isEmpty() && !shouldExit.get()) {
-            SigUtil.batch(() -> {
+            JSigUtil.batch(() -> {
                 while (!queue.isEmpty() && !shouldExit.get()) {
                     try {
                         queue.poll().run();

@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Flow;
 
-import static com.github.wilgaboury.jsignal.SigUtil.deferProvideAsyncExecutor;
-
 public class PublisherAdapter<T> implements Flow.Publisher<T> {
     private final SignalLike<T> signal;
     private final Set<Subscription> subscriptions;
@@ -33,7 +31,7 @@ public class PublisherAdapter<T> implements Flow.Publisher<T> {
 
         public Subscription(Flow.Subscriber<? super T> subscriber) {
             this.subscriber = subscriber;
-            this.effect = Effect.createAsync(deferProvideAsyncExecutor(this::publish));
+            this.effect = Effect.createAsync(this::publish);
             this.requestCount = 0L;
         }
 
