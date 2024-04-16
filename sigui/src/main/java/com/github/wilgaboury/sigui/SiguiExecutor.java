@@ -33,13 +33,14 @@ public class SiguiExecutor {
         maybeEnqueue();
     }
 
-    public static void queueMicrotask(Runnable runnable) {
-        if (SiguiUtil.onThread()) {
-            microtaskQueue.add(runnable);
-        } else {
-            logger.error("attempted to queue microtask from non ui thread");
-        }
-    }
+    // TODO: this doesn't work correctly unless it was called inside the executor
+//    public static void queueMicrotask(Runnable runnable) {
+//        if (SiguiUtil.onThread()) {
+//            microtaskQueue.add(runnable);
+//        } else {
+//            logger.error("attempted to queue microtask from non ui thread");
+//        }
+//    }
 
     private static void run() {
         willRun.set(false);

@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 /**
  * This class is not thread safe for performance reasons
+ * TODO: this needs to be made thread safe in some cases
  */
 public class Cleanups implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Cleanups.class);
