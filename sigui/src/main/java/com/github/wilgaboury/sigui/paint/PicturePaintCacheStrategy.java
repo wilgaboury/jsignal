@@ -7,8 +7,9 @@ import io.github.humbleui.skija.PictureRecorder;
 
 import java.util.function.Consumer;
 
-public class PicturePaintCacheStrategy implements PaintCacheStrategy{
+public class PicturePaintCacheStrategy implements PaintCacheStrategy {
     private Picture picture;
+    private int nonDirtyPaints = 0; // according to some google talk this is a trick used in flutter
 
     @Override
     public boolean isDirty() {

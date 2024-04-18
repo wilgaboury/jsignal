@@ -24,7 +24,7 @@ public class AsyncCounter implements Renderable {
 
   private final AtomicSignal<Integer> count = Signal.builder()
     .setValue(0)
-    .setDefaultExecutor(SiguiExecutor::invokeLater)
+    .setDefaultExecutor(SiguiThread::invokeLater)
     .atomic();
 
   @Override

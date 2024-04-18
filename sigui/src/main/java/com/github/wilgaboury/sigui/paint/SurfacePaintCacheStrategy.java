@@ -1,14 +1,14 @@
 package com.github.wilgaboury.sigui.paint;
 
 import com.github.wilgaboury.sigui.MetaNode;
-import io.github.humbleui.jwm.skija.LayerGLSkija;
-import io.github.humbleui.skija.*;
+import com.github.wilgaboury.sigui.SiguiWindow;
+import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Image;
+import io.github.humbleui.skija.Surface;
 
 import java.util.function.Consumer;
 
 public class SurfacePaintCacheStrategy implements PaintCacheStrategy {
-    private static final LayerGLSkija layer = new LayerGLSkija();
-
     private Image image;
 
     @Override
@@ -26,8 +26,7 @@ public class SurfacePaintCacheStrategy implements PaintCacheStrategy {
         var size = node.getLayout().getSize();
 
         if (image == null || image.getWidth() != (int)size.getX() || image.getHeight() != (int)size.getY()) {
-            // TODO: figure out a way to make this use a gpu surface
-            try (Surface surface = Surface.makeRaster(new ImageInfo((int)size.getX(), (int)size.getY(), ColorType.N32, ColorAlphaType.PREMUL))) {
+            try (Surface surface = SiguiWindow.paintSurfaceContext.use().makeSurface((int)size.getX(), (int)size.getY())) {
                 orElse.accept(surface.getCanvas());
                 image = surface.makeImageSnapshot();
             }

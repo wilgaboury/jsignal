@@ -32,7 +32,7 @@ public class SiguiUtil {
 
     clearNodeStyle = Yoga.YGNodeNew();
 
-    App.start(runnable);
+    App.start(() -> SiguiThread.invoke(runnable));
   }
 
   public static void provideHotswapInstrumentation(Runnable runnable) {
@@ -62,27 +62,11 @@ public class SiguiUtil {
 
   public static void createEffectLater(Runnable runnable) {
     Provider provider = Provider.get();
-    SiguiExecutor.invokeLater(() -> provider.provide(() -> Effect.create(runnable)));
-  }
-
-  public static boolean onThread() {
-    return App._onUIThread();
+    SiguiThread.invokeLater(() -> provider.provide(() -> Effect.create(runnable)));
   }
 
   public static Window createWindow() {
     return App.makeWindow();
-  }
-
-  public static void requestFrame() {
-    for (var window : SiguiWindow.getWindows()) {
-      window.requestFrame();
-    }
-  }
-
-  public static void requestLayout() {
-    for (var window : SiguiWindow.getWindows()) {
-      window.requestLayout();
-    }
   }
 
   public static void clearNodeStyle(long node) {

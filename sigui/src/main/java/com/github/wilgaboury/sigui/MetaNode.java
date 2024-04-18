@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import com.github.wilgaboury.sigui.paint.DynamicPaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
 import io.github.humbleui.skija.Canvas;
@@ -17,8 +18,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSignalUtil.toSupplier;
 import static com.github.wilgaboury.jsignal.JSignalUtil.on;
+import static com.github.wilgaboury.jsignal.JSignalUtil.toSupplier;
 
 public class MetaNode {
   private final SiguiWindow window;
@@ -59,7 +60,7 @@ public class MetaNode {
     this.id = null;
     this.tags = Collections.emptySet();
 
-    this.paintCacheStrategy = new PicturePaintCacheStrategy();
+    this.paintCacheStrategy = new DynamicPaintCacheStrategy();
 
     this.cleanups = Cleanups.create();
     Cleanups.provide(cleanups, () -> {
@@ -310,7 +311,7 @@ public class MetaNode {
 
   public <T extends Event> void fire(T event) {
     for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
-      SiguiExecutor.invokeLater(() -> ((Consumer<T>) listener).accept(event));
+      SiguiThread.invokeLater(() -> ((Consumer<T>) listener).accept(event));
 
       if (event.isImmediatePropagationStopped()) {
         return;

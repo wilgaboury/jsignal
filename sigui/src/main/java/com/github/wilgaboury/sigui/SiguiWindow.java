@@ -7,6 +7,7 @@ import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.event.*;
 import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
+import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
 import org.lwjgl.util.yoga.Yoga;
 
@@ -17,6 +18,7 @@ import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class SiguiWindow {
   public static final Context<SiguiWindow> context = new Context<>(null);
+  public static final Context<Surface> paintSurfaceContext = new Context<>(null);
 
   private static final Set<SiguiWindow> windows = new HashSet<>();
 
@@ -51,14 +53,12 @@ public class SiguiWindow {
       )
       .provide(() -> MetaNode.createRoot(root));
 
-    var layer = SiguiUtil.createLayer();
-    window.setEventListener(this::handleEvent);
-    window.setLayer(layer);
-
-    App._nRunOnUIThread(() -> {
+    window.setLayer(SiguiUtil.createLayer());
+    SiguiThread.queueMicrotask(() -> {
       window.setVisible(true);
-      layer.frame(); // fixes display glitch
+      window.getLayer().frame(); // fixes display glitch
     });
+    window.setEventListener(e -> SiguiThread.invoke(() -> handleEvent(e)));
   }
 
   public Optional<Window> getWindow() {
@@ -122,84 +122,90 @@ public class SiguiWindow {
     handleMouseMove(mousePosition.get());
   }
 
-  void handleEvent(io.github.humbleui.jwm.Event e) {
-
-    if (e instanceof EventWindowCloseRequest) {
-      close();
-    } else if (e instanceof EventWindowClose) {
-      if (windows.isEmpty()) {
-        App.terminate();
-      }
-    } else if (e instanceof EventFrameSkija ee) {
-      layout();
-      transformUpdate();
-      var canvas = ee.getSurface().getCanvas();
-      canvas.clear(0xFFFFFFFF);
-      root.paint(canvas);
-      shouldPaint = false;
-    } else if (e instanceof EventWindowResize) {
-      requestLayout();
-    } else if (e instanceof EventMouseScroll ee) {
-      if (hovered != null) {
-        hovered.bubble(new ScrollEvent(EventType.SCROLL, hovered, ee.getDeltaX(), ee.getDeltaY()));
-      }
-    } else if (e instanceof EventKey ee) {
-      if (focus == null) {
-        if (root == null) {
-          return;
-        } else {
-          focus = root;
+  void handleEvent(io.github.humbleui.jwm.Event event) {
+    switch (event) {
+      case EventWindowCloseRequest e -> close();
+      case EventWindowClose e -> {
+        if (windows.isEmpty()) {
+          App.terminate();
         }
       }
-
-      if (ee.isPressed()) {
-        focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, focus, ee));
-      } else {
-        focus.bubble(new KeyboardEvent(EventType.KEY_UP, focus, ee));
+      case EventFrameSkija e -> {
+        layout();
+        transformUpdate();
+        var canvas = e.getSurface().getCanvas();
+        canvas.clear(0xFFFFFFFF);
+        paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
+        shouldPaint = false;
       }
-    } else if (e instanceof EventMouseButton ee) {
-      if (hovered != null) {
-        if (ee.isPressed()) {
-          mouseDown = hovered;
-
-          mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown));
-
-          var focusTemp = mouseDown;
-          while (!focusTemp.hasListener(EventType.FOCUS)
-            && !focusTemp.hasListener(EventType.KEY_DOWN)
-            && !focusTemp.hasListener(EventType.KEY_UP)
-            && focusTemp.getParent() != null) {
-            focusTemp = focusTemp.getParent();
-          }
-          if (focus != null && focusTemp != focus) {
-            focus.fire(new FocusEvent(EventType.BLUR, focus));
-            focus = focusTemp;
-            focus.fire(new FocusEvent(EventType.FOCUS, focus));
-          }
-        }
-      }
-
-      if (!ee.isPressed()) {
+      case EventWindowResize e -> requestLayout();
+      case EventMouseScroll e -> {
         if (hovered != null) {
-          hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+          hovered.bubble(new ScrollEvent(EventType.SCROLL, hovered, e.getDeltaX(), e.getDeltaY()));
+        }
+      }
+      case EventKey e -> {
+        if (focus == null) {
+          if (root == null) {
+            return;
+          } else {
+            focus = root;
+          }
         }
 
-        // TODO: possibly check up tree instead of just target for click test
-        if (hovered != null && mouseDown == hovered) {
-          hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
-        } else if (mouseDown != null) {
-          mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+        if (e.isPressed()) {
+          focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, focus, e));
+        } else {
+          focus.bubble(new KeyboardEvent(EventType.KEY_UP, focus, e));
         }
       }
-    } else if (e instanceof EventMouseMove ee) {
-      var point = new Point(ee.getX(), ee.getY());
-      handleMouseMove(point);
-      mousePosition.accept(point);
-    } else if (e instanceof EventWindowFocusOut) {
-      if (hovered != null) {
-        hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
+      case EventMouseButton e -> {
+        if (hovered != null) {
+          if (e.isPressed()) {
+            mouseDown = hovered;
+
+            mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown));
+
+            var focusTemp = mouseDown;
+            while (!focusTemp.hasListener(EventType.FOCUS)
+              && !focusTemp.hasListener(EventType.KEY_DOWN)
+              && !focusTemp.hasListener(EventType.KEY_UP)
+              && focusTemp.getParent() != null) {
+              focusTemp = focusTemp.getParent();
+            }
+            if (focus != null && focusTemp != focus) {
+              focus.fire(new FocusEvent(EventType.BLUR, focus));
+              focus = focusTemp;
+              focus.fire(new FocusEvent(EventType.FOCUS, focus));
+            }
+          }
+        }
+
+        if (!e.isPressed()) {
+          if (hovered != null) {
+            hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+          }
+
+          // TODO: possibly check up tree instead of just target for click test
+          if (hovered != null && mouseDown == hovered) {
+            hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
+          } else if (mouseDown != null) {
+            mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+          }
+        }
       }
-      hovered = null;
+      case EventMouseMove e -> {
+        var point = new Point(e.getX(), e.getY());
+        handleMouseMove(point);
+        mousePosition.accept(point);
+      }
+      case EventWindowFocusOut e -> {
+        if (hovered != null) {
+          hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
+        }
+        hovered = null;
+      }
+      default -> {}
     }
   }
 

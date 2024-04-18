@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui.hotswap;
 
-import com.github.wilgaboury.sigui.SiguiExecutor;
+import com.github.wilgaboury.sigui.SiguiThread;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,7 +11,7 @@ public class HotswapRerenderService {
     public HotswapRerenderService() {}
 
     public static void rerender(List<String> classNames) {
-        SiguiExecutor.invokeLater(() -> {
+        SiguiThread.invokeLater(() -> {
             Set<HotswapComponent> components = classNames.stream()
                     .flatMap(className -> HotswapComponent.getClassNameToHotswap().get(className).stream())
                     .collect(Collectors.toSet());

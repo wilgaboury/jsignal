@@ -35,9 +35,9 @@ public class TestApp implements Renderable {
 
   private final Random rand = new Random();
 
-  private Signal<Integer> buttonColor = Signal.create(EzColors.BLACK);
-  private Signal<Boolean> showFire = Signal.create(false);
-  private Signal<Integer> count = Signal.create(0);
+  private final Signal<Integer> buttonColor = Signal.create(EzColors.BLACK);
+  private final Signal<Boolean> showFire = Signal.create(false);
+  private final Signal<Integer> count = Signal.create(0);
 
   @Override
   public Nodes render() {
