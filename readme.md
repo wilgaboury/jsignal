@@ -6,10 +6,11 @@ from [SolidJS](https://www.solidjs.com/).
 ## Motivation
 
 After decades of different approaches to GUI design patterns and abstractions, the modern software landscape seems to
-have settled on the declarative/reactive paradigm for GUI libraries (React, Flutter, SwiftUI, Jetpack Compose, etc.).
-Though, when it comes to Java there is a clear lack of choices, and options like Swing, JavaFX and SWT feel quite
-outdated by today's standards. Considering that Java is one of the most popular languages, used extensively in
-educational settings and for enterprise software development, this project is an ambitious attempt to fill in that void.
+have largely settled on the declarative/reactive paradigm for GUI libraries (React, Flutter, SwiftUI, Jetpack Compose,
+etc.). Though, when it comes to Java there is a clear lack of choices in this category, and traditional options like
+Swing, JavaFX and SWT feel quite outdated by today's standards. Considering that Java is one of the most popular
+languages, used extensively in educational settings and for enterprise software development, this project is an
+ambitious attempt to fill in that void.
 
 ## Module Disambiguation
 
@@ -17,7 +18,7 @@ educational settings and for enterprise software development, this project is an
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [JSignal](./jsignal) | signal/effect reactive primitive library                                                                                                                                                                                   |
 | [Sigui](./sigui)     | desktop graphical user interface library built on top of JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
-| [Sigwig](./sigwig)   | component library for Sigui                                                                                                                                                                                                |
+| [Sigwig](./sigwig)   | a standard component library for Sigui                                                                                                                                                                                     |
 
 ## Obligatory Example
 
@@ -25,7 +26,7 @@ educational settings and for enterprise software development, this project is an
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiUtil.start(() -> {
+    SiguiThread.start(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
@@ -66,8 +67,8 @@ public class Counter implements Renderable {
 ## Hotswap
 
 One of Sigui's main features is it's built in support for hotswap development, as in it can apply certain code changes
-to the user interface without having to restart a running application. Currently, this is reliant on the DCEVM JVM patch
-and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent). Instruction for setting this up in Intellij Idea
+to the user interface without having to restart a running application. Currently, this s reliant on the DCEVM JVM patch
+and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent). Instructions for setting this up in Intellij Idea
 CE are below:
 
 - Download and use the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK 21, which contains the
@@ -77,7 +78,7 @@ CE are below:
 - use the following VM command line
   arguments `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
 - change your application initialization code to look
-  like: `SiguiUtil.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> { ... }));`
+  like: `SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> { ... }));`
 
 ## Signals and Effects
 
@@ -137,40 +138,3 @@ A good example would be a signal of type `Signal<List<T>>`, which can have its i
 method (i.e., `signal.get().add(elem)`). Modifying the data in this way will not notify any of the effects. A remedy in
 this case would be using `Collections::unmodifiableList` as the "clone" argument. In such a case, the only way to modify
 the internal data would be using the `accept` or `mutate` methods, like so `signal.mutate(list -> list.add(elem))`.
-
-### Synchronicity
-
-Signals support both synchronous and asynchronous operation via the `Executor` interface. User's may specify the
-executor by setting the default executor when building the signal, or by setting the `Signal.executorContext` when
-accessing a signal inside an effect. By default, signals use a synchronous executor (`Runnable::run`). Here is an
-example:
-
-```java
-ExecutorService executor = Executors.newCachedThreadPool();
-AtomicSignal<Integer> value = Signal.builder(0).setDefaultExecutor(executor).atomic();
-Effect effect = Effect.createAsync(() -> System.out.println("Printing from another thread: " + value.get()));
-value.accept(i -> i + 1);
-```
-
-Asynchronous signals may be used from synchronous effects or asynchronous effects, but synchronous signal may only be
-used from synchronous effects. What is important to note about using asynchronous signals from synchronous effects, is
-that it will most likely cause an error unless the synchronous effects thread possesses some sort of event queue system.
-A good example would be the Swing UI thread. To use an asynchronous signal from a Swing UI thread effect, one should
-access the signal inside the effect like so:
-
-```java
-Signal<Integer> value = Signal.builder(0).setAsync().build();
-Effect effect = Effect.create(() -> {
-    var value = Signal.executorContext.with(Swing::invokeLater).provide(asyncSignal);
-    // do something with value
-});
-```
-
-Asynchronous effects are executed in a synchronize block, meaning that a given asynchronous effect will never have its
-logic executed in parallel. This makes the implementation of asynchronous effects much cleaner. It also eases the mental
-burden on developers when trying to reason about asynchronous reactive code.
-
-### Flow/Reactor/RxJava
-
-This library provides adapters (via the `PublisherAdapter` and `SubscriberAdapter`) for using signals as a source or
-sink for reactive streams.

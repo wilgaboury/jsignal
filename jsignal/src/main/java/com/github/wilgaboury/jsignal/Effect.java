@@ -35,7 +35,7 @@ public class Effect implements EffectLike {
         this.signals = new Flipper<>(HashSet::new);
         this.disposed = false;
 
-        Cleanups.onCleanup(this::dispose);
+        Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
     }
 
     /**
