@@ -14,7 +14,9 @@ public class DynamicPaintCacheStrategy implements PaintCacheStrategy {
     SurfacePaintCacheStrategy::new
   );
 
-  private PaintCacheStrategy strategy = new NullPaintCacheStrategy();
+  private static final int THRESHOLD = 3;
+
+  private PaintCacheStrategy strategy = layers.getFirst().get();
   private int layer = 0;
   private int dirtyCount = 0;
 
@@ -26,23 +28,25 @@ public class DynamicPaintCacheStrategy implements PaintCacheStrategy {
   @Override
   public void markDirty() {
     strategy.markDirty();
-    dirtyCount++;
+    dirtyCount = Math.min(THRESHOLD, dirtyCount + 1);
   }
 
   @Override
   public void paint(Canvas canvas, MetaNode node, Consumer<Canvas> orElse) {
-    if (dirtyCount <= -3 && layer < layers.size() - 1) { // upgrade
+    if (dirtyCount == -THRESHOLD && layer < layers.size() - 1) {
+      // upgrade
       layer++;
-      strategy = layers.get(layer).get();
       dirtyCount = 0;
-    } else if (dirtyCount >= 3 && layer > 0) { // downgrade
+      strategy = layers.get(layer).get();
+    } else if (dirtyCount == THRESHOLD && layer > 0) {
+      // downgrade
       layer--;
-      strategy = layers.get(layer).get();
       dirtyCount = 0;
+      strategy = layers.get(layer).get();
     }
 
     if (!isDirty()) {
-      dirtyCount--;
+      dirtyCount = Math.max(-THRESHOLD, dirtyCount - 1);
     }
     strategy.paint(canvas, node, orElse);
   }
