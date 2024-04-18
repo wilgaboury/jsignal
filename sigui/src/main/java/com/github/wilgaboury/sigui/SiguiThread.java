@@ -14,6 +14,13 @@ public class SiguiThread {
   private static boolean inThread = false;
   private static final Queue<Runnable> microtasks = new ArrayDeque<>();
 
+  public static void start(Runnable runnable) {
+    App.start(() -> run(() -> {
+      SiguiUtil.init();
+      runnable.run();
+    }));
+  }
+
   public static void invoke(Runnable runnable) {
     App.runOnUIThread(() -> run(runnable));
   }
@@ -26,23 +33,27 @@ public class SiguiThread {
     if (inThread) {
       microtasks.add(runnable);
     } else {
-      logger.error("queueing microtask outside of thread");
+      logger.error("cannot queue microtask outside of sigui thread");
     }
   }
 
   public static boolean isOnThread() {
-    return App._onUIThread();
+    return inThread;
   }
 
   private static void run(Runnable runnable) {
-    inThread = true;
-    try {
-      JSignalUtil.batch(runnable);
-      while (!microtasks.isEmpty()) {
-        JSignalUtil.batch(microtasks.poll());
+    if (inThread) {
+      runnable.run();
+    } else {
+      inThread = true;
+      try {
+        JSignalUtil.batch(runnable);
+        while (!microtasks.isEmpty()) {
+          JSignalUtil.batch(microtasks.poll());
+        }
+      } finally {
+        inThread = false;
       }
-    } finally {
-      inThread = false;
     }
   }
 }

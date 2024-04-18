@@ -1,6 +1,7 @@
 package com.github.wilgaboury.jsignal;
 
 import com.github.wilgaboury.jsignal.interfaces.OnFn;
+import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -9,6 +10,22 @@ import java.util.function.*;
 
 public class JSignalUtil {
   private JSignalUtil() {
+  }
+
+  public static <T> Supplier<T> maybeComputed(Supplier<T> supplier) {
+    if (supplier instanceof Constant<T> || supplier instanceof Computed<T>) {
+      return supplier;
+    } else {
+      return Computed.create(supplier);
+    }
+  }
+
+  public static <T> Supplier<T> maybeComputed(Supplier<SignalLike<T>> signal, Supplier<T> supplier) {
+    if (supplier instanceof Constant<T> || supplier instanceof Computed<T>) {
+      return supplier;
+    } else {
+      return Computed.create(signal.get(), supplier);
+    }
   }
 
   public static void batch(Runnable inner) {

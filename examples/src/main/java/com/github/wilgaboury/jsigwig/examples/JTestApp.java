@@ -1,9 +1,9 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
 import com.github.wilgaboury.sigwig.text.TextLine;
-import com.github.wilgaboury.sigui.*;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 
@@ -12,7 +12,7 @@ import java.util.Random;
 @SiguiComponent
 public class JTestApp implements Renderable {
   public static void main(String[] args) {
-    SiguiUtil.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Test App");
       window.setContentSize(400, 400);

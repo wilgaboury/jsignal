@@ -25,7 +25,7 @@ public class TestApp implements Renderable {
   }
 
   public static void main(String[] args) {
-    SiguiUtil.start(() -> {
+    SiguiThread.start(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Test App");
       window.setContentSize(400, 400);

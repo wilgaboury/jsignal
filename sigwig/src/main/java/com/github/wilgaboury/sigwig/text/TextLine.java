@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigwig.text;
 
+import com.github.wilgaboury.jsignal.JSignalUtil;
 import com.github.wilgaboury.sigui.SiguiComponent;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.Node;
@@ -15,7 +16,7 @@ public class TextLine implements Renderable {
   private final Supplier<Integer> color;
 
   public TextLine(Builder builder) {
-    this.line = builder.line;
+    this.line = JSignalUtil.maybeComputed(builder.line);
     this.color = builder.color;
   }
 

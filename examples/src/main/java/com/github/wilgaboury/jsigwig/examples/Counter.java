@@ -1,15 +1,15 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.Button;
 import com.github.wilgaboury.sigwig.EzColors;
 import com.github.wilgaboury.sigwig.text.TextLine;
-import com.github.wilgaboury.sigui.*;
 
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiUtil.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @SiguiComponent
 public class AsyncCounter implements Renderable {
   public static void main(String[] args) {
-    SiguiUtil.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Async Counter");
       window.setContentSize(250, 250);

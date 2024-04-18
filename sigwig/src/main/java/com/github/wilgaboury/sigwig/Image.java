@@ -26,12 +26,12 @@ public class Image implements Renderable {
     private static final WeakHashMap<Blob, io.github.humbleui.skija.Image> imageObjects = new WeakHashMap<>();
 
     private static SVGDOM getSvgDom(Blob blob) {
-        return svgDoms.computeIfAbsent(blob, b -> new SVGDOM(Data.makeFromBytes(b.getData())));
+        return svgDoms.computeIfAbsent(blob, b -> new SVGDOM(Data.makeFromBytes(b.data())));
     }
 
     private static io.github.humbleui.skija.Image getImageObject(Blob blob) {
         return imageObjects.computeIfAbsent(blob, b ->
-          io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.getData()));
+          io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data()));
     }
 
     private final Supplier<Blob> blob;
@@ -54,12 +54,12 @@ public class Image implements Renderable {
     public Nodes render() {
         return Node.builder()
           .layout(yoga -> {
-              if (blob.get().getMime().is(MediaType.SVG_UTF_8)) {
+              if (blob.get().mime().is(MediaType.SVG_UTF_8)) {
                   layoutVector(yoga);
-              } else if (blob.get().getMime().is(MediaType.ANY_IMAGE_TYPE)) {
+              } else if (blob.get().mime().is(MediaType.ANY_IMAGE_TYPE)) {
                   layoutRaster(yoga);
               } else {
-                  logger.warn("Unrecognized image type: {}", blob.get().getMime());
+                  logger.warn("Unrecognized image type: {}", blob.get().mime());
                   Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
                   Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
               }
@@ -124,15 +124,15 @@ public class Image implements Renderable {
     }
 
     private static Painter createPainter(Blob blob, Fit fit) {
-        if (blob.getMime().is(MediaType.SVG_UTF_8)) {
+        if (blob.mime().is(MediaType.SVG_UTF_8)) {
             var svg = getSvgDom(blob);
             var viewBox = viewBox(svg);
             return (canvas, node) -> paintVector(canvas, node, svg, fit, viewBox.getX(), viewBox.getY());
-        } else if (blob.getMime().is(MediaType.ANY_IMAGE_TYPE)) {
+        } else if (blob.mime().is(MediaType.ANY_IMAGE_TYPE)) {
             var img = getImageObject(blob);
             return (canvas, node) -> paintRaster(canvas, node, img, fit);
         } else {
-            logger.warn("Unrecognized image type: {}", blob.getMime());
+            logger.warn("Unrecognized image type: {}", blob.mime());
             return (canvas, yoga) -> {
             };
         }

@@ -1,5 +1,6 @@
 package com.github.wilgaboury.sigwig;
 
+import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Painter;
@@ -10,6 +11,8 @@ import io.github.humbleui.types.RRect;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.jsignal.JSignalUtil.maybeComputed;
 
 public class BasicPainter implements Painter {
   private final Supplier<Float> radius;
@@ -52,21 +55,21 @@ public class BasicPainter implements Painter {
   }
 
   public static class Builder {
-    private Supplier<Float> radius = () -> 0f;
-    private Supplier<Float> border = () -> 0f;
-    private Supplier<Optional<Integer>> backgroundColor = Optional::empty;
-    private Supplier<Optional<Integer>> borderColor = Optional::empty;
+    private Supplier<Float> radius = Constant.of(0f);
+    private Supplier<Float> border = Constant.of(0f);
+    private Supplier<Optional<Integer>> backgroundColor = Constant.of(Optional.empty());
+    private Supplier<Optional<Integer>> borderColor = Constant.of(Optional.empty());
 
     public Supplier<Float> getRadius() {
       return radius;
     }
 
     public Builder setRadius(float radius) {
-      return setRadius(() -> radius);
+      return setRadius(Constant.of(radius));
     }
 
     public Builder setRadius(Supplier<Float> radius) {
-      this.radius = radius;
+      this.radius = maybeComputed(radius);
       return this;
     }
 
@@ -75,11 +78,11 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBorder(float border) {
-      return setBorder(() -> border);
+      return setBorder(Constant.of(border));
     }
 
     public Builder setBorder(Supplier<Float> border) {
-      this.border = border;
+      this.border = maybeComputed(border);
       return this;
     }
 
@@ -88,11 +91,11 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBackgroundColor(@Nullable Integer backgroundColor) {
-      return setBackgroundColor(() -> Optional.ofNullable(backgroundColor));
+      return setBackgroundColor(Constant.of(Optional.ofNullable(backgroundColor)));
     }
 
     public Builder setBackgroundColor(Supplier<Optional<Integer>> background) {
-      this.backgroundColor = background;
+      this.backgroundColor = maybeComputed(background);
       return this;
     }
 
@@ -101,11 +104,11 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBorderColor(@Nullable Integer borderColor) {
-      return setBorderColor(() -> Optional.ofNullable(borderColor));
+      return setBorderColor(Constant.of(Optional.ofNullable(borderColor)));
     }
 
     public Builder setBorderColor(Supplier<Optional<Integer>> borderColor) {
-      this.borderColor = borderColor;
+      this.borderColor = maybeComputed(borderColor);
       return this;
     }
 

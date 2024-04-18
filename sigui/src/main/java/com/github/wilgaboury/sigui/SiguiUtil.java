@@ -24,15 +24,13 @@ public class SiguiUtil {
   private static final Logger logger = LoggerFactory.getLogger(SiguiUtil.class);
   private static long clearNodeStyle;
 
-  public static void start(Runnable runnable) {
+  static void init() {
     logger.trace("starting sigui application thread");
 
     // calling new here provides hook for hotswap agent plugin initialization
     new HotswapRerenderService();
 
     clearNodeStyle = Yoga.YGNodeNew();
-
-    App.start(() -> SiguiThread.invoke(runnable));
   }
 
   public static void provideHotswapInstrumentation(Runnable runnable) {

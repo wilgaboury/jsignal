@@ -1,32 +1,12 @@
 package com.github.wilgaboury.sigwig;
 
 import com.google.common.net.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class Blob {
-    private static final Logger logger = LoggerFactory.getLogger(Blob.class);
-
-    private final byte[] data;
-    private final MediaType mime;
-
-    public Blob(byte[] data, MediaType mime) {
-        this.data = data;
-        this.mime = mime;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public MediaType getMime() {
-        return mime;
-    }
-
+public record Blob(byte[] data, MediaType mime) {
     public static Blob fromResource(String name, MediaType type) throws BlobException {
         try (var resource = Blob.class.getResourceAsStream(name)) {
             if (resource == null) {

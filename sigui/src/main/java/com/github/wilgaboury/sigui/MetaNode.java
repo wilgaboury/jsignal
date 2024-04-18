@@ -6,7 +6,6 @@ import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
 import com.github.wilgaboury.sigui.paint.DynamicPaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
-import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
@@ -19,7 +18,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.on;
-import static com.github.wilgaboury.jsignal.JSignalUtil.toSupplier;
 
 public class MetaNode {
   private final SiguiWindow window;
@@ -165,7 +163,7 @@ public class MetaNode {
     return switch (children) {
       case Nodes.Fixed fixed -> {
         Ref<Integer> i = new Ref<>(0);
-        yield toSupplier(fixed.stream().map(n -> {
+        yield Constant.of(fixed.stream().map(n -> {
           var meta = new MetaNode(this, n);
           Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
           i.set(i.get() + 1);
