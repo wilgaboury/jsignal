@@ -16,9 +16,11 @@ public class TestApp implements Renderable {
     "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit.";
 
   private static final Blob penguin;
+  private static final Blob fire;
   static {
     try {
       penguin = Blob.fromResource("/peng.png", MediaType.PNG);
+      fire = Blob.fromResource("/fire.svg", MediaType.SVG_UTF_8);
     } catch (BlobException e) {
       throw new RuntimeException(e);
     }
@@ -41,8 +43,6 @@ public class TestApp implements Renderable {
 
   @Override
   public Nodes render() {
-    // TODO: finish conversion
-
     return Scroll.builder()
       .setBarWidth(15f)
       .setChildren(
@@ -114,6 +114,7 @@ public class TestApp implements Renderable {
               })
               .setChildren(InterFontUtil.createButtonText(this::buttonText))
               .build(),
+            maybeFire(),
             Image.builder()
               .setBlob(penguin)
               .setHeight(LayoutValue.pixel(300))
@@ -129,5 +130,20 @@ public class TestApp implements Renderable {
 
   private String buttonText() {
     return showFire.get() ? "Hide Fire" : "Show File";
+  }
+
+  private Nodes maybeFire() {
+    return Nodes.cacheOne(cache -> {
+      if (showFire.get()) {
+        return cache.get(() -> Image.builder()
+          .setBlob(fire)
+          .setHeight(LayoutValue.pixel(200))
+          .build()
+          .getNodes()
+        );
+      } else {
+        return Nodes.empty();
+      }
+    });
   }
 }

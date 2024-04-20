@@ -12,14 +12,14 @@ import io.github.humbleui.types.Point;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSignalUtil.on;
-
 public class MetaNode {
+
   private final SiguiWindow window;
   private final MutableProvider published;
 
@@ -42,14 +42,14 @@ public class MetaNode {
 
   private PaintCacheStrategy paintCacheStrategy;
 
-  private final Supplier<List<MetaNode>> children;
+  private final Supplier<List<MetaChild>> children;
 
   private MetaNode(MetaNode parent, Node node) {
     this.window = SiguiWindow.context.use();
     this.published = new MutableProvider();
 
     this.parent = parent;
-    this.node = node;
+    this.node = new WeakRef<>(node);
 
     this.yoga = Yoga.YGNodeNew();
     this.layout = new Layout(yoga);
@@ -129,8 +129,8 @@ public class MetaNode {
 
   void paint(Canvas canvas) {
     if (parent == null) {
-      for (MetaNode child : getChildren()) {
-        child.paint(canvas);
+      for (MetaChild child : getChildren()) {
+        child.meta().paint(canvas);
       }
       return;
     }
@@ -141,9 +141,9 @@ public class MetaNode {
       transformEffect.run(() -> canvas.concat(getTransform()));
 
       paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
-        paintEffect.run(() -> node.paint(cacheCanvas, this));
-        for (MetaNode child : getChildren()) {
-          child.paint(cacheCanvas);
+        paintEffect.run(() -> node.get().paint(cacheCanvas, this));
+        for (MetaChild child : getChildren()) {
+          child.meta().paint(cacheCanvas);
         }
       });
     } finally {
@@ -157,36 +157,37 @@ public class MetaNode {
     window.requestLayout();
   }
 
-  private Supplier<List<MetaNode>> createChildren() {
+  private Supplier<List<MetaChild>> createChildren() {
     var children = node.children();
 
     return switch (children) {
       case Nodes.Fixed fixed -> {
         Ref<Integer> i = new Ref<>(0);
-        yield Constant.of(fixed.stream().map(n -> {
+        yield Constant.of(fixed.getNodeList().stream().map(n -> {
           var meta = new MetaNode(this, n);
           Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
           i.set(i.get() + 1);
-          return meta;
+          return new MetaChild(n, meta);
         }).toList());
       }
-      case Nodes.Dynamic dynamic -> JSignalUtil.createMapped(
-        () -> dynamic.stream()
-          .filter(Objects::nonNull)
-          .toList(),
-        (child, idx) -> {
-          var meta = new MetaNode(this, child);
-          Effect.create(on(idx, (cur, prev) -> {
-            if (prev != null) {
-              Yoga.YGNodeRemoveChild(yoga, meta.yoga);
-            }
-            Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
-
-            window.requestLayout();
-          }));
-          return meta;
-        }
-      );
+      case Nodes.Dynamic dynamic -> {
+        final Flipper<List<MetaChild>> childrenFlipper = new Flipper<>(ArrayList::new);
+        yield Computed.create(() -> {
+          Cleanups.onCleanup(() -> {
+            childrenFlipper.flip();
+            Yoga.YGNodeRemoveAllChildren(yoga);
+          });
+          var list = dynamic.getNodeList();
+          for (int i = 0; i < list.size(); i++) {
+            var n = list.get(i);
+            var meta = new MetaNode(this, n);
+            childrenFlipper.getFront().add(new MetaChild(n, meta));
+            Yoga.YGNodeInsertChild(yoga, meta.yoga, i);
+          }
+          childrenFlipper.getBack().clear();
+          return childrenFlipper.getFront();
+        });
+      }
     };
   }
 
@@ -211,10 +212,10 @@ public class MetaNode {
       var children = currentNode.children.get();
       for (int i = children.size(); i > 0; i--) {
         var child = children.get(i - 1);
-        var newTransform = currentTransform.makeConcat(child.getTransform());
+        var newTransform = currentTransform.makeConcat(child.meta().getTransform());
 
-        if (child.getNode().hitTest(createTestPoint(p, newTransform), child)) {
-          currentNode = child;
+        if (child.node().hitTest(createTestPoint(p, newTransform), child.meta())) {
+          currentNode = child.meta();
           currentTransform = newTransform;
           continue outer;
         }
@@ -256,8 +257,8 @@ public class MetaNode {
     return res;
   }
 
-  public List<MetaNode> getChildren() {
-    return children.get();
+  public List<MetaChild> getChildren() {
+    return Collections.unmodifiableList(children.get());
   }
 
   public long getYoga() {
@@ -274,7 +275,7 @@ public class MetaNode {
     layout.update();
 
     for (var child : children.get()) {
-      child.updateLayout();
+      child.meta().updateLayout();
     }
   }
 
@@ -339,6 +340,12 @@ public class MetaNode {
       .children(new RootComponent(component).getNodes())
       .buildNode());
   }
+
+  public static MetaNode createNode(MetaNode parent, Node node) {
+    return metaNodes.computeIfAbsent(node, n -> new MetaNode(parent, node));
+  }
+
+  public record MetaChild(Node node, MetaNode meta) { }
 
   /**
    * provide hook for hotswap instrumentation at root

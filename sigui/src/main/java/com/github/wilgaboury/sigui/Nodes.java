@@ -7,11 +7,10 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public sealed interface Nodes extends NodesSupplier
 {
-    Stream<? extends Node> stream();
+    List<? extends Node> getNodeList();
 
     @Override
     default Nodes getNodes() {
@@ -26,7 +25,7 @@ public sealed interface Nodes extends NodesSupplier
         return new Fixed(List.of(nodes));
     }
 
-    static Fixed fixed(Collection<? extends Node> nodes) {
+    static Fixed fixed(List<? extends Node> nodes) {
         return new Fixed(nodes);
     }
 
@@ -37,43 +36,43 @@ public sealed interface Nodes extends NodesSupplier
     static Nodes compose(Collection<NodesSupplier> children) {
         var nodes = children.stream().map(NodesSupplier::getNodes).toList();
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
-            return new Dynamic(Computed.create(() -> nodes.stream().flatMap(Nodes::stream).toList()));
+            return new Dynamic(Computed.create(() -> nodes.stream().flatMap(n -> n.getNodeList().stream()).toList()));
         } else {
-            return new Fixed(nodes.stream().flatMap(Nodes::stream).toList());
+            return new Fixed(nodes.stream().flatMap(n -> n.getNodeList().stream()).toList());
         }
     }
 
     static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = JSignalUtil.createMapped(list, map);
-        var composed = Computed.create(() -> mapped.get().stream().flatMap(Nodes::stream).toList());
+        var composed = Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodeList().stream()).toList());
         return new Dynamic(composed);
     }
 
     static Dynamic compute(Supplier<Nodes> inner) {
-        return new Dynamic(Computed.create(() -> inner.get().stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.get().getNodeList().stream().toList()));
     }
 
     static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
         var cache = new CacheOne();
-        return new Dynamic(Computed.create(() -> inner.apply(cache).stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList().stream().toList()));
     }
 
     static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
         var cache = new CacheMany<K>(new HashMap<>());
-        return new Dynamic(Computed.create(() -> inner.apply(cache).stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList().stream().toList()));
     }
 
-    record Fixed(Collection<? extends Node> children) implements Nodes {
+    record Fixed(List<? extends Node> children) implements Nodes {
         @Override
-        public Stream<? extends Node> stream() {
-            return children.stream();
+        public List<? extends Node> getNodeList() {
+            return children;
         }
     }
 
     record Dynamic(Supplier<? extends List<? extends Node>> children) implements Nodes {
         @Override
-        public Stream<? extends Node> stream() {
-            return children.get().stream();
+        public List<? extends Node> getNodeList() {
+            return children.get();
         }
     }
 
