@@ -89,7 +89,7 @@ public class Scroll implements Renderable {
     });
 
     return Node.builder()
-      .reference(node -> {
+      .ref(node -> {
         view.set(node);
         node.tags("scroller-parent");
         node.listen(
@@ -111,7 +111,7 @@ public class Scroll implements Renderable {
       )
       .children(
         Node.builder()
-          .reference(content::set)
+          .ref(content::set)
           .layout(yoga -> {
             // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
             if (shouldShowSidebar.get()) {
@@ -137,7 +137,7 @@ public class Scroll implements Renderable {
           .children(children.get())
           .build(),
         Node.builder()
-          .reference(node -> node.listen(
+          .ref(node -> node.listen(
             EventListener.onMouseOver(e -> xBarMouseOver.accept(true)),
             EventListener.onMouseOut(e -> xBarMouseOver.accept(false)),
             EventListener.onMouseDown(e -> {
@@ -162,7 +162,7 @@ public class Scroll implements Renderable {
           .paint(this::paintVertScrollBar)
           .build(),
         Node.builder()
-          .reference(node -> node.listen(
+          .ref(node -> node.listen(
             EventListener.onMouseOver(e -> yBarMouseOver.accept(true)),
             EventListener.onMouseOut(e -> yBarMouseOver.accept(false))
           ))
@@ -177,7 +177,7 @@ public class Scroll implements Renderable {
           .children(
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
             Node.builder()
-              .reference(node -> {
+              .ref(node -> {
                 yBar.set(node);
                 node.listen(
                   EventListener.onMouseDown(e -> {
@@ -375,7 +375,7 @@ public class Scroll implements Renderable {
     @Override
     public Nodes render() {
       return Node.builder()
-        .reference(reference -> reference.listen(
+        .ref(reference -> reference.listen(
           EventListener.onMouseClick(e -> action.run()),
           EventListener.onMouseDown(e -> mouseDown.accept(true)),
           EventListener.onMouseUp(e -> mouseDown.accept(false))

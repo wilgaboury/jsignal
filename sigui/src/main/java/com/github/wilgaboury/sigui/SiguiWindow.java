@@ -27,6 +27,9 @@ public class SiguiWindow {
   private final Cleanups rootCleanups;
   private final NodeRegistry nodeRegistry;
 
+  private final Queue<Runnable> preFrame;
+  private final Queue<Runnable> postFrame;
+
   private boolean shouldLayout;
   private boolean shouldPaint;
   private boolean shouldTransformUpdate;
@@ -40,6 +43,9 @@ public class SiguiWindow {
   public SiguiWindow(Window window, Supplier<Renderable> root) {
     this.window = window;
     this.nodeRegistry = new NodeRegistry();
+
+    this.preFrame = new ArrayDeque<>();
+    this.postFrame = new ArrayDeque<>();
 
     this.shouldLayout = false;
     this.shouldPaint = false;
@@ -131,12 +137,16 @@ public class SiguiWindow {
         }
       }
       case EventFrameSkija e -> {
+        SiguiThread.executeQueue(preFrame);
+
         layout();
         transformUpdate();
         var canvas = e.getSurface().getCanvas();
         canvas.clear(0xFFFFFFFF);
         paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
         shouldPaint = false;
+
+        SiguiThread.executeQueue(postFrame);
       }
       case EventWindowResize e -> requestLayout();
       case EventMouseScroll e -> {

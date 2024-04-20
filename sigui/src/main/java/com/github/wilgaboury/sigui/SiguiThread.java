@@ -41,16 +41,29 @@ public class SiguiThread {
     return inThread;
   }
 
+  public static void executeQueue(Queue<Runnable> runnables) {
+    while (!runnables.isEmpty()) {
+      noExceptRun(runnables.poll());
+    }
+  }
+
+  private static void noExceptRun(Runnable runnable) {
+    try {
+      runnable.run();
+    } catch (Exception e) {
+      logger.error("uncaught exception in ui thread", e);
+    }
+  }
+
   private static void run(Runnable runnable) {
     if (inThread) {
-      runnable.run();
+      // allow for reentrant calls
+      noExceptRun(runnable);
     } else {
       inThread = true;
       try {
-        JSignalUtil.batch(runnable);
-        while (!microtasks.isEmpty()) {
-          JSignalUtil.batch(microtasks.poll());
-        }
+        noExceptRun(runnable);
+        executeQueue(microtasks);
       } finally {
         inThread = false;
       }

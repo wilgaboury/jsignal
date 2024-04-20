@@ -30,7 +30,7 @@ public class Button implements Renderable {
   @Override
   public Nodes render() {
     return Node.builder()
-      .reference(node -> node.listen(
+      .ref(node -> node.listen(
         EventListener.onMouseOver(e -> mouseOver.accept(true)),
         EventListener.onMouseDown(e -> mouseDown.accept(true)),
         EventListener.onMouseOut(e -> {
