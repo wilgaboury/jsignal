@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class MetaNode {
+  private static final WeakHashMap<Node, WeakReference<MetaNode>> metaNodeRegistry = new WeakHashMap<>();
 
   private final SiguiWindow window;
   private final MutableProvider published;
@@ -49,7 +50,7 @@ public class MetaNode {
     this.published = new MutableProvider();
 
     this.parent = parent;
-    this.node = new WeakRef<>(node);
+    this.node = node;
 
     this.yoga = Yoga.YGNodeNew();
     this.layout = new Layout(yoga);
@@ -141,7 +142,7 @@ public class MetaNode {
       transformEffect.run(() -> canvas.concat(getTransform()));
 
       paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
-        paintEffect.run(() -> node.get().paint(cacheCanvas, this));
+        paintEffect.run(() -> node.paint(cacheCanvas, this));
         for (MetaChild child : getChildren()) {
           child.meta().paint(cacheCanvas);
         }
@@ -164,7 +165,7 @@ public class MetaNode {
       case Nodes.Fixed fixed -> {
         Ref<Integer> i = new Ref<>(0);
         yield Constant.of(fixed.getNodeList().stream().map(n -> {
-          var meta = new MetaNode(this, n);
+          var meta = create(this, n);
           Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
           i.set(i.get() + 1);
           return new MetaChild(n, meta);
@@ -180,11 +181,14 @@ public class MetaNode {
           var list = dynamic.getNodeList();
           for (int i = 0; i < list.size(); i++) {
             var n = list.get(i);
-            var meta = new MetaNode(this, n);
+            var meta = create(this, n);
             childrenFlipper.getFront().add(new MetaChild(n, meta));
             Yoga.YGNodeInsertChild(yoga, meta.yoga, i);
           }
           childrenFlipper.getBack().clear();
+
+          window.requestLayout();
+
           return childrenFlipper.getFront();
         });
       }
@@ -333,6 +337,7 @@ public class MetaNode {
 
   public static MetaNode createRoot(Supplier<Renderable> component) {
     return new MetaNode(null, Node.builder()
+      // TODO: implement and use empty layout eliding
       .layout(yoga -> {
         Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
         Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
@@ -341,8 +346,20 @@ public class MetaNode {
       .buildNode());
   }
 
-  public static MetaNode createNode(MetaNode parent, Node node) {
-    return metaNodes.computeIfAbsent(node, n -> new MetaNode(parent, node));
+  public static MetaNode create(MetaNode parent, Node node) {
+    WeakReference<MetaNode> maybeMeta = metaNodeRegistry.get(node);
+    if (maybeMeta != null) {
+      MetaNode meta = maybeMeta.get();
+      if (meta == null) {
+        meta = new MetaNode(parent, node);
+        metaNodeRegistry.put(node, new WeakReference<>(meta));
+      }
+      return meta;
+    } else {
+      MetaNode meta = new MetaNode(parent, node);
+      metaNodeRegistry.put(node, new WeakReference<>(meta));
+      return meta;
+    }
   }
 
   public record MetaChild(Node node, MetaNode meta) { }
