@@ -18,7 +18,7 @@ public class CustomLayout implements Renderable {
     public Nodes render() {
         return Node.builder()
                 .layout(Flex.builder().stretch().build())
-                .children(Nodes.forEach(() -> children.stream().toList(), (n, idx) ->
+                .children(Nodes.forEach(() -> children.getNodeList().stream().toList(), (n, idx) ->
                         Node.builder()
                                 .children(Nodes.fixed(n))
                                 .build())
