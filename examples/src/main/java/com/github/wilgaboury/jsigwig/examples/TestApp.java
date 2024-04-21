@@ -82,6 +82,7 @@ public class TestApp implements Renderable {
                 .build())
               .children(
                 Button.builder()
+                  .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
                   .setChildren(InterFontUtil.createButtonText("Increase"))

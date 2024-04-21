@@ -60,7 +60,7 @@ public class SiguiUtil {
 
   public static void createEffectLater(Runnable runnable) {
     Provider provider = Provider.get();
-    SiguiThread.invokeLater(() -> provider.provide(() -> Effect.create(runnable)));
+    SiguiWindow.context.use().postFrame(() -> provider.provide(() -> Effect.create(runnable)));
   }
 
   public static Window createWindow() {

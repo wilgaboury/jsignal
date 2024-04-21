@@ -45,10 +45,9 @@ public interface Node {
     private Function<Node, MetaNode> toMeta = MetaNode::new;
     private Consumer<MetaNode> reference = n -> {};
     private Nodes children = Nodes.empty();
-    private Layouter layout = (layout) -> {};
-    private Transformer transformer = (layout) -> Matrix33.IDENTITY;
-    private Painter paint = (canvas, layout) -> {};
-    private Painter paintAfter = (canvas, layout) -> {};
+    private Layouter layout = null;
+    private Transformer transformer = null;
+    private Painter paint = null;
 
     public Builder toMeta(Function<Node, MetaNode> toMeta) {
       this.toMeta = toMeta;
@@ -85,11 +84,6 @@ public interface Node {
       return this;
     }
 
-    public Builder paintAfter(Painter paintAfter) {
-      this.paintAfter = paintAfter;
-      return this;
-    }
-
     public Node buildNode() {
       return new Composed(this);
     }
@@ -106,7 +100,6 @@ public interface Node {
     private final Layouter layout;
     private final Transformer transformer;
     private final Painter paint;
-    private final Painter paintAfter;
 
     public Composed(Builder builder) {
       this.toMeta = builder.toMeta;
@@ -115,7 +108,6 @@ public interface Node {
       this.layout = builder.layout;
       this.transformer = builder.transformer;
       this.paint = builder.paint;
-      this.paintAfter = builder.paintAfter;
     }
 
     @Override

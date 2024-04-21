@@ -128,6 +128,14 @@ public class SiguiWindow {
     handleMouseMove(mousePosition.get());
   }
 
+  public void preFrame(Runnable runnable) {
+    preFrame.add(runnable);
+  }
+
+  public void postFrame(Runnable runnable) {
+    postFrame.add(runnable);
+  }
+
   void handleEvent(io.github.humbleui.jwm.Event event) {
     switch (event) {
       case EventWindowCloseRequest e -> close();

@@ -5,6 +5,8 @@ import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
 import io.github.humbleui.jwm.Key;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
@@ -111,7 +113,10 @@ public class Scroll implements Renderable {
       )
       .children(
         Node.builder()
-          .ref(content::set)
+          .ref(meta -> {
+            content.set(meta);
+            meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
+          })
           .layout(yoga -> {
             // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
             if (shouldShowSidebar.get()) {

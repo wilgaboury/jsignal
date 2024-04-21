@@ -12,133 +12,133 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class Effect implements EffectLike {
-    static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
-    protected static final AtomicInteger nextId = new AtomicInteger(0);
+  public static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
+  protected static final AtomicInteger nextId = new AtomicInteger(0);
 
-    protected final int id;
-    protected final Runnable effect;
-    protected final Cleanups cleanups;
-    protected final Provider provider;
-    protected final ThreadBound threadBound;
-    protected final Flipper<Set<SignalLike<?>>> signals;
-    protected boolean disposed;
+  protected final int id;
+  protected final Runnable effect;
+  protected final Cleanups cleanups;
+  protected final Provider provider;
+  protected final ThreadBound threadBound;
+  protected final Flipper<Set<SignalLike<?>>> signals;
+  protected boolean disposed;
 
-    public Effect(Runnable effect, boolean isSync) {
-        this.id = nextId();
-        this.effect = effect;
-        this.cleanups = Cleanups.create();
-        this.provider = Provider.get().add(
-                Cleanups.context.with(Optional.of(cleanups)),
-                context.with(Optional.of(this))
-        );
-        this.threadBound = new ThreadBound(isSync);
-        this.signals = new Flipper<>(HashSet::new);
-        this.disposed = false;
+  public Effect(Runnable effect, boolean isSync) {
+    this.id = nextId();
+    this.effect = effect;
+    this.cleanups = Cleanups.create();
+    this.provider = Provider.get().add(
+      Cleanups.context.with(Optional.of(cleanups)),
+      context.with(Optional.of(this))
+    );
+    this.threadBound = new ThreadBound(isSync);
+    this.signals = new Flipper<>(HashSet::new);
+    this.disposed = false;
 
-        Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
+    Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
+  }
+
+  /**
+   * This method should only be called inside of implementations of {@link SignalLike#track()}
+   */
+  @Override
+  public void onTrack(SignalLike<?> signal) {
+    signals.getFront().add(signal);
+  }
+
+  /**
+   * This method should only be called inside of implementations of {@link SignalLike#untrack()}
+   */
+  @Override
+  public void onUntrack(SignalLike<?> signal) {
+    signals.getFront().remove(signal);
+  }
+
+  @Override
+  public int getId() {
+    return id;
+  }
+
+  public @Nullable Long getThreadId() {
+    return threadBound.getThreadId();
+  }
+
+  @Override
+  public void dispose() {
+    threadBound.maybeSynchronize(() -> {
+      if (disposed)
+        return;
+
+      disposed = true;
+      clear();
+    });
+  }
+
+  @Override
+  public boolean isDisposed() {
+    return threadBound.maybeSynchronize(() -> disposed);
+  }
+
+  @Override
+  public void run() {
+    run(effect);
+  }
+
+  protected void run(Runnable inner) {
+    threadBound.maybeSynchronize(() -> {
+      if (disposed)
+        return;
+
+      batch(() -> provider.provide(() -> {
+        clear();
+        inner.run();
+      }));
+    });
+  }
+
+  protected void clear() {
+    signals.flip();
+    try {
+      for (var signal : signals.getBack()) {
+        signal.untrack();
+      }
+    } finally {
+      signals.getBack().clear();
     }
 
-    /**
-     * This method should only be called inside of implementations of {@link SignalLike#track()}
-     */
-    @Override
-    public void onTrack(SignalLike<?> signal) {
-        signals.getFront().add(signal);
-    }
+    cleanups.run();
+  }
 
-    /**
-     * This method should only be called inside of implementations of {@link SignalLike#untrack()}
-     */
-    @Override
-    public void onUntrack(SignalLike<?> signal) {
-        signals.getFront().remove(signal);
-    }
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this)
+      return true;
 
-    @Override
-    public int getId() {
-        return id;
-    }
+    else if (!(obj instanceof Effect))
+      return false;
 
-    public @Nullable Long getThreadId() {
-        return threadBound.getThreadId();
-    }
+    Effect that = (Effect) obj;
+    return this.id == that.id;
+  }
 
-    @Override
-    public void dispose() {
-        threadBound.maybeSynchronize(() -> {
-            if (disposed)
-                return;
+  @Override
+  public int hashCode() {
+    return id;
+  }
 
-            disposed = true;
-            clear();
-        });
-    }
+  public static int nextId() {
+    return nextId.getAndIncrement();
+  }
 
-    @Override
-    public boolean isDisposed() {
-        return threadBound.maybeSynchronize(() -> disposed);
-    }
+  public static Effect create(Runnable runnable) {
+    var effect = new Effect(runnable, true);
+    effect.run();
+    return effect;
+  }
 
-    @Override
-    public void run() {
-        run(effect);
-    }
-
-    protected void run(Runnable inner) {
-        threadBound.maybeSynchronize(() -> {
-            if (disposed)
-                return;
-
-            batch(() -> provider.provide(() -> {
-                clear();
-                inner.run();
-            }));
-        });
-    }
-
-    private void clear() {
-        signals.flip();
-        try {
-            for (var signal : signals.getBack()) {
-                signal.untrack();
-            }
-        } finally {
-            signals.getBack().clear();
-        }
-
-        cleanups.run();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this)
-            return true;
-
-        else if (!(obj instanceof Effect))
-            return false;
-
-        Effect that = (Effect) obj;
-        return this.id == that.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return id;
-    }
-
-    public static int nextId() {
-        return nextId.getAndIncrement();
-    }
-
-    public static Effect create(Runnable runnable) {
-        var effect = new Effect(runnable, true);
-        effect.run();
-        return effect;
-    }
-
-    public static Effect createAsync(Runnable runnable) {
-        var effect = new Effect(runnable, false);
-        effect.run();
-        return effect;
-    }
+  public static Effect createAsync(Runnable runnable) {
+    var effect = new Effect(runnable, false);
+    effect.run();
+    return effect;
+  }
 }

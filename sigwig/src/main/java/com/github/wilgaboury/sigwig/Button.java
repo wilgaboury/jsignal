@@ -8,10 +8,12 @@ import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @SiguiComponent
 public class Button implements Renderable {
+  private final Consumer<MetaNode> ref;
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
@@ -21,6 +23,7 @@ public class Button implements Renderable {
   private final Signal<Boolean> mouseDown = Signal.create(false);
 
   public Button(Builder builder) {
+    this.ref = builder.ref;
     this.color = builder.color;
     this.size = builder.size;
     this.action = builder.action;
@@ -30,21 +33,24 @@ public class Button implements Renderable {
   @Override
   public Nodes render() {
     return Node.builder()
-      .ref(node -> node.listen(
-        EventListener.onMouseOver(e -> mouseOver.accept(true)),
-        EventListener.onMouseDown(e -> mouseDown.accept(true)),
-        EventListener.onMouseOut(e -> {
-          mouseDown.accept(false);
-          mouseOver.accept(false);
-        }),
-        EventListener.onMouseUp(e -> {
-          var prev = mouseDown.get();
-          mouseDown.accept(false);
-          if (prev) {
-            action.get().run();
-          }
-        })
-      ))
+      .ref(meta -> {
+        ref.accept(meta);
+        meta.listen(
+          EventListener.onMouseOver(e -> mouseOver.accept(true)),
+          EventListener.onMouseDown(e -> mouseDown.accept(true)),
+          EventListener.onMouseOut(e -> {
+            mouseDown.accept(false);
+            mouseOver.accept(false);
+          }),
+          EventListener.onMouseUp(e -> {
+            var prev = mouseDown.get();
+            mouseDown.accept(false);
+            if (prev) {
+              action.get().run();
+            }
+          })
+        );
+      })
       .layout(this::layout)
       .paint(this::paint)
       .children(children.get(this::textSize, () -> ColorUtil.contrastText(color.get())))
@@ -129,10 +135,16 @@ public class Button implements Renderable {
   }
 
   public static class Builder {
+    private Consumer<MetaNode> ref = ignored -> {};
     private Supplier<Integer> color = () -> EzColors.BLUE_400;
     private Supplier<Size> size = () -> Size.MD;
     private Supplier<Runnable> action = () -> () -> {};
     private Children children = Children.empty();
+
+    public Builder ref(Consumer<MetaNode> ref) {
+      this.ref = ref;
+      return this;
+    }
 
     public Supplier<Integer> getColor() {
       return color;
