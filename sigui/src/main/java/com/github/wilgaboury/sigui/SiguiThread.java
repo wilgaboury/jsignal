@@ -1,6 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.JSignalUtil;
 import io.github.humbleui.jwm.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

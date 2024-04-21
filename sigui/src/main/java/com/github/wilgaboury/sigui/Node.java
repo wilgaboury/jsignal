@@ -1,8 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.sigui.paint.NullPaintCacheStrategy;
-import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
-import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
@@ -10,7 +7,6 @@ import io.github.humbleui.types.Rect;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * The primary layout and rendering primitive of Sigui
@@ -20,35 +16,25 @@ public interface Node {
     return new MetaNode(this);
   }
 
-  default Nodes children() {
+  default Nodes getChildren() {
     return Nodes.empty();
   }
 
-  default void layout(long yoga) {
+  default Layouter getLayouter() {
+    return null;
   }
 
-  default void paint(Canvas canvas, MetaNode node) {
+  default Transformer getTransformer() {
+    return null;
   }
 
-  default void paintAfter(Canvas canvas, MetaNode node) {
-  }
-
-  default PaintCacheStrategy paintCache() {
-    return new NullPaintCacheStrategy();
-  }
-
-  default Matrix33 transform(MetaNode node) {
-    return Matrix33.IDENTITY;
+  default Painter getPainter() {
+    return null;
   }
 
   // coordinates are in "paint space" for ease of calculation
   default boolean hitTest(Point p, MetaNode node) {
     return MathUtil.contains(Rect.makeWH(node.getLayout().getSize()), p);
-  }
-
-  @FunctionalInterface
-  interface Transformer {
-    Matrix33 transform(MetaNode node);
   }
 
   static Builder builder() {
@@ -140,28 +126,23 @@ public interface Node {
     }
 
     @Override
-    public Nodes children() {
+    public Nodes getChildren() {
       return children;
     }
 
     @Override
-    public void layout(long yoga) {
-      layout.layout(yoga);
+    public Layouter getLayouter() {
+      return layout;
     }
 
     @Override
-    public Matrix33 transform(MetaNode node) {
-      return transformer.transform(node);
+    public Transformer getTransformer() {
+      return transformer;
     }
 
     @Override
-    public void paint(Canvas canvas, MetaNode node) {
-      paint.paint(canvas, node);
-    }
-
-    @Override
-    public void paintAfter(Canvas canvas, MetaNode node) {
-      paintAfter.paint(canvas, node);
+    public Painter getPainter() {
+      return paint;
     }
   }
 }

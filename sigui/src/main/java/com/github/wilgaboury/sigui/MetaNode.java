@@ -23,7 +23,11 @@ public class MetaNode {
   private final SiguiWindow window;
 
   private @Nullable MetaNode parent;
+
   private final Node node;
+  private final @Nullable Painter painter;
+  private final @Nullable Transformer transformer;
+  private final @Nullable Layouter layouter;
 
   private final long yoga;
   private final Layout layout;
@@ -35,7 +39,7 @@ public class MetaNode {
 
   private final SideEffect paintEffect;
   private final SideEffect transformEffect;
-  private final Effect layoutEffect; // unused
+  private final Effect layoutEffect; // unused, strong ref
 
   private PaintCacheStrategy paintCacheStrategy;
 
@@ -46,6 +50,9 @@ public class MetaNode {
 
     this.parent = parentContext.use();
     this.node = node;
+    this.painter = node.getPainter();
+    this.transformer = node.getTransformer();
+    this.layouter = node.getLayouter();
 
     this.yoga = Yoga.YGNodeNew();
     this.layout = new Layout(yoga);
@@ -58,9 +65,9 @@ public class MetaNode {
 
     Cleanups.onCleanup(this::cleanup);
 
-    this.paintEffect = SideEffect.create(this::paintEffectInner);
-    this.transformEffect = SideEffect.create(this::transformEffectInner);
-    this.layoutEffect = Effect.create(this::layoutEffectInner);
+    this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
+    this.transformEffect = transformer != null ? SideEffect.create(this::transformEffectInner) : null;
+    this.layoutEffect = layouter != null ? Effect.create(this::layoutEffectInner) : null;
 
     this.children = createChildren();
   }
@@ -82,6 +89,8 @@ public class MetaNode {
   }
 
   private void transformEffectInner() {
+    assert parent != null;
+
     parent.setPaintDirty();
     window.requestTransformUpdate();
   }
@@ -100,7 +109,7 @@ public class MetaNode {
     this.paintCacheStrategy = paintCacheStrategy;
   }
 
-  public void id(String id) {
+  public void setId(String id) {
     window.getNodeRegistry().removeNodeId(this);
     this.id = id;
     window.getNodeRegistry().addNodeId(this);
@@ -110,7 +119,7 @@ public class MetaNode {
     return id;
   }
 
-  public void tags(String... tags) {
+  public void setTags(String... tags) {
     window.getNodeRegistry().removeNodeTags(this);
     this.tags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(tags)));
     window.getNodeRegistry().addNodeTags(this);
@@ -121,37 +130,42 @@ public class MetaNode {
   }
 
   void paint(Canvas canvas) {
-    if (parent == null) {
-      for (MetaNode child : getChildren()) {
-        child.paint(canvas);
-      }
-      return;
-    }
-
-
     var count = canvas.save();
     try {
-      transformEffect.run(() -> canvas.concat(getTransform()));
+      if (transformer != null) {
+        transformEffect.run(() -> canvas.concat(getTransform()));
+      }
+
+      if (painter == null) {
+        paintChildren(canvas);
+        return;
+      }
 
       paintCacheStrategy.paint(canvas, this, cacheCanvas -> {
-        paintEffect.run(() -> node.paint(cacheCanvas, this));
-        for (MetaNode child : getChildren()) {
-          child.paint(cacheCanvas);
-        }
+        paintEffect.run(() -> painter.paint(cacheCanvas, this));
+        paintChildren(canvas);
       });
     } finally {
       canvas.restoreToCount(count);
     }
   }
 
+  private void paintChildren(Canvas canvas) {
+    for (MetaNode child : getChildren()) {
+      child.paint(canvas);
+    }
+  }
+
   private void layoutEffectInner() {
+    assert layouter != null;
+
     SiguiUtil.clearNodeStyle(yoga);
-    node.layout(yoga);
+    layouter.layout(yoga);
     window.requestLayout();
   }
 
   private Supplier<List<MetaNode>> createChildren() {
-    var children = node.children();
+    var children = node.getChildren();
 
     return switch (children) {
       case Nodes.Fixed fixed -> {
@@ -221,8 +235,10 @@ public class MetaNode {
   }
 
   public Matrix33 getTransform() {
+    assert transformer != null;
+
     var offset = layout.getParentOffset();
-    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(node.transform(this));
+    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transformer.transform(this));
   }
 
   public Matrix33 getFullTransform() {

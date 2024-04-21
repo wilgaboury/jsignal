@@ -89,10 +89,10 @@ public class Scroll implements Renderable {
     });
 
     return Node.builder()
-      .ref(node -> {
-        view.set(node);
-        node.tags("scroller-parent");
-        node.listen(
+      .ref(meta -> {
+        view.set(meta);
+        meta.setTags("scroller-parent");
+        meta.listen(
           EventListener.onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
           EventListener.onKeyDown(e -> {
             if (e.getEvent().getKey() == Key.DOWN) {
