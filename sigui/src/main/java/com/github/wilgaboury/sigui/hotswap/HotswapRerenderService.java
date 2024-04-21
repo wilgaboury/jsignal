@@ -1,6 +1,9 @@
 package com.github.wilgaboury.sigui.hotswap;
 
+import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.SiguiThread;
+import com.github.wilgaboury.sigui.SiguiUtil;
+import com.github.wilgaboury.sigui.SiguiWindow;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,6 +38,23 @@ public class HotswapRerenderService {
             for (HotswapComponent component : rerenderComponents) {
                 component.getRerender().trigger();
             }
+
+            for (SiguiWindow window : SiguiWindow.getWindows()) {
+                setAllDirty(window.getRoot());
+                window.requestTransformUpdate();
+                window.requestLayout();
+            }
         });
+    }
+
+    private static void setAllDirty(MetaNode meta) {
+        meta.getPaintCacheStrategy().markDirty();
+        meta.getLayouter().ifPresent(layouter -> {
+            SiguiUtil.clearNodeStyle(meta.getYoga());
+            layouter.layout(meta.getYoga());
+        });
+        for (MetaNode child : meta.getChildren()) {
+            setAllDirty(child);
+        }
     }
 }

@@ -91,12 +91,13 @@ public class SiguiWindow {
   }
 
   private void layout() {
-    // this loop is a somewhat hacky (elegant?) way to get around layout updates that rely on previous layout updates
+    // this loop is a somewhat hacky (elegant?) way to get around reactive layout updates
     while (shouldLayout && window != null) {
       shouldLayout = false;
       var rect = window.getContentRect();
       Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
       batch(root::updateLayout);
+      transformUpdate();
     }
   }
 

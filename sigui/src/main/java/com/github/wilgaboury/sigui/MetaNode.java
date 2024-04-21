@@ -4,7 +4,10 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
-import com.github.wilgaboury.sigui.paint.*;
+import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
+import com.github.wilgaboury.sigui.paint.UseMetaNode;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
@@ -106,10 +109,18 @@ public class MetaNode {
     });
   }
 
+  public PaintCacheStrategy getPaintCacheStrategy() {
+    return paintCacheStrategy;
+  }
+
   public void setPaintCacheStrategy(PaintCacheStrategy paintCacheStrategy) {
     this.paintCacheStrategy = paintCacheStrategy;
     paintCacheEffect.run(() -> {});
     paintEffectInner();
+  }
+
+  public Optional<Layouter> getLayouter() {
+    return Optional.ofNullable(layouter);
   }
 
   public void setId(String id) {
