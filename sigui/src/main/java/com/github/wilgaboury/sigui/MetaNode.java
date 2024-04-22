@@ -19,12 +19,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.JSignalUtil.onDefer;
+
 public class MetaNode {
   public static final Context<MetaNode> parentContext = Context.create(null);
 
   private final SiguiWindow window;
 
-  private @Nullable MetaNode parent;
+  private final @Nullable MetaNode parent;
 
   private final Node node;
   private final @Nullable Painter painter;
@@ -50,12 +52,13 @@ public class MetaNode {
 
   public MetaNode(Node node) {
     this.window = SiguiWindow.context.use();
-
     this.parent = parentContext.use();
+
     this.node = node;
     this.painter = node.getPainter();
     this.transformer = node.getTransformer() != null ? node.getTransformer() : n -> Matrix33.IDENTITY;
     this.layouter = node.getLayouter();
+    var nodeChildren = node.getChildren();
 
     this.yoga = Yoga.YGNodeNew();
     this.layout = new Layout(yoga);
@@ -66,14 +69,12 @@ public class MetaNode {
 
     this.paintCacheStrategy = new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new);
 
-    Cleanups.onCleanup(this::cleanup);
-
     this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
     this.paintCacheEffect = SideEffect.create(this::paintEffectInner);
     this.transformEffect = SideEffect.create(this::transformEffectInner);
     this.layoutEffect = layouter != null ? Effect.create(this::layoutEffectInner) : null;
 
-    this.children = createChildren();
+    this.children = createChildren(nodeChildren);
   }
 
   private void cleanup() {
@@ -180,40 +181,32 @@ public class MetaNode {
     window.requestLayout();
   }
 
-  private Supplier<List<MetaNode>> createChildren() {
-    var children = node.getChildren();
-
+  private Supplier<List<MetaNode>> createChildren(Nodes children) {
     return switch (children) {
       case Nodes.Fixed fixed -> {
-        Ref<Integer> i = new Ref<>(0);
-        yield Constant.of(fixed.getNodeList().stream().map(n -> {
-          var meta = parentContext.with(this).provide(n::toMeta);
-          Yoga.YGNodeInsertChild(yoga, meta.yoga, i.get());
-          i.set(i.get() + 1);
-          return meta;
-        }).toList());
+        var nodes = fixed.getNodeList();
+        List<MetaNode> result = new ArrayList<>(nodes.size());
+        for (int i = 0; i < nodes.size(); i++) {
+          var node = nodes.get(i);
+          var meta = parentContext.with(this).provide(node::toMeta);
+          Yoga.YGNodeInsertChild(yoga, meta.yoga, i);
+          result.add(meta);
+        }
+        yield Constant.of(result);
       }
-      case Nodes.Dynamic dynamic -> {
-        final Flipper<List<MetaNode>> childrenFlipper = new Flipper<>(ArrayList::new);
-        yield Computed.create(() -> {
-          Cleanups.onCleanup(() -> {
-            childrenFlipper.flip();
-            Yoga.YGNodeRemoveAllChildren(yoga);
-          });
-          var list = dynamic.getNodeList();
-          for (int i = 0; i < list.size(); i++) {
-            var n = list.get(i);
-            var child = parentContext.with(this).provide(n::toMeta);
-            childrenFlipper.getFront().add(child);
-            Yoga.YGNodeInsertChild(yoga, child.yoga, i);
-          }
-          childrenFlipper.getBack().clear();
+      case Nodes.Dynamic dynamic -> JSignalUtil.createMapped(dynamic::getNodeList, (node, idx) -> {
+        var meta = parentContext.with(this).provide(node::toMeta);
 
+        Yoga.YGNodeInsertChild(yoga, meta.yoga, idx.get());
+        Cleanups.onCleanup(() -> Yoga.YGNodeRemoveChild(yoga, meta.yoga));
+        Effect.create(onDefer(idx, (cur) -> {
+          Yoga.YGNodeRemoveChild(yoga, meta.yoga);
+          Yoga.YGNodeInsertChild(yoga, meta.yoga, cur);
           window.requestLayout();
+        }));
 
-          return childrenFlipper.getFront();
-        });
-      }
+        return meta;
+      });
     };
   }
 
@@ -267,10 +260,6 @@ public class MetaNode {
 
   public @Nullable MetaNode getParent() {
     return parent;
-  }
-
-  public void setParent(@Nullable MetaNode parent) {
-    this.parent = parent;
   }
 
   public Collection<MetaNode> getParents() {
@@ -359,7 +348,6 @@ public class MetaNode {
 
   public static MetaNode createRoot(Supplier<Renderable> component) {
     return new MetaNode(Node.builder()
-      // TODO: implement and use empty layout eliding
       .layout(yoga -> {
         Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
         Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);

@@ -47,8 +47,8 @@ public class SiguiWindow {
     this.preFrame = new ArrayDeque<>();
     this.postFrame = new ArrayDeque<>();
 
-    this.shouldLayout = false;
-    this.shouldPaint = false;
+    this.shouldLayout = true;
+    this.shouldPaint = true;
     this.shouldTransformUpdate = false;
 
     windows.add(this);

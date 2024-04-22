@@ -13,8 +13,8 @@ public class Animation {
   private boolean queued;
   private Signal<Boolean> isRunning;
 
-  public Animation(SiguiWindow window, Callback callback) {
-    this.window = window;
+  public Animation(Callback callback) {
+    this.window = SiguiWindow.context.use();
     this.callback = callback;
     queued = false;
     isRunning = Signal.create(false);
@@ -57,7 +57,7 @@ public class Animation {
     }
 
     if (isRunning.get()) {
-      SiguiThread.queueMicrotask(() -> {
+      window.postFrame(() -> {
         window.preFrame(this::run);
         window.requestFrame();
       });

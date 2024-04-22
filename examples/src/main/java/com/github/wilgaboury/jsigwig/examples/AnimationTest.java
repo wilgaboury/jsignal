@@ -34,7 +34,7 @@ public class AnimationTest implements Renderable {
 
   @Override
   public Nodes render() {
-    var animation = new Animation(SiguiWindow.context.use(), deltaTimeNano ->
+    var animation = new Animation(deltaTimeNano ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
     return Node.builder()
