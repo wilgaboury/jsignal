@@ -33,10 +33,18 @@ public class YogaLayoutConfig implements LayoutConfig {
   @Override
   public void setMeasure(Measure measure) {
     YGNodeSetMeasureFunc(node, (n, width, widthMode, height, heightMode, __result) -> {
-      var result = measure.invoke(width, widthMode, height, heightMode);
+      var result = measure.invoke(width, translateMeasureMode(widthMode), height, translateMeasureMode(heightMode));
       __result.width(result.width());
       __result.height(result.height());
     });
+  }
+
+  private MeasureMode translateMeasureMode(int mode) {
+    return switch (mode) {
+      case YGMeasureModeExactly -> MeasureMode.EXACTLY;
+      case YGMeasureModeAtMost -> MeasureMode.AT_MOST;
+      default -> MeasureMode.UNDEFINED;
+    };
   }
 
   @Override

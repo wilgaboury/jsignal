@@ -11,8 +11,6 @@ import io.github.humbleui.skija.paragraph.Paragraph;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.maybeComputed;
-import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
-import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class Para implements Renderable {
@@ -30,18 +28,13 @@ public class Para implements Renderable {
   public Nodes render() {
     return Node.builder()
       .layout(config -> {
-        config.setMaxHeight(percent(100f));
+        var p = para.get();
         config.setMeasure((width, widthMode, height, heightMode) -> {
-          var p = para.get();
           p.layout(width);
-          config.setMinWidth(pixel(p.getMinIntrinsicWidth()));
-          return new LayoutConfig.Size(p.getMaxIntrinsicWidth(), p.getHeight());
+          return new LayoutConfig.Size(width, p.getHeight());
         });
       })
-      .paint((canvas, node) -> {
-        var p = para.get();
-        p.paint(canvas, 0f, 0f);
-      })
+      .paint((canvas, node) -> para.get().paint(canvas, 0f, 0f))
       .build();
   }
 }

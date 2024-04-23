@@ -37,7 +37,13 @@ public interface LayoutConfig {
 
   @FunctionalInterface
   interface Measure {
-    Size invoke(float width, int widthMode, float height, int heightMode);
+    Size invoke(float width, MeasureMode widthMode, float height, MeasureMode heightMode);
+  }
+
+  public enum MeasureMode {
+    UNDEFINED,
+    EXACTLY,
+    AT_MOST
   }
 
   record Size(float width, float height) {}
