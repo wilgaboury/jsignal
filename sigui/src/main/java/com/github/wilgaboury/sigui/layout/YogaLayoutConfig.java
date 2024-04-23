@@ -3,6 +3,8 @@ package com.github.wilgaboury.sigui.layout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.github.wilgaboury.sigui.layout.LayoutValue.Percent;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.Pixel;
 import static org.lwjgl.util.yoga.Yoga.*;
 
 public class YogaLayoutConfig implements LayoutConfig {
@@ -175,13 +177,11 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setBasis(float basis) {
-    YGNodeStyleSetFlexBasis(node, basis);
-  }
-
-  @Override
-  public void setBasisPercent(float basis) {
-    YGNodeStyleSetFlexBasisPercent(node, basis);
+  public void setBasis(LayoutValue basis) {
+    switch (basis) {
+      case Pixel p -> YGNodeStyleSetFlexBasis(node, p.value());
+      case Percent p -> YGNodeStyleSetFlexBasisPercent(node, p.value());
+    }
   }
 
   @Override
@@ -190,23 +190,19 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setPosition(Edge edge, float position) {
-    YGNodeStyleSetPosition(node, translateEdge(edge), position);
+  public void setPosition(Edge edge, LayoutValue position) {
+    switch (position) {
+      case Pixel p -> YGNodeStyleSetPosition(node, translateEdge(edge), p.value());
+      case Percent p -> YGNodeStyleSetPositionPercent(node, translateEdge(edge), p.value());
+    }
   }
 
   @Override
-  public void setPositionPercent(Edge edge, float position) {
-    YGNodeStyleSetPositionPercent(node, translateEdge(edge), position);
-  }
-
-  @Override
-  public void setMargin(Edge edge, float margin) {
-    YGNodeStyleSetMargin(node, translateEdge(edge), margin);
-  }
-
-  @Override
-  public void setMarginPercent(Edge edge, float margin) {
-    YGNodeStyleSetMarginPercent(node, translateEdge(edge), margin);
+  public void setMargin(Edge edge, LayoutValue margin) {
+    switch (margin) {
+      case Pixel p -> YGNodeStyleSetMargin(node, translateEdge(edge), p.value());
+      case Percent p -> YGNodeStyleSetMarginPercent(node, translateEdge(edge), p.value());
+    }
   }
 
   @Override
@@ -215,13 +211,11 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setPadding(Edge edge, float padding) {
-    YGNodeStyleSetPadding(node, translateEdge(edge), padding);
-  }
-
-  @Override
-  public void setPaddingPercent(Edge edge, float padding) {
-    YGNodeStyleSetPaddingPercent(node, translateEdge(edge), padding);
+  public void setPadding(Edge edge, LayoutValue padding) {
+    switch (padding) {
+      case Pixel p -> YGNodeStyleSetPadding(node, translateEdge(edge), p.value());
+      case Percent p -> YGNodeStyleSetPaddingPercent(node, translateEdge(edge), p.value());
+    }
   }
 
   @Override
@@ -257,13 +251,11 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setWidth(float width) {
-    YGNodeStyleSetWidth(node, width);
-  }
-
-  @Override
-  public void setWidthPercent(float width) {
-    YGNodeStyleSetWidthPercent(node, width);
+  public void setWidth(LayoutValue width) {
+    switch (width) {
+      case Pixel p -> YGNodeStyleSetWidth(node, p.value());
+      case Percent p -> YGNodeStyleSetWidthPercent(node, p.value());
+    }
   }
 
   @Override
@@ -272,13 +264,11 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setHeight(float height) {
-    YGNodeStyleSetHeight(node, height);
-  }
-
-  @Override
-  public void setHeightPercent(float height) {
-    YGNodeStyleSetHeightPercent(node, height);
+  public void setHeight(LayoutValue height) {
+    switch (height) {
+      case Pixel p -> YGNodeStyleSetHeight(node, p.value());
+      case Percent p -> YGNodeStyleSetHeightPercent(node, p.value());
+    }
   }
 
   @Override
@@ -287,43 +277,37 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setMinWidth(float minWidth) {
-    YGNodeStyleSetMinWidth(node, minWidth);
+  public void setMinWidth(LayoutValue minWidth) {
+    switch (minWidth) {
+      case Pixel p -> YGNodeStyleSetMinWidth(node, p.value());
+      case Percent p -> YGNodeStyleSetMinWidthPercent(node, p.value());
+
+    }
   }
 
   @Override
-  public void setMinWidthPercent(float minWidth) {
-    YGNodeStyleSetMinWidthPercent(node, minWidth);
+  public void setMaxWidth(LayoutValue maxWidth) {
+    switch (maxWidth) {
+      case Pixel p -> YGNodeStyleSetMaxWidth(node, p.value());
+      case Percent p -> YGNodeStyleSetMaxWidthPercent(node, p.value());
+    }
+
   }
 
   @Override
-  public void setMaxWidth(float maxWidth) {
-    YGNodeStyleSetMaxWidth(node, maxWidth);
+  public void setMinHeight(LayoutValue minHeight) {
+    switch (minHeight) {
+      case Pixel p -> YGNodeStyleSetMinHeight(node, p.value());
+      case Percent p -> YGNodeStyleSetMinHeightPercent(node, p.value());
+    }
   }
 
   @Override
-  public void setMaxWidthPercent(float maxWidth) {
-    YGNodeStyleSetMaxWidthPercent(node, maxWidth);
-  }
-
-  @Override
-  public void setMinHeight(float minHeight) {
-    YGNodeStyleSetMinHeight(node, minHeight);
-  }
-
-  @Override
-  public void setMinHeightPercent(float minHeight) {
-    YGNodeStyleSetMinHeightPercent(node, minHeight);
-  }
-
-  @Override
-  public void setMaxHeight(float maxHeight) {
-    YGNodeStyleSetMaxHeight(node, maxHeight);
-  }
-
-  @Override
-  public void setMaxHeightPercent(float maxHeight) {
-    YGNodeStyleSetMaxHeightPercent(node, maxHeight);
+  public void setMaxHeight(LayoutValue maxHeight) {
+    switch (maxHeight) {
+      case Pixel p -> YGNodeStyleSetMaxHeight(node, p.value());
+      case Percent p -> YGNodeStyleSetMaxHeightPercent(node, p.value());
+    }
   }
 
   @Override

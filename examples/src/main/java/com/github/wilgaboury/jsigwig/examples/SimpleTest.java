@@ -2,6 +2,7 @@ package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
+import com.github.wilgaboury.sigui.layout.LayoutValue;
 import com.github.wilgaboury.sigwig.*;
 import com.github.wilgaboury.sigwig.text.Para;
 import com.github.wilgaboury.sigwig.text.TextLine;
@@ -10,6 +11,8 @@ import io.github.humbleui.skija.Color;
 
 import java.util.Random;
 
+import static com.github.wilgaboury.sigui.layout.Insets.insets;
+
 @SiguiComponent
 public class SimpleTest implements Renderable {
   private static final String LOREM =
@@ -17,6 +20,7 @@ public class SimpleTest implements Renderable {
 
   private static final Blob penguin;
   private static final Blob fire;
+
   static {
     try {
       penguin = Blob.fromResource("/peng.png", MediaType.PNG);
@@ -48,12 +52,12 @@ public class SimpleTest implements Renderable {
       .setChildren(
         Node.builder()
           .layout(Flex.builder()
-            .stretch()
+            .fitParent()
             .center()
             .border(10f)
             .column()
             .gap(16f)
-            .padding(new Insets(25f))
+            .padding(insets(25f))
             .widthPercent(100f)
             .build()
           )
