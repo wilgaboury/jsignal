@@ -5,7 +5,6 @@ import com.github.wilgaboury.sigui.layout.Insets;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigui.layout.LayoutValue;
 import com.github.wilgaboury.sigui.layout.Layouter;
-import org.lwjgl.util.yoga.Yoga;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,58 +137,62 @@ public class Flex implements Layouter {
       return this;
     }
 
-    public Builder top(float top) {
-      this.top = new MaybePercent<>(false, top);
+    public Builder top(LayoutValue top) {
+      return top(Constant.of(top));
+    }
+
+    public Builder top(Supplier<LayoutValue> top) {
+      operations.add(config -> config.setPosition(LayoutConfig.Edge.TOP, top.get()));
       return this;
     }
 
-    public Builder right(float right) {
-      this.right = new MaybePercent<>(false, right);
+    public Builder right(LayoutValue right) {
+      return right(Constant.of(right));
+    }
+
+    public Builder right(Supplier<LayoutValue> right) {
+      operations.add(config -> config.setPosition(LayoutConfig.Edge.RIGHT, right.get()));
       return this;
     }
 
-    public Builder bottom(float bottom) {
-      this.bottom = new MaybePercent<>(false, bottom);
+    public Builder bottom(LayoutValue bottom) {
+      return bottom(Constant.of(bottom));
+    }
+
+    public Builder bottom(Supplier<LayoutValue> bottom) {
+      operations.add(config -> config.setPosition(LayoutConfig.Edge.BOTTOM, bottom.get()));
       return this;
     }
 
-    public Builder left(float left) {
-      this.left = new MaybePercent<>(false, left);
-      return this;
+    public Builder left(LayoutValue left) {
+      return left(Constant.of(left));
     }
 
-    public Builder topPercent(float top) {
-      this.top = new MaybePercent<>(true, top);
-      return this;
-    }
-
-    public Builder rightPercent(float right) {
-      this.right = new MaybePercent<>(true, right);
-      return this;
-    }
-
-    public Builder bottomPercent(float bottom) {
-      this.bottom = new MaybePercent<>(true, bottom);
-      return this;
-    }
-
-    public Builder leftPercent(float left) {
-      this.left = new MaybePercent<>(true, left);
+    public Builder left(Supplier<LayoutValue> left) {
+      operations.add(config -> config.setPosition(LayoutConfig.Edge.LEFT, left.get()));
       return this;
     }
 
     public Builder grow(float grow) {
-      this.grow = grow;
+      return grow(Constant.of(grow));
+    }
+
+    public Builder grow(Supplier<Float> grow) {
+      operations.add(config -> config.setGrow(grow.get()));
       return this;
     }
 
     public Builder shrink(float shrink) {
-      this.shrink = shrink;
+      return shrink(Constant.of(shrink));
+    }
+
+    public Builder shrink(Supplier<Float> shrink) {
+      operations.add(config -> config.setShrink(shrink.get()));
       return this;
     }
 
-    public Builder overflow(int overflow) {
-      this.overflow = overflow;
+    public Builder overflow() {
+      operations.add(config -> config.setOverflow(LayoutConfig.Overflow.SCROLL));
       return this;
     }
 
@@ -197,8 +200,4 @@ public class Flex implements Layouter {
       return new Flex(this);
     }
   }
-
-  private record MaybePercent<T>(boolean isPercent, T value) {}
-
-  ;
 }

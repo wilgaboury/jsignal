@@ -59,10 +59,10 @@ public class YogaLayoutConfig implements LayoutConfig {
 
   private int translateFlexDirection(FlexDirection direction) {
     return switch (direction) {
-      case ROW -> YGFlexDirectionRow;
-      case ROW_REVERSE -> YGFlexDirectionRowReverse;
       case COLUMN -> YGFlexDirectionColumn;
       case COLUMN_REVERSE -> YGFlexDirectionColumnReverse;
+      case ROW -> YGFlexDirectionRow;
+      case ROW_REVERSE -> YGFlexDirectionRowReverse;
     };
   }
 

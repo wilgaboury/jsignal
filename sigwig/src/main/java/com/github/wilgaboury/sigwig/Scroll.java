@@ -12,7 +12,6 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
-import org.lwjgl.util.yoga.Yoga;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -111,7 +110,7 @@ public class Scroll implements Renderable {
       .layout(Flex.builder()
         .width(percent(100f))
         .height(percent(100f))
-        .overflow(Yoga.YGOverflowScroll)
+        .overflow()
         .build()
       )
       .children(
@@ -163,8 +162,8 @@ public class Scroll implements Renderable {
             .width(percent(100f))
             .height(() -> pixel(xBarWidth.get()))
             .absolute()
-            .left(0f)
-            .bottom(0f)
+            .left(pixel(0f))
+            .bottom(pixel(0f))
             .build()
           )
           .paint(this::paintVertScrollBar)
@@ -178,8 +177,8 @@ public class Scroll implements Renderable {
             .width(() -> pixel(yBarWidth.get()))
             .height(percent(100f))
             .absolute()
-            .top(0f)
-            .right(0f)
+            .top(pixel(0f))
+            .right(pixel(0f))
             .build()
           )
           .children(

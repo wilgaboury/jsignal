@@ -7,11 +7,12 @@ import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import io.github.humbleui.skija.paragraph.Paragraph;
-import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.maybeComputed;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class Para implements Renderable {
@@ -29,11 +30,11 @@ public class Para implements Renderable {
   public Nodes render() {
     return Node.builder()
       .layout(config -> {
-        config.setMaxHeightPercent(100f);
+        config.setMaxHeight(percent(100f));
         config.setMeasure((width, widthMode, height, heightMode) -> {
           var p = para.get();
           p.layout(width);
-          config.setMinWidth(p.getMinIntrinsicWidth());
+          config.setMinWidth(pixel(p.getMinIntrinsicWidth()));
           return new LayoutConfig.Size(p.getMaxIntrinsicWidth(), p.getHeight());
         });
       })

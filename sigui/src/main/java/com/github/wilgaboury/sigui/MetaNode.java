@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.onDefer;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 
 public class MetaNode {
   public static final Context<MetaNode> parentContext = Context.create(null);
@@ -75,7 +76,7 @@ public class MetaNode {
     this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
     this.paintCacheEffect = SideEffect.create(this::paintEffectInner);
     this.transformEffect = SideEffect.create(this::transformEffectInner);
-    this.layoutEffect = layouter != null ? Effect.create(this::layoutEffectInner) : null;
+    this.layoutEffect = layouter != null ? Effect.create(this::runLayouter) : null;
 
     this.children = createChildren(nodeChildren);
   }
@@ -176,12 +177,12 @@ public class MetaNode {
     }
   }
 
-  private void layoutEffectInner() {
-    assert layouter != null;
-
-    SiguiUtil.clearNodeStyle(yoga);
-    layouter.layout(new YogaLayoutConfig(yoga));
-    window.requestLayout();
+  public void runLayouter() {
+    if (layouter != null) {
+      SiguiUtil.clearNodeStyle(yoga);
+      layouter.layout(new YogaLayoutConfig(yoga));
+      window.requestLayout();
+    }
   }
 
   private Supplier<List<MetaNode>> createChildren(Nodes children) {
@@ -352,8 +353,8 @@ public class MetaNode {
   public static MetaNode createRoot(Supplier<Renderable> component) {
     return new MetaNode(Node.builder()
       .layout(config -> {
-        config.setWidthPercent(100f);
-        config.setHeightPercent(100f);
+        config.setWidth(percent(100f));
+        config.setHeight(percent(100f));
       }).children(new RootComponent(component).getNodes()).buildNode());
   }
 

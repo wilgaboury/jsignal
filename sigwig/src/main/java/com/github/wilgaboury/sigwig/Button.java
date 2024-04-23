@@ -3,13 +3,15 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
-import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class Button implements Renderable {
@@ -57,26 +59,26 @@ public class Button implements Renderable {
       .build();
   }
 
-  private void layout(long yoga) {
-    Yoga.YGNodeStyleSetGap(yoga, Yoga.YGGutterAll, 8f);
-    Yoga.YGNodeStyleSetJustifyContent(yoga, Yoga.YGJustifyCenter);
-    Yoga.YGNodeStyleSetAlignItems(yoga, Yoga.YGAlignCenter);
+  private void layout(LayoutConfig config) {
+    config.setGap(LayoutConfig.Gutter.ALL, 8f);
+    config.setJustifyContent(LayoutConfig.JustifyContent.CENTER);
+    config.setAlignItems(LayoutConfig.Align.CENTER);
     switch (size.get()) {
       case LG -> {
-        Yoga.YGNodeStyleSetHeight(yoga, 62f);
-        Yoga.YGNodeStyleSetPadding(yoga, Yoga.YGEdgeHorizontal, 24f);
+        config.setHeight(pixel(62f));
+        config.setPadding(LayoutConfig.Edge.HORIZONTAL, pixel(24f));
       }
       case MD -> {
-        Yoga.YGNodeStyleSetHeight(yoga, 46f);
-        Yoga.YGNodeStyleSetPadding(yoga, Yoga.YGEdgeHorizontal, 16f);
+        config.setHeight(pixel(46f));
+        config.setPadding(LayoutConfig.Edge.HORIZONTAL, pixel(16f));
       }
       case SM -> {
-        Yoga.YGNodeStyleSetHeight(yoga, 30f);
-        Yoga.YGNodeStyleSetPadding(yoga, Yoga.YGEdgeHorizontal, 12f);
+        config.setHeight(pixel(30f));
+        config.setPadding(LayoutConfig.Edge.HORIZONTAL, pixel(12f));
       }
       case XS -> {
-        Yoga.YGNodeStyleSetHeight(yoga, 22f);
-        Yoga.YGNodeStyleSetPadding(yoga, Yoga.YGEdgeHorizontal, 8f);
+        config.setHeight(pixel(22f));
+        config.setPadding(LayoutConfig.Edge.HORIZONTAL, pixel(8f));
       }
     }
   }

@@ -1,14 +1,15 @@
 package com.github.wilgaboury.sigwig.text;
 
 import com.github.wilgaboury.jsignal.JSignalUtil;
-import com.github.wilgaboury.sigui.SiguiComponent;
-import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
+import com.github.wilgaboury.sigui.SiguiComponent;
 import io.github.humbleui.skija.Paint;
-import org.lwjgl.util.yoga.Yoga;
 
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class TextLine implements Renderable {
@@ -23,10 +24,10 @@ public class TextLine implements Renderable {
   @Override
   public Nodes render() {
     return Node.builder()
-      .layout(yoga -> {
+      .layout(config -> {
         var tmp = line.get();
-        Yoga.YGNodeStyleSetWidth(yoga, tmp.getWidth());
-        Yoga.YGNodeStyleSetHeight(yoga, tmp.getHeight());
+        config.setWidth(pixel(tmp.getWidth()));
+        config.setHeight(pixel(tmp.getHeight()));
       })
       .paint((canvas, node) -> {
         try (var paint = new Paint()) {
