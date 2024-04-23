@@ -1,6 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import org.lwjgl.util.yoga.YGNode;
+import com.github.wilgaboury.sigui.layout.Layouter;
 import org.lwjgl.util.yoga.Yoga;
 
 public class Flex implements Layouter {

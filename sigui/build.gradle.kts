@@ -37,9 +37,9 @@ repositories {
 dependencies {
     api(project(":jsignal"))
 
-    api(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
-    api("org.lwjgl", "lwjgl")
-    api("org.lwjgl", "lwjgl-yoga")
+    implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
+    implementation("org.lwjgl", "lwjgl")
+    implementation("org.lwjgl", "lwjgl-yoga")
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-yoga", classifier = lwjglNatives)
 

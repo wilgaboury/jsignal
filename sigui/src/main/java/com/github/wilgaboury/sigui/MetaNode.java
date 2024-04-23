@@ -4,6 +4,9 @@ import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
+import com.github.wilgaboury.sigui.layout.Layout;
+import com.github.wilgaboury.sigui.layout.Layouter;
+import com.github.wilgaboury.sigui.layout.YogaLayoutConfig;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
@@ -177,7 +180,7 @@ public class MetaNode {
     assert layouter != null;
 
     SiguiUtil.clearNodeStyle(yoga);
-    layouter.layout(yoga);
+    layouter.layout(new YogaLayoutConfig(yoga));
     window.requestLayout();
   }
 
@@ -348,9 +351,9 @@ public class MetaNode {
 
   public static MetaNode createRoot(Supplier<Renderable> component) {
     return new MetaNode(Node.builder()
-      .layout(yoga -> {
-        Yoga.YGNodeStyleSetWidthPercent(yoga, 100f);
-        Yoga.YGNodeStyleSetHeightPercent(yoga, 100f);
+      .layout(config -> {
+        config.setWidthPercent(100f);
+        config.setHeightPercent(100f);
       }).children(new RootComponent(component).getNodes()).buildNode());
   }
 

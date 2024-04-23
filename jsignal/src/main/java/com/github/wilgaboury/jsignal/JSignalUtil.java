@@ -154,7 +154,7 @@ public class JSignalUtil {
     runnable.run();
   }
 
-  public static <T, U> Computed<List<U>> createMapped(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
+  public static <T, U> Computed<List<U>> createMapped(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
     List<U> result = new ArrayList<>();
     Flipper<Map<T, Mapped<U>>> mapping = new Flipper<>(HashMap::new);
 

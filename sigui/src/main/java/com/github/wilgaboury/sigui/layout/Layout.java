@@ -1,8 +1,9 @@
-package com.github.wilgaboury.sigui;
+package com.github.wilgaboury.sigui.layout;
 
 import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Trigger;
+import com.github.wilgaboury.sigui.Insets;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import org.lwjgl.util.yoga.Yoga;

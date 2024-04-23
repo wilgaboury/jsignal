@@ -5,6 +5,7 @@ import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import io.github.humbleui.skija.paragraph.Paragraph;
 import org.lwjgl.util.yoga.Yoga;
 
@@ -27,14 +28,13 @@ public class Para implements Renderable {
   @Override
   public Nodes render() {
     return Node.builder()
-      .layout(yoga -> {
-        Yoga.YGNodeStyleSetMaxWidthPercent(yoga, 100f);
-        Yoga.YGNodeSetMeasureFunc(yoga, (node, width, widthMode, height, heightMode, result) -> {
+      .layout(config -> {
+        config.setMaxHeightPercent(100f);
+        config.setMeasure((width, widthMode, height, heightMode) -> {
           var p = para.get();
           p.layout(width);
-          Yoga.YGNodeStyleSetMinWidth(yoga, p.getMinIntrinsicWidth());
-          result.height(p.getHeight());
-          result.width(p.getMaxIntrinsicWidth());
+          config.setMinWidth(p.getMinIntrinsicWidth());
+          return new LayoutConfig.Size(p.getMaxIntrinsicWidth(), p.getHeight());
         });
       })
       .paint((canvas, node) -> {
