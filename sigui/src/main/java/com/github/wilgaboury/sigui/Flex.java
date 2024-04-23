@@ -43,8 +43,8 @@ public class Flex implements Layouter {
 
     public Builder fitParent() {
       operations.add(config -> {
-        config.setMaxWidth(percent(100f));
-        config.setMaxHeight(percent(100f));
+        config.setWidth(percent(100f));
+        config.setHeight(percent(100f));
       });
       return this;
     }
