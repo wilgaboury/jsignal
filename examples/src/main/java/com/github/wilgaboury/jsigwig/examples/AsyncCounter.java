@@ -35,7 +35,7 @@ public class AsyncCounter implements Renderable {
 
     return Node.builder()
       .layout(Flex.builder()
-        .stretch()
+        .fitParent()
         .center()
         .column()
         .gap(10f)

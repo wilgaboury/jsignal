@@ -23,7 +23,7 @@ public interface LayoutConfig {
   void setMargin(Edge edge, LayoutValue margin);
   void setMarginAuto(Edge edge);
   void setPadding(Edge edge, LayoutValue padding);
-  void setBoarder(Edge edge, float border);
+  void setBorder(Edge edge, float border);
   void setGap(Gutter gutter, float gap);
   void setWidth(LayoutValue width);
   void setWidthAuto();

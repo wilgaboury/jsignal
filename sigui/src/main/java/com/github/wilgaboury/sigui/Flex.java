@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigui;
 import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.sigui.layout.Insets;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
+import com.github.wilgaboury.sigui.layout.LayoutValue;
 import com.github.wilgaboury.sigui.layout.Layouter;
 import org.lwjgl.util.yoga.Yoga;
 
@@ -10,126 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
+
 public class Flex implements Layouter {
   private final List<Layouter> operations;
 
   public Flex(Builder builder) {
-    this.margins = builder.margins;
-    this.border = builder.border;
-    this.padding = builder.padding;
-    this.justify = builder.justify;
-    this.align = builder.align;
-    this.direction = builder.direction;
-    this.wrap = builder.wrap;
-    this.gap = builder.gap;
-    this.height = builder.height;
-    this.width = builder.width;
-    this.absolute = builder.absolute;
-    this.top = builder.top;
-    this.right = builder.right;
-    this.bottom = builder.bottom;
-    this.left = builder.left;
-    this.grow = builder.grow;
-    this.shrink = builder.shrink;
-    this.overflow = builder.overflow;
+    this.operations = builder.operations;
   }
 
   @Override
-  public void layout(long yoga) {
-    if (margins != null) {
-      margins.set(Yoga::YGNodeStyleSetMargin, yoga);
-    }
-
-    if (border != null) {
-      Yoga.YGNodeStyleSetBorder(yoga, Yoga.YGEdgeAll, border);
-    }
-
-    if (padding != null) {
-      padding.set(Yoga::YGNodeStyleSetPadding, yoga);
-    }
-
-    if (justify != null) {
-      Yoga.YGNodeStyleSetJustifyContent(yoga, justify);
-    }
-
-    if (align != null) {
-      Yoga.YGNodeStyleSetAlignItems(yoga, align);
-    }
-
-    if (direction != null) {
-      Yoga.YGNodeStyleSetFlexDirection(yoga, direction);
-    }
-
-    if (wrap != null) {
-      Yoga.YGNodeStyleSetFlexWrap(yoga, wrap);
-    }
-
-    if (width != null) {
-      if (width.isPercent()) {
-        Yoga.YGNodeStyleSetWidthPercent(yoga, width.value());
-      } else {
-        Yoga.YGNodeStyleSetWidth(yoga, width.value());
-      }
-    }
-
-    if (height != null) {
-      if (height.isPercent()) {
-        Yoga.YGNodeStyleSetHeightPercent(yoga, height.value());
-      } else {
-        Yoga.YGNodeStyleSetHeight(yoga, height.value());
-      }
-    }
-
-    if (gap != null) {
-      Yoga.YGNodeStyleSetGap(yoga, Yoga.YGGutterAll, gap);
-    }
-
-    if (absolute != null && absolute) {
-      Yoga.YGNodeStyleSetPositionType(yoga, Yoga.YGPositionTypeAbsolute);
-    }
-
-    if (top != null) {
-      if (top.isPercent()) {
-        Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeTop, top.value());
-      } else {
-        Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeTop, top.value());
-      }
-    }
-
-    if (right != null) {
-      if (right.isPercent()) {
-        Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeRight, right.value());
-      } else {
-        Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeRight, right.value());
-      }
-    }
-
-    if (bottom != null) {
-      if (bottom.isPercent()) {
-        Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeBottom, bottom.value());
-      } else {
-        Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeBottom, bottom.value());
-      }
-    }
-
-    if (left != null) {
-      if (left.isPercent()) {
-        Yoga.YGNodeStyleSetPositionPercent(yoga, Yoga.YGEdgeLeft, left.value());
-      } else {
-        Yoga.YGNodeStyleSetPosition(yoga, Yoga.YGEdgeLeft, left.value());
-      }
-    }
-
-    if (grow != null) {
-      Yoga.YGNodeStyleSetFlexGrow(yoga, grow);
-    }
-
-    if (shrink != null) {
-      Yoga.YGNodeStyleSetFlexShrink(yoga, shrink);
-    }
-
-    if (overflow != null) {
-      Yoga.YGNodeStyleSetOverflow(yoga, overflow);
+  public void layout(LayoutConfig config) {
+    for (var operation : operations) {
+      operation.layout(config);
     }
   }
 
@@ -150,8 +44,8 @@ public class Flex implements Layouter {
 
     public Builder fitParent() {
       operations.add(config -> {
-        config.setMaxWidthPercent(100f);
-        config.setMaxHeightPercent(100f);
+        config.setMaxWidth(percent(100f));
+        config.setMaxHeight(percent(100f));
       });
       return this;
     }
@@ -166,64 +60,81 @@ public class Flex implements Layouter {
       return this;
     }
 
-    public Builder margins(Insets margins) {
+    public Builder margins(Insets.Layout margins) {
       return margins(Constant.of(margins));
     }
 
-    public Builder margins(Supplier<Insets> margins) {
+    public Builder margins(Supplier<Insets.Layout> margins) {
       operations.add(config -> {
-
+        var insets = margins.get();
+        config.setMargin(LayoutConfig.Edge.TOP, insets.top());
+        config.setMargin(LayoutConfig.Edge.RIGHT, insets.right());
+        config.setMargin(LayoutConfig.Edge.BOTTOM, insets.bottom());
+        config.setMargin(LayoutConfig.Edge.LEFT, insets.left());
       });
       return this;
     }
 
-    public Builder padding(Insets.Basic padding) {
-      this.padding = padding;
+    public Builder padding(Insets.Layout padding) {
+      return padding(Constant.of(padding));
+    }
+
+    public Builder padding(Supplier<Insets.Layout> padding) {
+      operations.add(config -> {
+        var insets = padding.get();
+        config.setPadding(LayoutConfig.Edge.TOP, insets.top());
+        config.setPadding(LayoutConfig.Edge.RIGHT, insets.right());
+        config.setPadding(LayoutConfig.Edge.BOTTOM, insets.bottom());
+        config.setPadding(LayoutConfig.Edge.LEFT, insets.left());
+      });
       return this;
     }
 
-    public Builder border(Float border) {
-      this.border = border;
+    public Builder border(Insets.Basic border) {
+      return border(Constant.of(border));
+    }
+
+    public Builder border(Supplier<Insets.Basic> border) {
+      operations.add(config -> {
+        var insets = border.get();
+        config.setBorder(LayoutConfig.Edge.TOP, insets.top());
+        config.setBorder(LayoutConfig.Edge.RIGHT, insets.right());
+        config.setBorder(LayoutConfig.Edge.BOTTOM, insets.bottom());
+        config.setBorder(LayoutConfig.Edge.LEFT, insets.left());
+      });
       return this;
     }
 
     public Builder wrap() {
-      this.wrap = Yoga.YGWrapWrap;
+      operations.add(config -> config.setWrap(LayoutConfig.Wrap.WRAP));
       return this;
     }
 
-    public Builder gap(Float gap) {
-      this.gap = gap;
+    public Builder gap(float gap) {
+      operations.add(config -> config.setGap(LayoutConfig.Gutter.ALL, gap));
       return this;
     }
 
-    public Builder height(float height) {
-      this.height = new MaybePercent<>(false, height);
+    public Builder height(LayoutValue height) {
+      return height(Constant.of(height));
+    }
+
+    public Builder height(Supplier<LayoutValue> height) {
+      operations.add(config -> config.setHeight(height.get()));
       return this;
     }
 
-    public Builder width(float width) {
-      this.width = new MaybePercent<>(false, width);
-      return this;
+    public Builder width(LayoutValue width) {
+      return width(Constant.of(width));
     }
 
-    public Builder heightPercent(float height) {
-      this.height = new MaybePercent<>(true, height);
-      return this;
-    }
-
-    public Builder widthPercent(float width) {
-      this.width = new MaybePercent<>(true, width);
+    public Builder width(Supplier<LayoutValue> width) {
+      operations.add(config -> config.setHeight(width.get()));
       return this;
     }
 
     public Builder absolute() {
-      this.absolute = true;
-      return this;
-    }
-
-    public Builder absolute(boolean absolute) {
-      this.absolute = absolute;
+      operations.add(config -> config.setPositionType(LayoutConfig.PositionType.ABSOLUTE));
       return this;
     }
 

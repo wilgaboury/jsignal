@@ -12,6 +12,8 @@ import io.github.humbleui.skija.Color;
 import java.util.Random;
 
 import static com.github.wilgaboury.sigui.layout.Insets.insets;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class SimpleTest implements Renderable {
@@ -54,11 +56,11 @@ public class SimpleTest implements Renderable {
           .layout(Flex.builder()
             .fitParent()
             .center()
-            .border(10f)
+            .border(insets(10f))
             .column()
             .gap(16f)
-            .padding(insets(25f))
-            .widthPercent(100f)
+            .padding(insets(pixel(25f)))
+            .width(percent(100f))
             .build()
           )
           .paint(BasicPainter.builder()
@@ -122,8 +124,8 @@ public class SimpleTest implements Renderable {
             maybeFire(),
             Image.builder()
               .setBlob(penguin)
-              .setHeight(LayoutValue.pixel(300))
-              .setWidth(LayoutValue.pixel(200))
+              .setHeight(pixel(300))
+              .setWidth(pixel(200))
               .setFit(Image.Fit.COVER)
               .build()
           )
@@ -142,7 +144,7 @@ public class SimpleTest implements Renderable {
       if (showFire.get()) {
         return cache.get(() -> Image.builder()
           .setBlob(fire)
-          .setHeight(LayoutValue.pixel(200))
+          .setHeight(pixel(200))
           .build()
           .getNodes()
         );

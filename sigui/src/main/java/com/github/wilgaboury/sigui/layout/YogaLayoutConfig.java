@@ -219,7 +219,7 @@ public class YogaLayoutConfig implements LayoutConfig {
   }
 
   @Override
-  public void setBoarder(Edge edge, float border) {
+  public void setBorder(Edge edge, float border) {
     YGNodeStyleSetBorder(node, translateEdge(edge), border);
   }
 

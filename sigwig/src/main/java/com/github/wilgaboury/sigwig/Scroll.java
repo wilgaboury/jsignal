@@ -19,6 +19,9 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.untrack;
 import static com.github.wilgaboury.sigui.SiguiUtil.createEffectLater;
+import static com.github.wilgaboury.sigui.layout.Insets.insets;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class Scroll implements Renderable {
@@ -106,8 +109,8 @@ public class Scroll implements Renderable {
         );
       })
       .layout(Flex.builder()
-        .widthPercent(100f)
-        .heightPercent(100f)
+        .width(percent(100f))
+        .height(percent(100f))
         .overflow(Yoga.YGOverflowScroll)
         .build()
       )
@@ -121,13 +124,13 @@ public class Scroll implements Renderable {
             // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
             if (shouldShowSidebar.get()) {
               Flex.builder()
-                .padding(new Insets(0f, yBarWidth.get(), xBarWidth.get(), 0f))
+                .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).toLayout())
                 .build()
                 .layout(yoga);
             } else {
               Flex.builder()
-                .widthPercent(100f)
-                .padding(new Insets(0f))
+                .width(percent(100f))
+                .padding(insets(pixel(0f)))
                 .build()
                 .layout(yoga);
             }
@@ -157,8 +160,8 @@ public class Scroll implements Renderable {
             EventListener.onMouseUp(e -> xBarMouseDown.accept(false))
           ))
           .layout(Flex.builder()
-            .widthPercent(100f)
-            .height(xBarWidth.get())
+            .width(percent(100f))
+            .height(() -> pixel(xBarWidth.get()))
             .absolute()
             .left(0f)
             .bottom(0f)
@@ -172,8 +175,8 @@ public class Scroll implements Renderable {
             EventListener.onMouseOut(e -> yBarMouseOver.accept(false))
           ))
           .layout(Flex.builder()
-            .width(yBarWidth.get())
-            .heightPercent(100f)
+            .width(() -> pixel(yBarWidth.get()))
+            .height(percent(100f))
             .absolute()
             .top(0f)
             .right(0f)
@@ -201,7 +204,7 @@ public class Scroll implements Renderable {
                 );
               })
               .layout(Flex.builder()
-                .widthPercent(100f)
+                .width(percent(100f))
                 .grow(1f)
                 .build()
               )
@@ -211,7 +214,7 @@ public class Scroll implements Renderable {
             // spacer
             Node.builder()
               .layout(yoga -> Flex.builder()
-                .height(xBarWidth.get())
+                .height(pixel(xBarWidth.get()))
                 .build()
                 .layout(yoga)
               )
@@ -385,11 +388,10 @@ public class Scroll implements Renderable {
           EventListener.onMouseDown(e -> mouseDown.accept(true)),
           EventListener.onMouseUp(e -> mouseDown.accept(false))
         ))
-        .layout(yoga -> Flex.builder()
-          .height(size.get())
-          .width(size.get())
+        .layout(Flex.builder()
+          .height(() -> pixel(size.get()))
+          .width(() -> pixel(size.get()))
           .build()
-          .layout(yoga)
         )
         .transform(node -> {
           if (!mouseDown.get()) {
