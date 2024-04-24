@@ -159,8 +159,8 @@ public class JSignalUtil {
     Flipper<Map<T, Mapped<U>>> mapping = new Flipper<>(HashMap::new);
 
     Cleanups.onCleanup(() -> {
-      for (var entry : mapping.getFront().values()) {
-        entry.cleanups.run();
+      for (var mapped : mapping.getFront().values()) {
+        mapped.cleanups.run();
       }
     });
 
@@ -170,17 +170,20 @@ public class JSignalUtil {
         mapping.flip();
       });
 
-      var elems = list.get();
+      var keys = list.get();
 
-      for (int i = 0; i < elems.size(); i++) {
-        var elem = elems.get(i);
-        var mapped = mapping.getBack().remove(elem);
+      for (int i = 0; i < keys.size(); i++) {
+        var key = keys.get(i);
+        var mapped = mapping.getBack().remove(key);
         if (mapped != null) {
           mapped.idx.accept(i);
         } else {
-          mapped = Mapped.create(elem, i, map);
+          var idx = Signal.create(i);
+          var cleanups = new Cleanups();
+          var value = Cleanups.provide(cleanups, () -> untrack(() -> map.apply(key, idx)));
+          mapped = new Mapped<>(value, idx, cleanups);
         }
-        mapping.getFront().put(elem, mapped);
+        mapping.getFront().put(key, mapped);
         result.add(mapped.value);
       }
 
@@ -193,12 +196,42 @@ public class JSignalUtil {
     });
   }
 
-  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {
-    public static <T, U> Mapped<U> create(T elem, int i, BiFunction<T, Supplier<Integer>, U> map) {
-      var cleanups = new Cleanups();
-      var idx = Signal.create(i);
-      var mapped = Cleanups.provide(cleanups, () -> untrack(() -> map.apply(elem, idx)));
-      return new Mapped<>(mapped, idx, cleanups);
-    }
+  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {}
+
+  public static <T, U> Computed<List<U>> createIndexed(Supplier<? extends List<T>> list, BiFunction<Supplier<T>, Integer, U> map) {
+    List<Indexed<T>> indexes = new ArrayList<>();
+    List<U> result = new ArrayList<>();
+
+    Cleanups.onCleanup(() -> {
+      for (var index : indexes) {
+        index.cleanups().run();
+      }
+    });
+
+    return Computed.create(() -> {
+      var keys = list.get();
+
+      for (int i = 0; i < keys.size(); i++) {
+        if (i < indexes.size()) {
+          indexes.get(i).value().accept(keys.get(i));
+        } else {
+          var key = Signal.create(keys.get(i));
+          var cleanups = new Cleanups();
+          var idx = i;
+          var value = Cleanups.provide(cleanups, () -> untrack(() -> map.apply(key, idx)));
+          indexes.add(new Indexed<>(key, cleanups));
+          result.add(value);
+        }
+      }
+
+      while (indexes.size() > keys.size()) {
+        indexes.removeLast().cleanups().run();
+        result.removeLast();
+      }
+
+      return Collections.unmodifiableList(result);
+    });
   }
+
+  private record Indexed<T>(Signal<T> value, Cleanups cleanups) {}
 }
