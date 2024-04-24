@@ -213,7 +213,7 @@ public class Scroll implements Renderable {
             // spacer
             Node.builder()
               .layout(yoga -> Flex.builder()
-                .height(pixel(xBarWidth.get()))
+                .height(() -> pixel(xBarWidth.get()))
                 .build()
                 .layout(yoga)
               )

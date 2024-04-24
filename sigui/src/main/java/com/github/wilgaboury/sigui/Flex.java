@@ -8,6 +8,7 @@ import com.github.wilgaboury.sigui.layout.Layouter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
@@ -128,7 +129,7 @@ public class Flex implements Layouter {
     }
 
     public Builder width(Supplier<LayoutValue> width) {
-      operations.add(config -> config.setHeight(width.get()));
+      operations.add(config -> config.setWidth(width.get()));
       return this;
     }
 
@@ -193,6 +194,11 @@ public class Flex implements Layouter {
 
     public Builder overflow() {
       operations.add(config -> config.setOverflow(LayoutConfig.Overflow.SCROLL));
+      return this;
+    }
+
+    public Builder apply(Consumer<Flex.Builder> consumer) {
+      consumer.accept(this);
       return this;
     }
 
