@@ -16,6 +16,10 @@ public class Portal {
   private static final Context<HashMap<Object, Signal<List<NodesSupplier>>>> context =
     Context.create(new HashMap<>());
 
+  private static Signal<List<NodesSupplier>> getSuppliers(Object id) {
+    return context.use().computeIfAbsent(id, ignored -> Signal.create(new ArrayList<>()));
+  }
+
   @SiguiComponent
   public static class Out implements Renderable {
     public final Object id;
@@ -27,8 +31,7 @@ public class Portal {
     @Override
     public Nodes render() {
       // TODO: find way to assert no duplicate out points
-      var suppliers = context.use().computeIfAbsent(id,
-        ignored -> Signal.create(new ArrayList<>()));
+      var suppliers = getSuppliers(id);
       return Nodes.forEach(suppliers, (supplier, idx) -> supplier.getNodes());
     }
   }
@@ -45,9 +48,9 @@ public class Portal {
 
     @Override
     public Nodes render() {
-      var signal = context.use().computeIfAbsent(id, ignored -> Signal.create(new ArrayList<>()));
-      signal.mutate(list -> {list.add(child);});
-      Cleanups.onCleanup(() -> signal.mutate(list -> {list.remove(child);}));
+      var suppliers = getSuppliers(id);
+      suppliers.mutate(list -> {list.add(child);});
+      Cleanups.onCleanup(() -> suppliers.mutate(list -> {list.remove(child);}));
       return Nodes.empty();
     }
   }
