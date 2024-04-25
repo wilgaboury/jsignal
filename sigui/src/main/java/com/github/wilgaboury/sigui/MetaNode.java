@@ -30,7 +30,6 @@ public class MetaNode {
 
   private final SiguiWindow window;
   private final @Nullable MetaNode parent;
-  private final MetaNodeRegistry registry;
 
   private final Node node;
   private final @Nullable Painter painter;
@@ -57,7 +56,6 @@ public class MetaNode {
   public MetaNode(Node node) {
     this.window = SiguiWindow.context.use();
     this.parent = parentContext.use();
-    this.registry = MetaNodeRegistry.context.use();
 
     this.node = node;
     this.painter = node.getPainter();
@@ -85,11 +83,6 @@ public class MetaNode {
   }
 
   private void cleanup() {
-    registry.removeById(id, this);
-    for (var tag : tags) {
-      registry.removeByTag(tag, this);
-    }
-
     if (parent != null) {
       Yoga.YGNodeRemoveChild(parent.yoga, yoga);
     }
@@ -135,8 +128,6 @@ public class MetaNode {
   }
 
   public void setId(String id) {
-    registry.removeById(this.id, this);
-    registry.addById(id, this);
     this.id = id;
   }
 
@@ -144,20 +135,12 @@ public class MetaNode {
     return id;
   }
 
-  public void addTag(Object tag) {
-    if (tags.add(tag)) {
-      registry.addById(tag, this);
-    }
-  }
-
-  public void removeTag(Object tag) {
-    if (tags.remove(tag)) {
-      registry.removeByTag(tag, this);
-    }
-  }
-
   public Set<Object> getTags() {
-    return Collections.unmodifiableSet(tags);
+    return tags;
+  }
+
+  public void addTags(Object... tags) {
+    this.tags.addAll(Arrays.asList(tags));
   }
 
   void paint(Canvas canvas) {
@@ -359,6 +342,35 @@ public class MetaNode {
       }
 
       node = node.parent;
+    }
+  }
+
+  public Optional<MetaNode> findById(Object id) {
+    if (this.id != null && this.id.equals(id)) {
+      return Optional.of(this);
+    } else {
+      for (var child : children.get()) {
+        var result = child.findById(id);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+      return Optional.empty();
+    }
+  }
+
+  public List<MetaNode> findByTag(Object tag) {
+    List<MetaNode> metas = new ArrayList<>();
+    findByTag(tag, metas);
+    return metas;
+  }
+
+  private void findByTag(Object tag, List<MetaNode> metas) {
+    if (this.tags.contains(tag)) {
+      metas.add(this);
+    }
+    for (var child : children.get()) {
+      child.findByTag(id);
     }
   }
 

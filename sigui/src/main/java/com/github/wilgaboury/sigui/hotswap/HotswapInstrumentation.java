@@ -1,13 +1,13 @@
 package com.github.wilgaboury.sigui.hotswap;
 
-import com.github.wilgaboury.sigui.ComponentInstrumentation;
+import com.github.wilgaboury.sigui.RenderInstrumentation;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.NodesSupplier;
 import com.github.wilgaboury.sigui.Renderable;
 
 import java.util.Optional;
 
-public class HotswapInstrumentation implements ComponentInstrumentation {
+public class HotswapInstrumentation implements RenderInstrumentation {
   @Override
   public Nodes instrument(Renderable component, NodesSupplier render) {
     var haComponent = new HotswapComponent(component);

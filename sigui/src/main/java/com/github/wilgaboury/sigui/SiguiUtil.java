@@ -34,8 +34,8 @@ public class SiguiUtil {
   }
 
   public static void provideHotswapInstrumentation(Runnable runnable) {
-    ComponentInstrumentation.context.with(
-        current -> current.addInner(new HotswapInstrumentation()))
+    RenderInstrumentation.context.with(
+        current -> current.add(new HotswapInstrumentation()))
       .provide(runnable);
   }
 

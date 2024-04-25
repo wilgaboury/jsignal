@@ -95,7 +95,7 @@ public class Scroll implements Renderable {
     return Node.builder()
       .ref(meta -> {
         view.set(meta);
-        meta.setTags("scroller-parent");
+        meta.addTags("scroller-parent");
         meta.listen(
           EventListener.onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
           EventListener.onKeyDown(e -> {

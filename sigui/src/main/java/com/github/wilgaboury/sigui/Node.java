@@ -13,7 +13,7 @@ import java.util.function.Function;
  */
 public interface Node {
   default MetaNode toMeta() {
-    return new MetaNode(this);
+    return MetaNodeInitInstrumentation.context.use().instrument(() -> new MetaNode(this));
   }
 
   default Nodes getChildren() {
