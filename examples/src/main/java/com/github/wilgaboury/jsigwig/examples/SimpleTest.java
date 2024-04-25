@@ -2,7 +2,6 @@ package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.layout.LayoutValue;
 import com.github.wilgaboury.sigwig.*;
 import com.github.wilgaboury.sigwig.text.Para;
 import com.github.wilgaboury.sigwig.text.TextLine;
@@ -53,8 +52,8 @@ public class SimpleTest implements Renderable {
       .setBarWidth(15f)
       .setChildren(
         Node.builder()
-          .layout(Flex.builder()
-            .fitParent()
+          .layout(EzLayout.builder()
+            .fill()
             .center()
             .border(insets(10f))
             .column()
@@ -81,7 +80,7 @@ public class SimpleTest implements Renderable {
               .setColor(EzColors.GRAY_700)
               .build(),
             Node.builder()
-              .layout(Flex.builder()
+              .layout(EzLayout.builder()
                 .row()
                 .wrap()
                 .gap(10f)

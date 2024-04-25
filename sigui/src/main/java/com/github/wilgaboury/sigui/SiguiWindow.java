@@ -25,7 +25,6 @@ public class SiguiWindow {
   private Window window;
   private final MetaNode root;
   private final Cleanups rootCleanups;
-  private final NodeRegistry nodeRegistry;
 
   private final Queue<Runnable> preFrame;
   private final Queue<Runnable> postFrame;
@@ -42,7 +41,6 @@ public class SiguiWindow {
 
   public SiguiWindow(Window window, Supplier<Renderable> root) {
     this.window = window;
-    this.nodeRegistry = new NodeRegistry();
 
     this.preFrame = new ArrayDeque<>();
     this.postFrame = new ArrayDeque<>();
@@ -80,10 +78,6 @@ public class SiguiWindow {
 
   public MetaNode getRoot() {
     return root;
-  }
-
-  public NodeRegistry getNodeRegistry() {
-    return nodeRegistry;
   }
 
   public Point getMousePosition() {
@@ -224,7 +218,8 @@ public class SiguiWindow {
         }
         hovered = null;
       }
-      default -> {}
+      default -> {
+      }
     }
   }
 

@@ -22,8 +22,8 @@ public class Counter implements Renderable {
   @Override
   public Nodes render() {
     return Node.builder()
-      .layout(Flex.builder()
-        .fitParent()
+      .layout(EzLayout.builder()
+        .fill()
         .center()
         .column()
         .gap(10f)

@@ -107,7 +107,7 @@ public class Scroll implements Renderable {
           })
         );
       })
-      .layout(Flex.builder()
+      .layout(EzLayout.builder()
         .width(percent(100f))
         .height(percent(100f))
         .overflow()
@@ -122,12 +122,12 @@ public class Scroll implements Renderable {
           .layout(yoga -> {
             // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
             if (shouldShowSidebar.get()) {
-              Flex.builder()
+              EzLayout.builder()
                 .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).toLayout())
                 .build()
                 .layout(yoga);
             } else {
-              Flex.builder()
+              EzLayout.builder()
                 .width(percent(100f))
                 .padding(insets(pixel(0f)))
                 .build()
@@ -158,7 +158,7 @@ public class Scroll implements Renderable {
             }),
             EventListener.onMouseUp(e -> xBarMouseDown.accept(false))
           ))
-          .layout(Flex.builder()
+          .layout(EzLayout.builder()
             .width(percent(100f))
             .height(() -> pixel(xBarWidth.get()))
             .absolute()
@@ -173,7 +173,7 @@ public class Scroll implements Renderable {
             EventListener.onMouseOver(e -> yBarMouseOver.accept(true)),
             EventListener.onMouseOut(e -> yBarMouseOver.accept(false))
           ))
-          .layout(Flex.builder()
+          .layout(EzLayout.builder()
             .width(() -> pixel(yBarWidth.get()))
             .height(percent(100f))
             .absolute()
@@ -202,7 +202,7 @@ public class Scroll implements Renderable {
                   EventListener.onMouseUp(e -> yBarMouseDown.accept(false))
                 );
               })
-              .layout(Flex.builder()
+              .layout(EzLayout.builder()
                 .width(percent(100f))
                 .grow(1f)
                 .build()
@@ -212,7 +212,7 @@ public class Scroll implements Renderable {
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
             // spacer
             Node.builder()
-              .layout(yoga -> Flex.builder()
+              .layout(yoga -> EzLayout.builder()
                 .height(() -> pixel(xBarWidth.get()))
                 .build()
                 .layout(yoga)
@@ -387,7 +387,7 @@ public class Scroll implements Renderable {
           EventListener.onMouseDown(e -> mouseDown.accept(true)),
           EventListener.onMouseUp(e -> mouseDown.accept(false))
         ))
-        .layout(Flex.builder()
+        .layout(EzLayout.builder()
           .height(() -> pixel(size.get()))
           .width(() -> pixel(size.get()))
           .build()

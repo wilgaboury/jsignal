@@ -13,10 +13,10 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 
-public class Flex implements Layouter {
+public class EzLayout implements Layouter {
   private final List<Layouter> operations;
 
-  public Flex(Builder builder) {
+  public EzLayout(Builder builder) {
     this.operations = builder.operations;
   }
 
@@ -42,7 +42,7 @@ public class Flex implements Layouter {
       return this;
     }
 
-    public Builder fitParent() {
+    public Builder fill() {
       operations.add(config -> {
         config.setWidth(percent(100f));
         config.setHeight(percent(100f));
@@ -197,13 +197,13 @@ public class Flex implements Layouter {
       return this;
     }
 
-    public Builder apply(Consumer<Flex.Builder> consumer) {
+    public Builder apply(Consumer<EzLayout.Builder> consumer) {
       consumer.accept(this);
       return this;
     }
 
-    public Flex build() {
-      return new Flex(this);
+    public EzLayout build() {
+      return new EzLayout(this);
     }
   }
 }

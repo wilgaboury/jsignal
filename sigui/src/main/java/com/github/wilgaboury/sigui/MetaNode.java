@@ -26,11 +26,11 @@ import static com.github.wilgaboury.jsignal.JSignalUtil.onDefer;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 
 public class MetaNode {
-  public static final Context<MetaNode> parentContext = Context.create(null);
+  private static final Context<MetaNode> parentContext = Context.create(null);
 
   private final SiguiWindow window;
-
   private final @Nullable MetaNode parent;
+  private final MetaNodeRegistry registry;
 
   private final Node node;
   private final @Nullable Painter painter;
@@ -42,8 +42,8 @@ public class MetaNode {
 
   private final Map<EventType, Collection<Consumer<?>>> listeners;
 
-  private String id;
-  private Set<String> tags;
+  private Object id;
+  private final Set<Object> tags;
 
   private final SideEffect paintEffect;
   private final SideEffect paintCacheEffect;
@@ -57,6 +57,7 @@ public class MetaNode {
   public MetaNode(Node node) {
     this.window = SiguiWindow.context.use();
     this.parent = parentContext.use();
+    this.registry = MetaNodeRegistry.context.use();
 
     this.node = node;
     this.painter = node.getPainter();
@@ -69,7 +70,7 @@ public class MetaNode {
     this.listeners = new HashMap<>();
 
     this.id = null;
-    this.tags = Collections.emptySet();
+    this.tags = new HashSet<>();
 
     this.paintCacheStrategy = new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new);
 
@@ -79,10 +80,15 @@ public class MetaNode {
     this.layoutEffect = layouter != null ? Effect.create(this::runLayouter) : null;
 
     this.children = createChildren(nodeChildren);
+
+    Cleanups.onCleanup(this::cleanup);
   }
 
   private void cleanup() {
-    window.getNodeRegistry().removeNode(this);
+    registry.removeById(id, this);
+    for (var tag : tags) {
+      registry.removeByTag(tag, this);
+    }
 
     if (parent != null) {
       Yoga.YGNodeRemoveChild(parent.yoga, yoga);
@@ -129,23 +135,29 @@ public class MetaNode {
   }
 
   public void setId(String id) {
-    window.getNodeRegistry().removeNodeId(this);
+    registry.removeById(this.id, this);
+    registry.addById(id, this);
     this.id = id;
-    window.getNodeRegistry().addNodeId(this);
   }
 
-  public String getId() {
+  public @Nullable Object getId() {
     return id;
   }
 
-  public void setTags(String... tags) {
-    window.getNodeRegistry().removeNodeTags(this);
-    this.tags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(tags)));
-    window.getNodeRegistry().addNodeTags(this);
+  public void addTag(Object tag) {
+    if (tags.add(tag)) {
+      registry.addById(tag, this);
+    }
   }
 
-  public Set<String> getTags() {
-    return tags;
+  public void removeTag(Object tag) {
+    if (tags.remove(tag)) {
+      registry.removeByTag(tag, this);
+    }
+  }
+
+  public Set<Object> getTags() {
+    return Collections.unmodifiableSet(tags);
   }
 
   void paint(Canvas canvas) {
@@ -355,7 +367,9 @@ public class MetaNode {
       .layout(config -> {
         config.setWidth(percent(100f));
         config.setHeight(percent(100f));
-      }).children(new RootComponent(component).getNodes()).buildNode());
+      })
+      .children(new RootComponent(component).getNodes())
+      .node());
   }
 
   /**

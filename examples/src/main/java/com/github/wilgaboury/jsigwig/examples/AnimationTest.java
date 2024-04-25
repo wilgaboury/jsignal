@@ -39,8 +39,8 @@ public class AnimationTest implements Renderable {
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
     return Node.builder()
-      .layout(Flex.builder()
-        .fitParent()
+      .layout(EzLayout.builder()
+        .fill()
         .center()
         .gap(20f)
         .build()

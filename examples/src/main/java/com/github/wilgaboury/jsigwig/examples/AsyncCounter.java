@@ -34,8 +34,8 @@ public class AsyncCounter implements Renderable {
     Cleanups.onCleanup(executorService::shutdown);
 
     return Node.builder()
-      .layout(Flex.builder()
-        .fitParent()
+      .layout(EzLayout.builder()
+        .fill()
         .center()
         .column()
         .gap(10f)
