@@ -33,7 +33,7 @@ public sealed interface Nodes extends NodesSupplier
         return compose(Arrays.asList(nodes));
     }
 
-    static Nodes compose(Collection<NodesSupplier> children) {
+    static Nodes compose(Collection<? extends NodesSupplier> children) {
         var nodes = children.stream().map(NodesSupplier::getNodes).toList();
         if (nodes.stream().anyMatch(c -> c instanceof Dynamic)) {
             return new Dynamic(Computed.create(() -> nodes.stream().flatMap(n -> n.getNodeList().stream()).toList()));
@@ -42,24 +42,28 @@ public sealed interface Nodes extends NodesSupplier
         }
     }
 
-    static <T> Dynamic forEach(Supplier<List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
+    static <T> Dynamic forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
         var mapped = JSignalUtil.createMapped(list, map);
         var composed = Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodeList().stream()).toList());
         return new Dynamic(composed);
     }
 
     static Dynamic compute(Supplier<Nodes> inner) {
-        return new Dynamic(Computed.create(() -> inner.get().getNodeList().stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.get().getNodeList()));
+    }
+
+    static Dynamic computeList(Supplier<? extends List<? extends NodesSupplier>> supplier) {
+        return new Dynamic(Computed.create(() -> supplier.get().stream().flatMap(n -> n.getNodes().getNodeList().stream()).toList()));
     }
 
     static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
         var cache = new CacheOne();
-        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList().stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList()));
     }
 
     static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
         var cache = new CacheMany<K>(new HashMap<>());
-        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList().stream().toList()));
+        return new Dynamic(Computed.create(() -> inner.apply(cache).getNodeList()));
     }
 
     record Fixed(List<? extends Node> children) implements Nodes {

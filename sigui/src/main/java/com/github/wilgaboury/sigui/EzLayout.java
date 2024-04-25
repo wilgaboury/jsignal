@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 public class EzLayout implements Layouter {
   private final List<Layouter> operations;
@@ -33,6 +34,17 @@ public class EzLayout implements Layouter {
 
   public static class Builder {
     private final List<Layouter> operations = new ArrayList<>();
+
+    public Builder overlay() {
+      operations.add(config -> {
+        config.setPositionType(LayoutConfig.PositionType.ABSOLUTE);
+        config.setPosition(LayoutConfig.Edge.TOP, pixel(0f));
+        config.setPosition(LayoutConfig.Edge.RIGHT, pixel(0f));
+        config.setPosition(LayoutConfig.Edge.BOTTOM, pixel(0f));
+        config.setPosition(LayoutConfig.Edge.LEFT, pixel(0f));
+      });
+      return this;
+    }
 
     public Builder center() {
       operations.add(config -> {
