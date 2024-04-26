@@ -2,8 +2,8 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.jsignal.Ref;
-import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.Painter;
+import com.github.wilgaboury.sigui.layout.Layout;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.RRect;
@@ -28,14 +28,14 @@ public class BasicPainter implements Painter {
   }
 
   @Override
-  public void paint(Canvas canvas, MetaNode node) {
+  public void paint(Canvas canvas, Layout layout) {
     try (Paint paint = new Paint()) {
       Ref<RRect> borderInner = new Ref<>();
       borderColor.get().ifPresent(color -> {
         if (border.get() > 0f) {
-          var borderOuter = node.getLayout().getBorderRect().withRadii(radius.get());
+          var borderOuter = layout.getBorderRect().withRadii(radius.get());
           var inner = borderOuter.inflate(-border.get());
-          borderInner.set(inner instanceof RRect i ? i : inner.withRadii(0f));
+          borderInner.accept(inner instanceof RRect i ? i : inner.withRadii(0f));
           paint.setColor(color);
           canvas.drawDRRect(borderOuter, borderInner.get(), paint);
         }
@@ -43,7 +43,7 @@ public class BasicPainter implements Painter {
       backgroundColor.get().ifPresent(color -> {
         var rect = borderInner.get() != null
           ? borderInner.get()
-          : node.getLayout().getPaddingRect().withRadii(0f);
+          : layout.getPaddingRect().withRadii(0f);
         paint.setColor(color);
         canvas.drawRRect(rect, paint);
       });

@@ -1,10 +1,14 @@
 package com.github.wilgaboury.sigui;
 
+import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.Layouter;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -33,8 +37,8 @@ public interface Node {
   }
 
   // coordinates are in "paint space" for ease of calculation
-  default boolean hitTest(Point p, MetaNode node) {
-    return MathUtil.contains(Rect.makeWH(node.getLayout().getSize()), p);
+  default boolean hitTest(Point p, Layout layout) {
+    return MathUtil.contains(Rect.makeWH(layout.getSize()), p);
   }
 
   static Builder builder() {
@@ -44,6 +48,7 @@ public interface Node {
   class Builder {
     private Function<Node, MetaNode> toMeta = MetaNode::new;
     private Consumer<MetaNode> reference = n -> {};
+    private List<EventListener> listeners = Collections.emptyList();
     private Nodes children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
@@ -56,6 +61,11 @@ public interface Node {
 
     public Builder ref(Consumer<MetaNode> reference) {
       this.reference = reference;
+      return this;
+    }
+
+    public Builder listen(EventListener... listeners) {
+      this.listeners = Arrays.asList(listeners);
       return this;
     }
 
@@ -96,6 +106,7 @@ public interface Node {
   class Composed implements Node {
     private final Function<Node, MetaNode> toMeta;
     private final Consumer<MetaNode> ref;
+    private final List<EventListener> listeners;
     private final Nodes children;
     private final Layouter layout;
     private final Transformer transformer;
@@ -105,6 +116,7 @@ public interface Node {
       this.toMeta = builder.toMeta;
       this.children = builder.children;
       this.ref = builder.reference;
+      this.listeners = builder.listeners;
       this.layout = builder.layout;
       this.transformer = builder.transformer;
       this.paint = builder.paint;
@@ -113,7 +125,10 @@ public interface Node {
     @Override
     public MetaNode toMeta() {
       var meta = toMeta.apply(this);
-      SiguiThread.queueMicrotask(() -> ref.accept(meta));
+      SiguiThread.queueMicrotask(() -> {
+        meta.listen(listeners);
+        ref.accept(meta);
+      });
       return meta;
     }
 

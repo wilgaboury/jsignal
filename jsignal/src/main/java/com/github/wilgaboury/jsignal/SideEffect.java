@@ -33,7 +33,7 @@ public class SideEffect extends Effect {
 
   public <T> T run(Supplier<T> supplier) {
     var ref = new Ref<T>(null);
-    run(() -> ref.set(supplier.get()));
+    run(() -> ref.accept(supplier.get()));
     return ref.get();
   }
 

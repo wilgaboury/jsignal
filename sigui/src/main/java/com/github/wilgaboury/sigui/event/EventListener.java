@@ -54,4 +54,12 @@ public class EventListener {
     public static EventListener onScroll(Consumer<ScrollEvent> listener) {
         return new EventListener(EventType.SCROLL, listener);
     }
+
+    public static EventListener onFocus(Consumer<FocusEvent> listener) {
+        return new EventListener(EventType.SCROLL, listener);
+    }
+
+    public static EventListener onBlur(Consumer<FocusEvent> listener) {
+        return new EventListener(EventType.BLUR, listener);
+    }
 }

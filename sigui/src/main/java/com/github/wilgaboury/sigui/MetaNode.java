@@ -119,7 +119,7 @@ public class MetaNode {
 
   public void setPaintCacheStrategy(PaintCacheStrategy paintCacheStrategy) {
     this.paintCacheStrategy = paintCacheStrategy;
-    paintCacheEffect.run(() -> {});
+    paintCacheEffect.run(() -> {}); // clear side effect dependencies
     paintEffectInner();
   }
 
@@ -150,7 +150,7 @@ public class MetaNode {
 
       paintCacheStrategy.paint(canvas, new PaintCacheUseMetaNode(), cacheCanvas -> {
         if (painter != null) {
-          paintEffect.run(() -> painter.paint(cacheCanvas, this));
+          paintEffect.run(() -> painter.paint(cacheCanvas, layout));
         }
         paintChildren(cacheCanvas);
       });
@@ -217,18 +217,16 @@ public class MetaNode {
     var currentNode = this;
     var currentTransform = this.getTransform();
 
-    if (!currentNode.getNode().hitTest(createTestPoint(p, currentTransform), currentNode)) {
+    if (!currentNode.getNode().hitTest(createTestPoint(p, currentTransform), layout)) {
       return null;
     }
 
     outer:
     for (; ; ) {
-      var children = currentNode.children.get();
-      for (int i = children.size(); i > 0; i--) {
-        var child = children.get(i - 1);
+      for (var child : currentNode.getChildren().reversed()) {
         var newTransform = currentTransform.makeConcat(child.getTransform());
 
-        if (child.node.hitTest(createTestPoint(p, newTransform), child)) {
+        if (child.node.hitTest(createTestPoint(p, newTransform), child.getLayout())) {
           currentNode = child;
           currentTransform = newTransform;
           continue outer;
@@ -249,7 +247,7 @@ public class MetaNode {
 
   public Matrix33 getFullTransform() {
     Ref<Matrix33> mat = new Ref<>(Matrix33.IDENTITY);
-    visitParents(n -> mat.set(n.getTransform().makeConcat(mat.get())));
+    visitParents(n -> mat.accept(n.getTransform().makeConcat(mat.get())));
     return mat.get();
   }
 
@@ -309,6 +307,10 @@ public class MetaNode {
   }
 
   public void listen(EventListener... addListeners) {
+    listen(Arrays.asList(addListeners));
+  }
+
+  public void listen(Iterable<EventListener> addListeners) {
     for (var listener : addListeners) {
       var listeners = this.listeners.computeIfAbsent(listener.getType(), k -> new LinkedHashSet<>());
       listeners.add(listener.getListener());

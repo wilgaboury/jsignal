@@ -3,6 +3,7 @@ package com.github.wilgaboury.sigwig;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
@@ -91,8 +92,8 @@ public class Button implements Renderable {
     };
   }
 
-  private void paint(Canvas canvas, MetaNode node) {
-    var size = node.getLayout().getSize();
+  private void paint(Canvas canvas, Layout layout) {
+    var size = layout.getSize();
     if (mouseDown.get()) {
       float pressScale = 0.95f;
       canvas.scale(pressScale, pressScale);

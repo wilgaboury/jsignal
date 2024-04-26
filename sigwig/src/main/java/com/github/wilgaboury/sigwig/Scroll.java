@@ -5,6 +5,7 @@ import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
+import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
 import io.github.humbleui.jwm.Key;
@@ -94,7 +95,7 @@ public class Scroll implements Renderable {
 
     return Node.builder()
       .ref(meta -> {
-        view.set(meta);
+        view.accept(meta);
         meta.addTags("scroller-parent");
         meta.listen(
           EventListener.onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
@@ -116,7 +117,7 @@ public class Scroll implements Renderable {
       .children(
         Node.builder()
           .ref(meta -> {
-            content.set(meta);
+            content.accept(meta);
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
           .layout(yoga -> {
@@ -185,7 +186,7 @@ public class Scroll implements Renderable {
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
             Node.builder()
               .ref(node -> {
-                yBar.set(node);
+                yBar.accept(node);
                 node.listen(
                   EventListener.onMouseDown(e -> {
                     var pos = MathUtil.apply(
@@ -232,7 +233,7 @@ public class Scroll implements Renderable {
     return Optional.empty();
   }
 
-  private void paintVertScrollBar(Canvas canvas, MetaNode node) {
+  private void paintVertScrollBar(Canvas canvas, Layout layout) {
   }
 
   private Optional<Rect> horizBarRect() {
@@ -401,14 +402,14 @@ public class Scroll implements Renderable {
               .makeConcat(Matrix33.makeTranslate(-size.get() / 2f, -size.get() / 2f));
           }
         })
-        .paint((canvas, node) -> {
-            if (!show.get()) {
-                return;
-            }
+        .paint((canvas, layout) -> {
+          if (!show.get()) {
+            return;
+          }
 
           try (var paint = new Paint()) {
             paint.setColor(EzColors.BLUE_300);
-            canvas.drawRect(node.getLayout().getBoundingRect(), paint);
+            canvas.drawRect(layout.getBoundingRect(), paint);
           }
         })
         .build();

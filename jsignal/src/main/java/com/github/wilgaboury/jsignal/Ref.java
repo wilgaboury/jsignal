@@ -1,6 +1,9 @@
 package com.github.wilgaboury.jsignal;
 
-public class Ref<T> {
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+public class Ref<T> implements Supplier<T>, Consumer<T> {
     private T ref;
 
     public Ref() {
@@ -11,11 +14,13 @@ public class Ref<T> {
         this.ref = ref;
     }
 
+    @Override
     public T get() {
         return ref;
     }
 
-    public void set(T ref) {
+    @Override
+    public void accept(T ref) {
         this.ref = ref;
     }
 }

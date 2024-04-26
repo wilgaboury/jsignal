@@ -9,6 +9,7 @@ import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
 
 import java.util.*;
@@ -22,7 +23,7 @@ public class SiguiWindow {
 
   private static final Set<SiguiWindow> windows = new HashSet<>();
 
-  private Window window;
+  private @Nullable Window window;
   private final MetaNode root;
   private final Cleanups rootCleanups;
 
@@ -39,7 +40,7 @@ public class SiguiWindow {
 
   private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
-  public SiguiWindow(Window window, Supplier<Renderable> root) {
+  public SiguiWindow(@Nullable Window window, Supplier<Renderable> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();
