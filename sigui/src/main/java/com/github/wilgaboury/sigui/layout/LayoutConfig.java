@@ -82,7 +82,7 @@ public interface LayoutConfig {
   }
 
   enum PositionType {
-    STATIC,
+    STATIC, // TODO: maybe remove this, ruins layout and hit detection assumptions
     RELATIVE,
     ABSOLUTE
   }

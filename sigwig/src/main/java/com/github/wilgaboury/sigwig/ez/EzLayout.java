@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigui;
+package com.github.wilgaboury.sigwig.ez;
 
 import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.sigui.layout.Insets;

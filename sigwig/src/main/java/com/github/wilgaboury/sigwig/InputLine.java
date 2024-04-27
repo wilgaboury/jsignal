@@ -2,7 +2,13 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.*;
+import com.github.wilgaboury.sigui.MetaNode;
+import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
+import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.TextLine;
 import io.github.humbleui.skija.Paint;
 
@@ -20,7 +26,7 @@ public class InputLine implements Renderable {
   @Override
   public Nodes render() {
     var ref = new Ref<MetaNode>();
-    return Node.builder()
+    return EzNode.builder()
       .ref(ref)
       .listen(
         onFocus(event -> isFocused.accept(true)),

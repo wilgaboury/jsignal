@@ -10,7 +10,6 @@ import com.github.wilgaboury.sigui.layout.YogaLayoutConfig;
 import com.github.wilgaboury.sigui.paint.PaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.PicturePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
-import com.github.wilgaboury.sigui.paint.UseMetaNode;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
@@ -33,6 +32,7 @@ public class MetaNode {
 
   private final Node node;
   private final @Nullable Painter painter;
+  private final @Nullable Painter afterPainter;
   private final Transformer transformer;
   private final @Nullable Layouter layouter;
 
@@ -46,6 +46,7 @@ public class MetaNode {
 
   private final SideEffect paintEffect;
   private final SideEffect paintCacheEffect;
+  private final SideEffect paintAfterEffect;
   private final SideEffect transformEffect;
   private final Effect layoutEffect; // unused, strong ref
 
@@ -59,6 +60,7 @@ public class MetaNode {
 
     this.node = node;
     this.painter = node.getPainter();
+    this.afterPainter = node.getAfterPainter();
     this.transformer = node.getTransformer() != null ? node.getTransformer() : n -> Matrix33.IDENTITY;
     this.layouter = node.getLayouter();
     var nodeChildren = node.getChildren();
@@ -74,6 +76,7 @@ public class MetaNode {
 
     this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
     this.paintCacheEffect = SideEffect.create(this::paintEffectInner);
+    this.paintAfterEffect = afterPainter != null ? SideEffect.create(this::paintEffectInner) : null;
     this.transformEffect = SideEffect.create(this::transformEffectInner);
     this.layoutEffect = layouter != null ? Effect.create(this::runLayouter) : null;
 
@@ -148,11 +151,16 @@ public class MetaNode {
     try {
       transformEffect.run(() -> canvas.concat(getTransform()));
 
-      paintCacheStrategy.paint(canvas, new PaintCacheUseMetaNode(), cacheCanvas -> {
+      paintCacheStrategy.paint(canvas, this::paintCacheUseMetaNode, cacheCanvas -> {
         if (painter != null) {
           paintEffect.run(() -> painter.paint(cacheCanvas, layout));
         }
+
         paintChildren(cacheCanvas);
+
+        if (afterPainter != null) {
+          paintAfterEffect.run(() -> afterPainter.paint(cacheCanvas, layout));
+        }
       });
     } finally {
       canvas.restoreToCount(count);
@@ -165,11 +173,8 @@ public class MetaNode {
     }
   }
 
-  private class PaintCacheUseMetaNode implements UseMetaNode {
-    @Override
-    public <T> T use(Function<MetaNode, T> use) {
-      return paintCacheEffect.run(() -> use.apply(MetaNode.this));
-    }
+  private <T> T paintCacheUseMetaNode(Function<MetaNode, T> use) {
+    return paintCacheEffect.run(() -> use.apply(MetaNode.this));
   }
 
   public void runLayouter() {
@@ -242,7 +247,7 @@ public class MetaNode {
 
   public Matrix33 getTransform() {
     var offset = layout.getParentOffset();
-    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transformer.transform(this));
+    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transformer.transform(layout));
   }
 
   public Matrix33 getFullTransform() {
@@ -377,13 +382,20 @@ public class MetaNode {
   }
 
   public static MetaNode createRoot(Supplier<Renderable> component) {
-    return new MetaNode(Node.builder()
-      .layout(config -> {
-        config.setWidth(percent(100f));
-        config.setHeight(percent(100f));
-      })
-      .children(new RootComponent(component).getNodes())
-      .node());
+    return new MetaNode(new Node() {
+      @Override
+      public Layouter getLayouter() {
+        return config -> {
+          config.setWidth(percent(100f));
+          config.setHeight(percent(100f));
+        };
+      }
+
+      @Override
+      public Nodes getChildren() {
+        return new RootComponent(component).getNodes();
+      }
+    });
   }
 
   /**

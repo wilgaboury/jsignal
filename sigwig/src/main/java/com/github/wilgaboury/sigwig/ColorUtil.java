@@ -1,6 +1,7 @@
 package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.sigui.MathUtil;
+import com.github.wilgaboury.sigwig.ez.EzColors;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.Matrix33;
 

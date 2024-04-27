@@ -1,10 +1,10 @@
 package com.github.wilgaboury.sigwig.text;
 
 import com.github.wilgaboury.jsignal.JSignalUtil;
-import com.github.wilgaboury.sigui.Node;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.skija.Paint;
 
 import java.util.function.Supplier;
@@ -23,7 +23,7 @@ public class TextLine implements Renderable {
 
   @Override
   public Nodes render() {
-    return Node.builder()
+    return EzNode.builder()
       .layout(config -> {
         var tmp = line.get();
         config.setWidth(pixel(tmp.getWidth()));

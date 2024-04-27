@@ -3,6 +3,9 @@ package com.github.wilgaboury.jsigwig.examples;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.Para;
 import com.github.wilgaboury.sigwig.text.TextLine;
 import com.google.common.net.MediaType;
@@ -51,7 +54,7 @@ public class SimpleTest implements Renderable {
     return Scroll.builder()
       .setBarWidth(15f)
       .setChildren(
-        Node.builder()
+        EzNode.builder()
           .layout(EzLayout.builder()
             .fill()
             .center()
@@ -79,7 +82,7 @@ public class SimpleTest implements Renderable {
               ))
               .setColor(EzColors.GRAY_700)
               .build(),
-            Node.builder()
+            EzNode.builder()
               .layout(EzLayout.builder()
                 .row()
                 .wrap()

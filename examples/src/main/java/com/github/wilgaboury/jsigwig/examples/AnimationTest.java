@@ -3,7 +3,13 @@ package com.github.wilgaboury.jsigwig.examples;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.layout.LayoutValue;
-import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigwig.Blob;
+import com.github.wilgaboury.sigwig.BlobException;
+import com.github.wilgaboury.sigwig.Button;
+import com.github.wilgaboury.sigwig.Image;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.TextLine;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Matrix33;
@@ -38,7 +44,7 @@ public class AnimationTest implements Renderable {
     var animation = new Animation(deltaTimeNano ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
-    return Node.builder()
+    return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()
@@ -46,12 +52,12 @@ public class AnimationTest implements Renderable {
         .build()
       )
       .children(
-        Node.builder()
-          .transform(meta -> {
-            var size = meta.getLayout().getSize();
-            return Matrix33.makeTranslate(size.getX()/2f, size.getY()/2f)
+        EzNode.builder()
+          .transform(layout -> {
+            var size = layout.getSize();
+            return Matrix33.makeTranslate(size.getX() / 2f, size.getY() / 2f)
               .makeConcat(Matrix33.makeRotate(angle.get()))
-              .makeConcat(Matrix33.makeTranslate(-size.getX()/2f, -size.getY()/2f));
+              .makeConcat(Matrix33.makeTranslate(-size.getX() / 2f, -size.getY() / 2f));
           })
           .children(
             Image.builder()

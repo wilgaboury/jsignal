@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigwig;
+package com.github.wilgaboury.sigwig.ez;
 
 public class EzColors {
     public static final int WHITE = 0xffffffff;

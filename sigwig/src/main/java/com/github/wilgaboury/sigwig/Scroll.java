@@ -8,6 +8,9 @@ import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.jwm.Key;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
@@ -93,7 +96,7 @@ public class Scroll implements Renderable {
       yScale.accept(viewSize.getY() / contentSize.getY());
     });
 
-    return Node.builder()
+    return EzNode.builder()
       .ref(meta -> {
         view.accept(meta);
         meta.addTags("scroller-parent");
@@ -115,7 +118,7 @@ public class Scroll implements Renderable {
         .build()
       )
       .children(
-        Node.builder()
+        EzNode.builder()
           .ref(meta -> {
             content.accept(meta);
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
@@ -135,16 +138,16 @@ public class Scroll implements Renderable {
                 .layout(yoga);
             }
           })
-          .transform(node -> {
-            var height = node.getParent().getLayout().getHeight();
-            var max = node.getLayout().getHeight() - height;
+          .transform(layout -> {
+            var height = layout.getHeight();
+            var max = layout.getHeight() - height;
             // TODO: bypass
             yOffset.accept(Math.min(0f, Math.max(-max, yOffset.get())));
             return Matrix33.makeTranslate(0f, yOffset.get());
           })
           .children(children.get())
           .build(),
-        Node.builder()
+        EzNode.builder()
           .ref(node -> node.listen(
             EventListener.onMouseOver(e -> xBarMouseOver.accept(true)),
             EventListener.onMouseOut(e -> xBarMouseOver.accept(false)),
@@ -169,7 +172,7 @@ public class Scroll implements Renderable {
           )
           .paint(this::paintVertScrollBar)
           .build(),
-        Node.builder()
+        EzNode.builder()
           .ref(node -> node.listen(
             EventListener.onMouseOver(e -> yBarMouseOver.accept(true)),
             EventListener.onMouseOut(e -> yBarMouseOver.accept(false))
@@ -184,7 +187,7 @@ public class Scroll implements Renderable {
           )
           .children(
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
-            Node.builder()
+            EzNode.builder()
               .ref(node -> {
                 yBar.accept(node);
                 node.listen(
@@ -212,7 +215,7 @@ public class Scroll implements Renderable {
               .build(),
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
             // spacer
-            Node.builder()
+            EzNode.builder()
               .layout(yoga -> EzLayout.builder()
                 .height(() -> pixel(xBarWidth.get()))
                 .build()
@@ -382,7 +385,7 @@ public class Scroll implements Renderable {
 
     @Override
     public Nodes render() {
-      return Node.builder()
+      return EzNode.builder()
         .ref(reference -> reference.listen(
           EventListener.onMouseClick(e -> action.run()),
           EventListener.onMouseDown(e -> mouseDown.accept(true)),

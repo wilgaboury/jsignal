@@ -2,6 +2,7 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigwig.ez.EzColors;
 
 public class Theme {
   public static final Context<Signal<Theme>> context = Context.create(Signal.create(Theme.builder().build()));

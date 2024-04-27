@@ -5,6 +5,8 @@ import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
@@ -35,7 +37,7 @@ public class Button implements Renderable {
 
   @Override
   public Nodes render() {
-    return Node.builder()
+    return EzNode.builder()
       .ref(meta -> {
         ref.accept(meta);
         meta.listen(

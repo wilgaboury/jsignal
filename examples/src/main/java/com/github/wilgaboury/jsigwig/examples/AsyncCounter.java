@@ -5,7 +5,9 @@ import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigwig.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.TextLine;
 
 import java.util.concurrent.Executors;
@@ -33,7 +35,7 @@ public class AsyncCounter implements Renderable {
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);
 
-    return Node.builder()
+    return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()

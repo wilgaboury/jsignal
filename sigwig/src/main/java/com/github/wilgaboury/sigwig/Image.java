@@ -2,8 +2,10 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.sigui.*;
+import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigui.layout.LayoutValue;
+import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Data;
@@ -55,7 +57,7 @@ public class Image implements Renderable {
 
   @Override
   public Nodes render() {
-    return Node.builder()
+    return EzNode.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {
           layoutVector(config);
@@ -123,7 +125,7 @@ public class Image implements Renderable {
       return (canvas, node) -> paintVector(canvas, node, svg, fit, viewBox.getX(), viewBox.getY());
     } else if (blob.mime().is(MediaType.ANY_IMAGE_TYPE)) {
       var img = getImageObject(blob);
-      return (canvas, node) -> paintRaster(canvas, node, img, fit);
+      return (canvas, layout) -> paintRaster(canvas, layout, img, fit);
     } else {
       logger.warn("Unrecognized image type: {}", blob.mime());
       return (canvas, yoga) -> {
@@ -133,13 +135,13 @@ public class Image implements Renderable {
 
   private static void paintVector(
     Canvas canvas,
-    MetaNode node,
+    Layout layout,
     SVGDOM svg,
     Fit fit,
     float imgHeight,
     float imgWidth
   ) {
-    var size = node.getLayout().getSize();
+    var size = layout.getSize();
 
     if (fit == Fit.FILL) {
       var svgRatio = imgWidth / imgHeight;
@@ -181,11 +183,11 @@ public class Image implements Renderable {
 
   private static void paintRaster(
     Canvas canvas,
-    MetaNode node,
+    Layout layout,
     io.github.humbleui.skija.Image img,
     Fit fit
   ) {
-    var size = node.getLayout().getSize();
+    var size = layout.getSize();
 
     switch (fit) {
       case CONTAIN -> {
