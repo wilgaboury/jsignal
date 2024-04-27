@@ -27,6 +27,8 @@ public class SiguiWindow {
   private final MetaNode root;
   private final Cleanups rootCleanups;
 
+  private long prevFrameTimeNano = 0;
+  private long deltaFrameNano = -1L;
   private final Queue<Runnable> preFrame;
   private final Queue<Runnable> postFrame;
 
@@ -63,7 +65,8 @@ public class SiguiWindow {
       window.setVisible(true);
       window.getLayer().frame(); // fixes display glitch
     });
-    window.setEventListener(e -> SiguiThread.invoke(() -> handleEvent(e)));
+    window.setEventListener(e -> SiguiThread.invoke(() ->
+      context.with(this).provide(() -> handleEvent(e))));
   }
 
   public Optional<Window> getWindow() {
@@ -83,6 +86,10 @@ public class SiguiWindow {
 
   public Point getMousePosition() {
     return mousePosition.get();
+  }
+
+  public long getDeltaFrameNano() {
+    return deltaFrameNano;
   }
 
   private void layout() {
@@ -150,6 +157,8 @@ public class SiguiWindow {
         paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
         shouldPaint = false;
 
+        calculateDeltaFrame();
+
         SiguiThread.executeQueue(postFrame);
       }
       case EventWindowResize e -> requestLayout();
@@ -178,7 +187,7 @@ public class SiguiWindow {
           if (e.isPressed()) {
             mouseDown = hovered;
 
-            mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown));
+            mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_DOWN, mouseDown, e));
 
             var focusTemp = mouseDown;
             while (!focusTemp.hasListener(EventType.FOCUS)
@@ -197,14 +206,14 @@ public class SiguiWindow {
 
         if (!e.isPressed()) {
           if (hovered != null) {
-            hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+            hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
           }
 
           // TODO: possibly check up tree instead of just target for click test
           if (hovered != null && mouseDown == hovered) {
-            hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered));
+            hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_CLICK, hovered, e));
           } else if (mouseDown != null) {
-            mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered));
+            mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
           }
         }
       }
@@ -215,7 +224,7 @@ public class SiguiWindow {
       }
       case EventWindowFocusOut e -> {
         if (hovered != null) {
-          hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
+          hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
         }
         hovered = null;
       }
@@ -232,23 +241,34 @@ public class SiguiWindow {
       var newParents = newHovered == null ? null : newHovered.getParents();
 
       if (hovered != null) {
-        hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered));
+        hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
         var node = hovered;
         while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
-          node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered));
+          node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered, mousePosition.get()));
           node = node.getParent();
         }
       }
 
       if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
-        newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered));
+        newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered, mousePosition.get()));
       }
 
       hovered = newHovered;
     }
 
     if (hovered != null) {
-      hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered));
+      hovered.bubble(new MouseEvent(EventType.MOUSE_OVER, hovered, mousePosition.get()));
+    }
+  }
+
+  private void calculateDeltaFrame() {
+    if (deltaFrameNano < 0) {
+      prevFrameTimeNano = System.nanoTime();
+      deltaFrameNano = 0;
+    } else {
+      long curFrameTimeNano = System.nanoTime();
+      deltaFrameNano = curFrameTimeNano - prevFrameTimeNano;
+      prevFrameTimeNano = curFrameTimeNano;
     }
   }
 

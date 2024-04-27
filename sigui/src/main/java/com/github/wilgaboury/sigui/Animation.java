@@ -9,56 +9,54 @@ public class Animation {
 
   private final SiguiWindow window;
   private final Callback callback;
-  private Long lastTimeNano = null;
+  private boolean firstFrame = true;
   private boolean queued;
-  private Signal<Boolean> isRunning;
+  private Signal<Boolean> running;
 
   public Animation(Callback callback) {
     this.window = SiguiWindow.context.use();
     this.callback = callback;
+    firstFrame = true;
     queued = false;
-    isRunning = Signal.create(false);
+    running = Signal.create(false);
   }
 
   public boolean isRunning() {
-    return isRunning.get();
+    return running.get();
   }
 
   public void start() {
     if (!queued) {
-      window.preFrame(this::run);
+      firstFrame = true;
       queued = true;
+      window.postFrame(this::run);
       window.requestFrame();
     }
-    isRunning.accept(true);
+    running.accept(true);
   }
 
   public void stop() {
-    isRunning.accept(false);
-    lastTimeNano = null;
+    running.accept(false);
   }
 
   private void run() {
     queued = false;
-    if (!isRunning.get())
+    if (!running.get())
       return;
 
-    long deltaTime = 0;
-    long newTimeNano = System.nanoTime();
-    if (lastTimeNano != null) {
-      deltaTime = newTimeNano - lastTimeNano;
-    }
-    lastTimeNano = newTimeNano;
-
-    try {
-      callback.run(deltaTime);
-    } catch (Exception e) {
-      logger.error("uncaught exception in animation", e);
+    if (firstFrame) {
+      firstFrame = false;
+    } else {
+      try {
+        callback.run(window.getDeltaFrameNano());
+      } catch (Exception e) {
+        logger.error("uncaught exception in animation", e);
+      }
     }
 
-    if (isRunning.get()) {
-      window.postFrame(() -> {
-        window.preFrame(this::run);
+    if (running.get()) {
+      SiguiThread.queueMicrotask(() -> {
+        window.postFrame(this::run);
         window.requestFrame();
       });
       queued = true;

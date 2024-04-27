@@ -35,7 +35,7 @@ public class AnimationTest implements Renderable {
     }
   }
 
-  private static final float ANGULAR_VEL_DEG_SEC = 360f / 1f;
+  private static final float ANGULAR_VEL_DEG_SEC = 360f / 5f;
 
   private final Signal<Float> angle = Signal.create(0f);
 
@@ -77,8 +77,10 @@ public class AnimationTest implements Renderable {
           )
           .setAction(() -> {
             if (animation.isRunning()) {
+              System.out.println("stop");
               animation.stop();
             } else {
+              System.out.println("start");
               animation.start();
             }
           })
