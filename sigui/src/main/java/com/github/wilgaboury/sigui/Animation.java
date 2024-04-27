@@ -9,7 +9,7 @@ public class Animation {
 
   private final SiguiWindow window;
   private final Callback callback;
-  private boolean firstFrame = true;
+  private boolean firstFrame;
   private boolean queued;
   private Signal<Boolean> running;
 
