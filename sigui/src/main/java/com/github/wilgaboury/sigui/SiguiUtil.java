@@ -4,6 +4,8 @@ import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.sigui.hotswap.HotswapInstrumentation;
 import com.github.wilgaboury.sigui.hotswap.HotswapRerenderService;
+import com.github.wilgaboury.sigui.hotswap.espresso.EspressoSiguiHotswapPlugin;
+import com.oracle.truffle.espresso.hotswap.EspressoHotSwap;
 import io.github.humbleui.jwm.App;
 import io.github.humbleui.jwm.Layer;
 import io.github.humbleui.jwm.Platform;
@@ -29,6 +31,8 @@ public class SiguiUtil {
 
     // calling new here provides hook for hotswap agent plugin initialization
     new HotswapRerenderService();
+
+    EspressoHotSwap.registerPlugin(new EspressoSiguiHotswapPlugin());
 
     clearNodeStyle = Yoga.YGNodeNew();
   }

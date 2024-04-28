@@ -23,6 +23,7 @@ ambitious attempt to fill in that void.
 ## Obligatory Example
 
 ```java
+
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
@@ -67,9 +68,22 @@ public class Counter implements Renderable {
 ## Hotswap
 
 One of Sigui's main features is it's built in support for hotswap development, as in it can apply certain code changes
-to the user interface without having to restart a running application. Currently, this s reliant on the DCEVM JVM patch
-and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent). Instructions for setting this up in Intellij Idea
+to the user interface without having to restart a running application. This feature is supported in two ways.
+
+### Espresso
+
+Also known as Java on Truffle, this is an implementation of Java using GraalVM's truffle language framework. It also
+supports advanced hotswap capabilities, and a has a nice plugin API. Instructions for setting this up in Intellij Idea
 CE are below:
+
+- Download the [GraalVM Espresso JVM](https://www.graalvm.org/jdk21/reference-manual/java-on-truffle/#getting-started) 
+- Set the jvm as 
+
+### Hotswap Agent
+
+This method of hotwap support uses the DCEVM JVM patch
+and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent), which is fundamentally a framework built around
+Java's instrumentation API. Instructions for setting this up in Intellij Idea CE are below:
 
 - Download and use the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK 21, which contains the
   DCEVM JVM patch
@@ -93,26 +107,54 @@ developer ergonomics.
 Signal<Integer> value = Signal.create(5);
 Effect effect = Effect.create(() -> System.out.println(value.get()));
 // prints 5
-value.accept(6); // prints 6
-value.accept(7); // prints 7
-effect.dispose();
-value.accept(8); // prints nothing
+value.
+
+accept(6); // prints 6
+value.
+
+accept(7); // prints 7
+effect.
+
+dispose();
+value.
+
+accept(8); // prints nothing
 
 // create an automatically computed value
 Computed<Integer> squared = createComputed(() -> value.get() * value.get());
-effect = Effect.create(() -> System.out.println(squared.get())); // prints 64
-value.accept(9); // prints 81
-value.accept(10); // prints 100
+effect =Effect.
 
-effect = null;
-Runtime.getRuntime().gc();
-value.accept(11); // prints nothing
+create(() ->System.out.
+
+println(squared.get())); // prints 64
+  value.
+
+accept(9); // prints 81
+value.
+
+accept(10); // prints 100
+
+effect =null;
+  Runtime.
+
+getRuntime().
+
+gc();
+value.
+
+accept(11); // prints nothing
 
 // explicitly define dependency to get current and previous value on change
-effect = Effect.create(on(squared, (cur, prev) -> System.out.println(cur + ", " + prev)));
+effect =Effect.
+
+create(on(squared, (cur, prev) ->System.out.
+
+println(cur +", "+prev)));
 // prints 121, null
 
-value.accept(12); // prints 144, 121
+  value.
+
+accept(12); // prints 144, 121
 ```
 
 One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the
