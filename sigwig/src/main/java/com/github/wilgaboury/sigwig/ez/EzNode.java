@@ -32,10 +32,8 @@ public class EzNode implements Node {
   @Override
   public MetaNode toMeta() {
     var meta = toMeta.apply(this);
-    SiguiThread.queueMicrotask(() -> {
-      meta.listen(listeners);
-      ref.accept(meta);
-    });
+    ref.accept(meta);
+    meta.listen(listeners);
     return meta;
   }
 

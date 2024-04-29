@@ -139,10 +139,11 @@ public class Scroll implements Renderable {
             }
           })
           .transform(layout -> {
-            var height = layout.getHeight();
+            var height = view.get().getLayout().getHeight();
             var max = layout.getHeight() - height;
             // TODO: bypass
-            yOffset.accept(Math.min(0f, Math.max(-max, yOffset.get())));
+            var tmp = Math.min(0f, Math.max(-max, yOffset.get()));
+            yOffset.accept(tmp);
             return Matrix33.makeTranslate(0f, yOffset.get());
           })
           .children(children.get())
