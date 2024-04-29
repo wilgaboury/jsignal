@@ -2,7 +2,6 @@ package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigwig.ez.EzColors;
@@ -14,6 +13,7 @@ import io.github.humbleui.types.Rect;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.sigui.event.EventListener.*;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
@@ -38,24 +38,22 @@ public class Button implements Renderable {
   @Override
   public Nodes render() {
     return EzNode.builder()
-      .ref(meta -> {
-        ref.accept(meta);
-        meta.listen(
-          EventListener.onMouseOver(e -> mouseOver.accept(true)),
-          EventListener.onMouseDown(e -> mouseDown.accept(true)),
-          EventListener.onMouseOut(e -> {
-            mouseDown.accept(false);
-            mouseOver.accept(false);
-          }),
-          EventListener.onMouseUp(e -> {
-            var prev = mouseDown.get();
-            mouseDown.accept(false);
-            if (prev) {
-              action.get().run();
-            }
-          })
-        );
-      })
+      .ref(ref)
+      .listen(
+        onMouseOver(e -> mouseOver.accept(true)),
+        onMouseDown(e -> mouseDown.accept(true)),
+        onMouseOut(e -> {
+          mouseDown.accept(false);
+          mouseOver.accept(false);
+        }),
+        onMouseUp(e -> {
+          var prev = mouseDown.get();
+          mouseDown.accept(false);
+          if (prev) {
+            action.get().run();
+          }
+        })
+      )
       .layout(this::layout)
       .paint(this::paint)
       .children(children.get(this::textSize, () -> ColorUtil.contrastText(color.get())))
