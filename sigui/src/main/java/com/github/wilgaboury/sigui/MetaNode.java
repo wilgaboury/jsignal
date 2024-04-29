@@ -130,7 +130,7 @@ public class MetaNode {
     return Optional.ofNullable(layouter);
   }
 
-  public void setId(String id) {
+  public void setId(@Nullable Object id) {
     this.id = id;
   }
 
@@ -140,10 +140,6 @@ public class MetaNode {
 
   public Set<Object> getTags() {
     return tags;
-  }
-
-  public void addTags(Object... tags) {
-    this.tags.addAll(Arrays.asList(tags));
   }
 
   void paint(Canvas canvas) {

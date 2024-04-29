@@ -97,20 +97,17 @@ public class Scroll implements Renderable {
     });
 
     return EzNode.builder()
-      .ref(meta -> {
-        view.accept(meta);
-        meta.addTags("scroller-parent");
-        meta.listen(
-          onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
-          onKeyDown(e -> {
-            if (e.getEvent().getKey() == Key.DOWN) {
-              yOffset.accept(y -> y - 100);
-            } else if (e.getEvent().getKey() == Key.UP) {
-              yOffset.accept(y -> y + 100);
-            }
-          })
-        );
-      })
+      .ref(view)
+      .listen(
+        onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
+        onKeyDown(e -> {
+          if (e.getEvent().getKey() == Key.DOWN) {
+            yOffset.accept(y -> y - 100);
+          } else if (e.getEvent().getKey() == Key.UP) {
+            yOffset.accept(y -> y + 100);
+          }
+        })
+      )
       .layout(EzLayout.builder()
         .width(percent(100f))
         .height(percent(100f))
@@ -149,12 +146,12 @@ public class Scroll implements Renderable {
           .children(children.get())
           .build(),
         EzNode.builder()
-          .ref(node -> node.listen(
+          .ref(meta -> meta.listen(
             onMouseOver(e -> xBarMouseOver.accept(true)),
             onMouseOut(e -> xBarMouseOver.accept(false)),
             onMouseDown(e -> {
-              var pos = MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.getMousePosition());
-              vertBarRect(node).ifPresent(rect -> {
+              var pos = MathUtil.apply(MathUtil.inverse(meta.getFullTransform()), window.getMousePosition());
+              vertBarRect(meta).ifPresent(rect -> {
                 if (MathUtil.contains(rect, pos)) {
                   xMouseDownOffset = pos.getX() - rect.getLeft();
                   xBarMouseDown.accept(true);
@@ -174,10 +171,10 @@ public class Scroll implements Renderable {
           .paint(this::paintVertScrollBar)
           .build(),
         EzNode.builder()
-          .ref(node -> node.listen(
+          .listen(
             onMouseOver(e -> yBarMouseOver.accept(true)),
             onMouseOut(e -> yBarMouseOver.accept(false))
-          ))
+          )
           .layout(EzLayout.builder()
             .width(() -> pixel(yBarWidth.get()))
             .height(percent(100f))
@@ -189,12 +186,12 @@ public class Scroll implements Renderable {
           .children(
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
             EzNode.builder()
-              .ref(node -> {
-                yBar.accept(node);
-                node.listen(
+              .ref(meta -> {
+                yBar.accept(meta);
+                meta.listen(
                   onMouseDown(e -> {
                     var pos = MathUtil.apply(
-                      MathUtil.inverse(node.getFullTransform()),
+                      MathUtil.inverse(meta.getFullTransform()),
                       window.getMousePosition()
                     );
                     horizBarRect().ifPresent(rect -> {
@@ -233,7 +230,7 @@ public class Scroll implements Renderable {
     return yBarMouseOver.get() || yBarMouseDown.get() || !overlay.get();
   }
 
-  private Optional<Rect> vertBarRect(MetaNode node) {
+  private Optional<Rect> vertBarRect(MetaNode meta) {
     return Optional.empty();
   }
 
