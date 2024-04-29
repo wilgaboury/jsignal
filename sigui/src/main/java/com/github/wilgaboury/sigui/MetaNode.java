@@ -218,27 +218,23 @@ public class MetaNode {
     return MathUtil.apply(MathUtil.inverse(transform), p);
   }
 
-  public @Nullable MetaNode pick(Point p) {
-    var currentNode = this;
-    var currentTransform = this.getTransform();
-
-    if (!currentNode.getNode().hitTest(createTestPoint(p, currentTransform), layout)) {
+  /**
+   * @param point must be relative to the node
+   */
+  public @Nullable MetaNode pick(Point point) {
+    var currentTest = node.hitTest(point, layout);
+    if (currentTest == Node.HitTestResult.MISS) {
       return null;
     }
 
-    outer:
-    for (; ; ) {
-      for (var child : currentNode.getChildren().reversed()) {
-        var newTransform = currentTransform.makeConcat(child.getTransform());
-
-        if (child.node.hitTest(createTestPoint(p, newTransform), child.getLayout())) {
-          currentNode = child;
-          currentTransform = newTransform;
-          continue outer;
-        }
+    for (var child : children.get().reversed()) {
+      var childResult = child.pick(createTestPoint(point, child.getTransform()));
+      if (childResult != null) {
+        return childResult;
       }
-      return currentNode;
     }
+
+    return currentTest == Node.HitTestResult.HIT ? this : null;
   }
 
   public Layout getLayout() {

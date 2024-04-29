@@ -35,7 +35,14 @@ public interface Node {
   }
 
   // coordinates are in "paint space" for ease of calculation
-  default boolean hitTest(Point p, Layout layout) {
-    return MathUtil.contains(Rect.makeWH(layout.getSize()), p);
+  default HitTestResult hitTest(Point p, Layout layout) {
+    return MathUtil.contains(Rect.makeWH(layout.getSize()), p)
+      ? HitTestResult.HIT : HitTestResult.MISS;
+  }
+
+  enum HitTestResult {
+    HIT,
+    MISS,
+    PASSTHROUGH
   }
 }

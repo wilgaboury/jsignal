@@ -35,12 +35,12 @@ public class SimpleTest implements Renderable {
   }
 
   public static void main(String[] args) {
-    SiguiThread.start(() -> {
+    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Test App");
       window.setContentSize(400, 400);
       new SiguiWindow(window, SimpleTest::new);
-    });
+    }));
   }
 
   private final Random rand = new Random();

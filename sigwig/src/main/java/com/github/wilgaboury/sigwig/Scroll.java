@@ -4,7 +4,6 @@ import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
@@ -22,6 +21,7 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.untrack;
 import static com.github.wilgaboury.sigui.SiguiUtil.createEffectLater;
+import static com.github.wilgaboury.sigui.event.EventListener.*;
 import static com.github.wilgaboury.sigui.layout.Insets.insets;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
@@ -101,8 +101,8 @@ public class Scroll implements Renderable {
         view.accept(meta);
         meta.addTags("scroller-parent");
         meta.listen(
-          EventListener.onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
-          EventListener.onKeyDown(e -> {
+          onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
+          onKeyDown(e -> {
             if (e.getEvent().getKey() == Key.DOWN) {
               yOffset.accept(y -> y - 100);
             } else if (e.getEvent().getKey() == Key.UP) {
@@ -149,9 +149,9 @@ public class Scroll implements Renderable {
           .build(),
         EzNode.builder()
           .ref(node -> node.listen(
-            EventListener.onMouseOver(e -> xBarMouseOver.accept(true)),
-            EventListener.onMouseOut(e -> xBarMouseOver.accept(false)),
-            EventListener.onMouseDown(e -> {
+            onMouseOver(e -> xBarMouseOver.accept(true)),
+            onMouseOut(e -> xBarMouseOver.accept(false)),
+            onMouseDown(e -> {
               var pos = MathUtil.apply(MathUtil.inverse(node.getFullTransform()), window.getMousePosition());
               vertBarRect(node).ifPresent(rect -> {
                 if (MathUtil.contains(rect, pos)) {
@@ -160,7 +160,7 @@ public class Scroll implements Renderable {
                 }
               });
             }),
-            EventListener.onMouseUp(e -> xBarMouseDown.accept(false))
+            onMouseUp(e -> xBarMouseDown.accept(false))
           ))
           .layout(EzLayout.builder()
             .width(percent(100f))
@@ -174,8 +174,8 @@ public class Scroll implements Renderable {
           .build(),
         EzNode.builder()
           .ref(node -> node.listen(
-            EventListener.onMouseOver(e -> yBarMouseOver.accept(true)),
-            EventListener.onMouseOut(e -> yBarMouseOver.accept(false))
+            onMouseOver(e -> yBarMouseOver.accept(true)),
+            onMouseOut(e -> yBarMouseOver.accept(false))
           ))
           .layout(EzLayout.builder()
             .width(() -> pixel(yBarWidth.get()))
@@ -191,7 +191,7 @@ public class Scroll implements Renderable {
               .ref(node -> {
                 yBar.accept(node);
                 node.listen(
-                  EventListener.onMouseDown(e -> {
+                  onMouseDown(e -> {
                     var pos = MathUtil.apply(
                       MathUtil.inverse(node.getFullTransform()),
                       window.getMousePosition()
@@ -203,7 +203,7 @@ public class Scroll implements Renderable {
                       }
                     });
                   }),
-                  EventListener.onMouseUp(e -> yBarMouseDown.accept(false))
+                  onMouseUp(e -> yBarMouseDown.accept(false))
                 );
               })
               .layout(EzLayout.builder()
@@ -386,11 +386,11 @@ public class Scroll implements Renderable {
     @Override
     public Nodes render() {
       return EzNode.builder()
-        .ref(reference -> reference.listen(
-          EventListener.onMouseClick(e -> action.run()),
-          EventListener.onMouseDown(e -> mouseDown.accept(true)),
-          EventListener.onMouseUp(e -> mouseDown.accept(false))
-        ))
+        .listen(
+          onMouseClick(e -> action.run()),
+          onMouseDown(e -> mouseDown.accept(true)),
+          onMouseUp(e -> mouseDown.accept(false))
+        )
         .layout(EzLayout.builder()
           .height(() -> pixel(size.get()))
           .width(() -> pixel(size.get()))

@@ -234,7 +234,11 @@ public class SiguiWindow {
   }
 
   private void handleMouseMove(Point point) {
-    // TODO: convert from screen to paint space using scale
+    // TODO: convert from screen to paint space using scale - not sure what this means now?
+    // TODO: handle mouse move should be an effect so that whenever transforms, which effect hit testing change,
+    // automatically will cause new event firing, instead of current system of transform side effect and update
+    // which is more hacky. This will also mean that hit test can be reactive, so if the hit test behavior changes
+    // then a new event will be fired automatically (i.e. switching a node from hit to pass through)
     var newHovered = root.pick(point);
     if (hovered != newHovered) {
       var parents = hovered == null ? null : hovered.getParents();
