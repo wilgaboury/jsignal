@@ -12,7 +12,7 @@ public class ComputedContext<T> extends Context<Supplier<T>> {
     return with(JSignalUtil.maybeConstant(use(), func));
   }
 
-  public Provider.Entry withCompute(Function<T, T> func) {
+  public Provider.Entry withComputed(Function<T, T> func) {
     return Provider.Entry.create(this, Computed.create(() -> func.apply(use().get())));
   }
 

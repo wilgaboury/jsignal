@@ -253,7 +253,7 @@ public class Para implements Renderable {
     }
 
     public Provider.Entry computedCustomize(Function<StyleBuilder, StyleBuilder> customize) {
-      return withCompute(s -> customize.apply(s.toBuilder()).build());
+      return withComputed(s -> customize.apply(s.toBuilder()).build());
     }
   }
 

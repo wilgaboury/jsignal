@@ -57,7 +57,7 @@ public class Button implements Renderable {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(Para.style.withCompute(style -> style.toBuilder()
+      .children(Para.style.withComputed(style -> style.toBuilder()
         .setTextStyle(text -> text
           .setFontSize(textSize())
           .setColor(ColorUtil.contrastText(color.get()))

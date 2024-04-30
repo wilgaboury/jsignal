@@ -19,6 +19,7 @@ import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.Para;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
+import io.github.humbleui.skija.FontStyle;
 
 import java.util.Random;
 
@@ -119,7 +120,7 @@ public class SimpleTest implements Renderable {
               )
               .build(),
             Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() -> Nodes.compose(
-              Para.style.computedCustomize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
+              Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
               Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
@@ -134,7 +135,16 @@ public class SimpleTest implements Renderable {
                 )
                 .provide(() ->
                   Para.fromString(LOREM)
-                )
+                ),
+              Para.builder()
+                .setString("Hello")
+                .constantStyle(style -> style
+                  .setTextStyle(text -> text
+                    .setFontSize(26f)
+                    .setFontStyle(FontStyle.ITALIC)
+                    .setColor(EzColors.RED_600)
+                  ))
+                .build()
             )),
             Button.builder()
               .setColor(buttonColor)
