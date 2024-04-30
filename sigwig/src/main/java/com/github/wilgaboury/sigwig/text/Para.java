@@ -10,6 +10,7 @@ import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigui.SiguiThread;
 import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
@@ -40,13 +41,11 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSignalUtil.maybeComputed;
-
 @SiguiComponent
 public class Para implements Renderable {
   private static final FontCollection defaultCollection = new FontCollection();
 
-  public static ComputedContext<Style> style = ComputedContext.create(Constant.of(styleBuilder().build()));
+  public static ParaStyleContext style = new ParaStyleContext();
   public static Context<FontCollection> fonts = Context.create(defaultCollection);
 
   public static final TypefaceFontProvider fontManager = new TypefaceFontProvider();
@@ -65,31 +64,27 @@ public class Para implements Renderable {
   }
 
   private final Supplier<Paragraph> para;
+  private final Supplier<Boolean> line;
 
-  public Para(Paragraph para) {
-    this(Constant.of(para));
+  public Para(Builder builder) {
+    this.para = builder.paragraph;
+    this.line = builder.line;
   }
 
-  public Para(Supplier<Paragraph> para) {
-    this.para = maybeComputed(para);
+  public static Para from(Paragraph paragraph) {
+    return Para.builder().setParagraph(paragraph).build();
+  }
+
+  public static Para from(Supplier<Paragraph> paragraph) {
+    return Para.builder().setParagraph(paragraph).build();
   }
 
   public static Para fromString(String string) {
-    return fromString(Constant.of(string));
+    return Para.builder().setString(string).build();
   }
 
   public static Para fromString(Supplier<String> string) {
-    Supplier<Paragraph> compute = () -> {
-      var result = new ParagraphBuilder(style.use().get().toSkia(), fonts.use());
-      result.addText(string.get());
-      return result.build();
-    };
-
-    if (string instanceof Constant<String>) {
-      return new Para(Constant.of(compute.get()));
-    } else {
-      return new Para(Computed.create(compute));
-    }
+    return Para.builder().setString(string).build();
   }
 
   @Override
@@ -99,14 +94,26 @@ public class Para implements Renderable {
       .ref(meta -> meta.setPaintCacheStrategy(
         new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new)))
       .layout(config -> {
-        provider.provide(() -> Effect.create(JSignalUtil.onDefer(para, () -> {
-          config.markDirty();
-          SiguiWindow.context.use().requestLayout();
-        })));
+        SiguiThread.queueMicrotask(() -> {
+          provider.provide(() -> {
+            Effect.create(() -> {
+              // track state
+              para.get();
+              line.get();
+
+              config.markDirty();
+              SiguiWindow.context.use().requestLayout();
+            });
+          });
+        });
         config.setMeasure((width, widthMode, height, heightMode) -> {
           var p = para.get();
           p.layout(width);
-          return new LayoutConfig.Size(Math.min(width, Math.round(p.getMaxIntrinsicWidth() + 0.5f)), p.getHeight());
+          float intrinsicWidth = Math.round(p.getMaxIntrinsicWidth() + 0.5f);
+          return new LayoutConfig.Size(
+            line.get() ? intrinsicWidth : Math.min(width, intrinsicWidth),
+            p.getHeight()
+          );
         });
       })
       .paint((canvas, layout) -> {
@@ -119,6 +126,135 @@ public class Para implements Renderable {
         p.paint(canvas, 0f, 0f);
       })
       .build();
+  }
+
+  public static BuilderSetContent builder() {
+    return new Builder();
+  }
+
+  public interface BuilderSetContent {
+    BuilderContentString setString(String string);
+    BuilderContentString setString(Supplier<String> string);
+    BuilderContentParagraph setParagraph(Paragraph paragraph);
+    BuilderContentParagraph setParagraph(Supplier<Paragraph> paragraph);
+  }
+
+  public interface BuilderContentString {
+    BuilderContentString setStyle(Style style);
+    BuilderContentString setStyle(Supplier<Style> style);
+    BuilderContentString constantStyle(Function<StyleBuilder, StyleBuilder> customize);
+    BuilderContentString computeStyle(Function<StyleBuilder, StyleBuilder> customize);
+    BuilderContentParagraph setLine(boolean line);
+    BuilderContentParagraph setLine(Supplier<Boolean> line);
+    Para build();
+  }
+
+  public interface BuilderContentParagraph {
+    BuilderContentParagraph setLine(boolean line);
+    BuilderContentParagraph setLine(Supplier<Boolean> line);
+    Para build();
+  }
+
+  public static class Builder implements BuilderSetContent, BuilderContentParagraph, BuilderContentString {
+    private @Nullable Supplier<String> string;
+    private Supplier<Style> style = Para.style.use();
+
+    private @Nullable Supplier<Paragraph> paragraph;
+    private Supplier<Boolean> line = Constant.of(false);
+
+    @Override
+    public Builder setString(String string) {
+      this.string = Constant.of(string);
+      return this;
+    }
+
+    @Override
+    public Builder setString(Supplier<String> string) {
+      this.string = JSignalUtil.maybeComputed(string);
+      return this;
+    }
+
+    @Override
+    public Builder setStyle(Style style) {
+      return this.setStyle(Constant.of(style));
+    }
+
+    @Override
+    public Builder setStyle(Supplier<Style> style) {
+      this.style = JSignalUtil.maybeComputed(style);
+      return this;
+    }
+
+    @Override
+    public Builder constantStyle(Function<StyleBuilder, StyleBuilder> customize) {
+      this.style = JSignalUtil.maybeConstant(Para.style.use(), s -> customize.apply(s.toBuilder()).build());
+      return this;
+    }
+
+    @Override
+    public Builder computeStyle(Function<StyleBuilder, StyleBuilder> customize) {
+      this.style = Computed.create(() -> customize.apply(Para.style.use().get().toBuilder()).build());
+      return this;
+    }
+
+    @Override
+    public Builder setParagraph(Paragraph paragraph) {
+      return this.setParagraph(Constant.of(paragraph));
+    }
+
+    @Override
+    public Builder setParagraph(Supplier<Paragraph> paragraph) {
+      this.paragraph = paragraph;
+      return this;
+    }
+
+    @Override
+    public Builder setLine(boolean line) {
+      return this.setLine(Constant.of(line));
+    }
+
+    @Override
+    public Builder setLine(Supplier<Boolean> line) {
+      this.line = line;
+      return this;
+    }
+
+    private void setParagraphFromString() {
+      assert string != null;
+
+      Supplier<Paragraph> compute = () -> {
+        var result = new ParagraphBuilder(style.get().toSkia(), fonts.use());
+        result.addText(string.get());
+        return result.build();
+      };
+
+      if (string instanceof Constant<String> && style instanceof Constant<Style>) {
+        paragraph = Constant.of(compute.get());
+      } else {
+        paragraph = Computed.create(compute);
+      }
+    }
+
+    public Para build() {
+      if (string != null) {
+        setParagraphFromString();
+      }
+      return new Para(this);
+    }
+  }
+
+  public static class ParaStyleContext extends ComputedContext<Style> {
+    public ParaStyleContext() {
+      super(Constant.of(styleBuilder().build()));
+    }
+
+    public Provider.Entry constantCustomize(Function<StyleBuilder, StyleBuilder> customize) {
+      return withConstant(s -> customize.apply(s.toBuilder()).build());
+    }
+
+    public Provider.Entry computedCustomize(Function<StyleBuilder, StyleBuilder> customize) {
+      return withCompute(s -> customize.apply(s.toBuilder()).build());
+    }
   }
 
   public static StyleBuilder styleBuilder() {

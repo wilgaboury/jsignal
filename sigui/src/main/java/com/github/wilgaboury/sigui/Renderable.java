@@ -8,5 +8,7 @@ public interface Renderable extends NodesSupplier {
   /**
    * This method should be overridden but never called externally, use GetNodes
    */
-  Nodes render();
+  default Nodes render() {
+    return Nodes.empty();
+  }
 }

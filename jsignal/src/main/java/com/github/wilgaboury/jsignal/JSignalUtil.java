@@ -12,6 +12,14 @@ public class JSignalUtil {
   private JSignalUtil() {
   }
 
+  public static <T, V> Supplier<V> maybeConstant(Supplier<T> supplier, Function<T, V> func) {
+    if (supplier instanceof Constant<T>) {
+      return Constant.of(func.apply(supplier.get()));
+    } else {
+      return Computed.create(() -> func.apply(supplier.get()));
+    }
+  }
+
   public static <T> Supplier<T> maybeComputed(Supplier<T> supplier) {
     if (supplier instanceof Constant<T> || supplier instanceof Computed<T>) {
       return supplier;

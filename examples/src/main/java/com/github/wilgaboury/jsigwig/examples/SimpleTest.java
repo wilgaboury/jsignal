@@ -17,7 +17,6 @@ import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.text.Para;
-import com.github.wilgaboury.sigwig.text.TextLine;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 
@@ -83,14 +82,10 @@ public class SimpleTest implements Renderable {
             .build()
           )
           .children(
-            TextLine.builder()
-              .setLine(() -> InterFontUtil.createTextLine(String.format(
-                  "Count: %s",
-                  count.get()
-                ),
-                20f
-              ))
-              .setColor(EzColors.GRAY_700)
+            Para.builder()
+              .setString(() -> String.format("Count: %s", count.get()))
+              .constantStyle(style -> style.setTextStyle(text -> text.setFontSize(20f)))
+              .setLine(true)
               .build(),
             EzNode.builder()
               .layout(EzLayout.builder()
@@ -123,20 +118,19 @@ public class SimpleTest implements Renderable {
                   .build()
               )
               .build(),
-            Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setColor(EzColors.BLACK)).build()).provide(() -> Nodes.compose(
-              Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setFontSize(12f)).build()).provide(() ->
+            Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() -> Nodes.compose(
+              Para.style.computedCustomize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setFontSize(10f)).build()).provide(() ->
+              Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.withConstant(p -> p.toBuilder()
+              Para.style.constantCustomize(style -> style
                   .setTextStyle(text -> text
-                    .setFontSize(8f)
+                    .setFontSize(16f)
                   )
-                  .setMaxLinesCount(1L)
+                  .setMaxLinesCount(2L)
                   .setEllipsis("...")
-                  .build()
                 )
                 .provide(() ->
                   Para.fromString(LOREM)

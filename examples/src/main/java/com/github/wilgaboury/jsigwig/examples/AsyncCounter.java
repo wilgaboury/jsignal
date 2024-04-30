@@ -2,13 +2,17 @@ package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.AtomicSignal;
 import com.github.wilgaboury.jsignal.Cleanups;
-import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.*;
+import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
+import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigui.SiguiThread;
+import com.github.wilgaboury.sigui.SiguiUtil;
+import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
-import com.github.wilgaboury.sigwig.text.TextLine;
+import com.github.wilgaboury.sigwig.text.Para;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -44,9 +48,12 @@ public class AsyncCounter implements Renderable {
         .build()
       )
       .children(
-        TextLine.builder()
-          .setLine(Computed.create(() -> InterFontUtil.createTextLine("Count: " + count.get(), 20f)))
-          .setColor(EzColors.BLUE_500)
+        Para.builder()
+          .setString(() -> "Count: " + count.get())
+          .constantStyle(style -> style.setTextStyle(text -> text
+            .setColor(EzColors.BLUE_300)
+            .setFontSize(20f)
+          ))
           .build()
       )
       .build();
