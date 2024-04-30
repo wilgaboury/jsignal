@@ -3,7 +3,7 @@ package com.github.wilgaboury.jsignal;
 import java.util.function.Function;
 
 // cannot be a record because each object instance needs to be hashable by object
-public final class Context<T> {
+public class Context<T> {
     private final T defaultValue;
 
     public Context(T defaultValue) {

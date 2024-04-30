@@ -34,8 +34,7 @@ public class YogaLayoutConfig implements LayoutConfig {
   public void setMeasure(Measure measure) {
     YGNodeSetMeasureFunc(node, (n, width, widthMode, height, heightMode, __result) -> {
       var result = measure.invoke(width, translateMeasureMode(widthMode), height, translateMeasureMode(heightMode));
-      __result.width(result.width());
-      __result.height(result.height());
+      __result.set(result.width(), result.height());
     });
   }
 
@@ -321,5 +320,10 @@ public class YogaLayoutConfig implements LayoutConfig {
   @Override
   public void setAspectRatio(float aspectRatio) {
     YGNodeStyleSetAspectRatio(node, aspectRatio);
+  }
+
+  @Override
+  public void markDirty() {
+    YGNodeMarkDirty(node);
   }
 }

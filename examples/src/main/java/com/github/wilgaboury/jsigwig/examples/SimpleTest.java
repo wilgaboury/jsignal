@@ -1,8 +1,18 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigwig.*;
+import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.Renderable;
+import com.github.wilgaboury.sigui.SiguiComponent;
+import com.github.wilgaboury.sigui.SiguiThread;
+import com.github.wilgaboury.sigui.SiguiUtil;
+import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigwig.BasicPainter;
+import com.github.wilgaboury.sigwig.Blob;
+import com.github.wilgaboury.sigwig.BlobException;
+import com.github.wilgaboury.sigwig.Button;
+import com.github.wilgaboury.sigwig.Image;
+import com.github.wilgaboury.sigwig.Scroll;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
@@ -35,7 +45,7 @@ public class SimpleTest implements Renderable {
   }
 
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Test App");
       window.setContentSize(400, 400);
@@ -87,41 +97,58 @@ public class SimpleTest implements Renderable {
                 .row()
                 .wrap()
                 .gap(10f)
-                .build())
+                .build()
+              )
               .children(
                 Button.builder()
                   .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
-                  .setChildren(InterFontUtil.createButtonText("Increase"))
+                  .setChildren(() -> Para.fromString("abcdefghijklmnopqrstuvwxyz"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.BLUE_700)
                   .setAction(() -> count.accept(c -> c - 1))
-                  .setChildren(InterFontUtil.createButtonText("Decrease"))
+                  .setChildren(() -> Para.fromString("Decrease"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.RED_300)
                   .setAction(() -> count.accept(c -> c * 2))
-                  .setChildren(InterFontUtil.createButtonText("Multiply"))
+                  .setChildren(() -> Para.fromString("Multiply"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.RED_700)
                   .setAction(() -> count.accept(c -> c / 2))
-                  .setChildren(InterFontUtil.createButtonText("Divide"))
+                  .setChildren(() -> Para.fromString("Divide"))
                   .build()
               )
               .build(),
-            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 12f)),
-            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 10f)),
-            new Para(InterFontUtil.createParagraph(LOREM, EzColors.BLACK, 8f)),
+            Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setColor(EzColors.BLACK)).build()).provide(() -> Nodes.compose(
+              Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setFontSize(12f)).build()).provide(() ->
+                Para.fromString(LOREM)
+              ),
+              Para.style.withConstant(p -> p.toBuilder().setTextStyle(text -> text.setFontSize(10f)).build()).provide(() ->
+                Para.fromString(LOREM)
+              ),
+              Para.style.withConstant(p -> p.toBuilder()
+                  .setTextStyle(text -> text
+                    .setFontSize(8f)
+                  )
+                  .setMaxLinesCount(1L)
+                  .setEllipsis("...")
+                  .build()
+                )
+                .provide(() ->
+                  Para.fromString(LOREM)
+                )
+            )),
             Button.builder()
               .setColor(buttonColor)
               .setAction(() -> {
                 buttonColor.accept(Color.withA(rand.nextInt(), 255));
                 showFire.accept(show -> !show);
               })
-              .setChildren(InterFontUtil.createButtonText(this::buttonText))
+              .setChildren(() -> Para.fromString(this::buttonText))
               .build(),
             maybeFire(),
             Image.builder()

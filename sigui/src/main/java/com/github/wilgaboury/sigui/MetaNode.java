@@ -1,6 +1,12 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.*;
+import com.github.wilgaboury.jsignal.Cleanups;
+import com.github.wilgaboury.jsignal.Constant;
+import com.github.wilgaboury.jsignal.Context;
+import com.github.wilgaboury.jsignal.Effect;
+import com.github.wilgaboury.jsignal.JSignalUtil;
+import com.github.wilgaboury.jsignal.Ref;
+import com.github.wilgaboury.jsignal.SideEffect;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
@@ -16,7 +22,17 @@ import io.github.humbleui.types.Point;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,6 +42,8 @@ import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 
 public class MetaNode {
   private static final Context<MetaNode> parentContext = Context.create(null);
+  public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
+    () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
   private final SiguiWindow window;
   private final @Nullable MetaNode parent;
@@ -72,7 +90,7 @@ public class MetaNode {
     this.id = null;
     this.tags = new HashSet<>();
 
-    this.paintCacheStrategy = new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new);
+    this.paintCacheStrategy = defaultPaintCacheStrategy.use().get();
 
     this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
     this.paintCacheEffect = SideEffect.create(this::paintEffectInner);

@@ -4,6 +4,7 @@ public interface LayoutConfig {
   void reset();
   void copy(LayoutConfig config);
   void setMeasure(Measure measure);
+  void markDirty();
   void setDirection(Direction direction);
   void setFlexDirection(FlexDirection direction);
   void setJustifyContent(JustifyContent justifyContent);
@@ -40,7 +41,7 @@ public interface LayoutConfig {
     Size invoke(float width, MeasureMode widthMode, float height, MeasureMode heightMode);
   }
 
-  public enum MeasureMode {
+  enum MeasureMode {
     UNDEFINED,
     EXACTLY,
     AT_MOST

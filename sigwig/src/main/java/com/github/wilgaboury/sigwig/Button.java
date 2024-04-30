@@ -6,6 +6,7 @@ import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzNode;
+import com.github.wilgaboury.sigwig.text.Para;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
@@ -22,7 +23,7 @@ public class Button implements Renderable {
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
-  private final Children children;
+  private final Supplier<NodesSupplier> children;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
@@ -56,7 +57,13 @@ public class Button implements Renderable {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(children.get(this::textSize, () -> ColorUtil.contrastText(color.get())))
+      .children(Para.style.withCompute(style -> style.toBuilder()
+        .setTextStyle(text -> text
+          .setFontSize(textSize())
+          .setColor(ColorUtil.contrastText(color.get()))
+        )
+        .setMaxLinesCount(1L)
+        .build()).provide(children))
       .build();
   }
 
@@ -128,21 +135,12 @@ public class Button implements Renderable {
     XS
   }
 
-  @FunctionalInterface
-  public interface Children {
-    NodesSupplier get(Supplier<Float> textSize, Supplier<Integer> textColor);
-
-    static Children empty() {
-      return (textSize, textColor) -> Nodes::empty;
-    }
-  }
-
   public static class Builder {
     private Consumer<MetaNode> ref = ignored -> {};
     private Supplier<Integer> color = () -> EzColors.BLUE_400;
     private Supplier<Size> size = () -> Size.MD;
     private Supplier<Runnable> action = () -> () -> {};
-    private Children children = Children.empty();
+    private Supplier<NodesSupplier> children = Nodes::empty;
 
     public Builder ref(Consumer<MetaNode> ref) {
       this.ref = ref;
@@ -188,11 +186,11 @@ public class Button implements Renderable {
       return this;
     }
 
-    public Children getChildren() {
+    public Supplier<NodesSupplier> getChildren() {
       return children;
     }
 
-    public Builder setChildren(Children children) {
+    public Builder setChildren(Supplier<NodesSupplier> children) {
       this.children = children;
       return this;
     }

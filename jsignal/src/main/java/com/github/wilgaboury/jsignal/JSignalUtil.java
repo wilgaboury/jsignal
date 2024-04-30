@@ -116,10 +116,6 @@ public class JSignalUtil {
     return () -> consumer.apply(null);
   }
 
-  public static <T> Supplier<T> toSupplier(T value) {
-    return () -> value;
-  }
-
   public static Supplier<Void> toSupplier(Runnable runnable) {
     return () -> {
       runnable.run();

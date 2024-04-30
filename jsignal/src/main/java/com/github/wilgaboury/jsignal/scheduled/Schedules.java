@@ -1,5 +1,8 @@
 package com.github.wilgaboury.jsignal.scheduled;
 
+import com.github.wilgaboury.jsignal.Cleanups;
+import com.github.wilgaboury.jsignal.Ref;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -89,5 +92,44 @@ public class Schedules {
 
   public static <T> Scheduled<T> throttle(Consumer<T> callback, long wait, TimeUnit unit) {
     return createThrottledFactory(DEFAULT_SCHEDULED_EXECUTOR).create(callback, wait, unit);
+  }
+
+  public static <T> Scheduled<T> leading(
+    ScheduledFactory schedule,
+    Consumer<T> callback,
+    long wait,
+    TimeUnit unit
+  ) {
+    Ref<Boolean> isScheduled = new Ref<>(false);
+    var scheduled = schedule.create(ignored -> isScheduled.accept(false), wait, unit);
+
+    Consumer<T> func = (arg) -> {
+      if (!isScheduled.get()) callback.accept(arg);
+      isScheduled.accept(true);
+      scheduled.accept(null);
+    };
+
+    Runnable close = () -> {
+      isScheduled.accept(false);
+      try {
+        scheduled.close();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
+
+    Cleanups.onCleanup(close);
+
+    return new Scheduled<T>() {
+      @Override
+      public void accept(T t) {
+
+      }
+
+      @Override
+      public void close() throws Exception {
+        close.run();
+      }
+    };
   }
 }

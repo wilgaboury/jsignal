@@ -48,8 +48,8 @@ public sealed interface Nodes extends NodesSupplier
         return new Dynamic(composed);
     }
 
-    static Dynamic compute(Supplier<Nodes> inner) {
-        return new Dynamic(Computed.create(() -> inner.get().getNodeList()));
+    static Dynamic compute(Supplier<NodesSupplier> inner) {
+        return new Dynamic(Computed.create(() -> inner.get().getNodes().getNodeList()));
     }
 
     static Dynamic computeList(Supplier<? extends List<? extends NodesSupplier>> supplier) {

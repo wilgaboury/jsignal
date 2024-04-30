@@ -69,12 +69,12 @@ public class AnimationTest implements Renderable {
         Button.builder()
           .setSize(Button.Size.LG)
           .setColor(() -> animation.isRunning() ? EzColors.RED_800 : EzColors.GREEN_800)
-          .setChildren((textSize, textColor) -> TextLine.builder()
-            .setLine(() -> InterFontUtil.createTextLine(animation.isRunning() ?
-              "Stop" : "Start", textSize.get()))
-            .setColor(textColor)
-            .build()
-          )
+//          .setChildren((textSize, textColor) -> TextLine.builder()
+//            .setLine(() -> InterFontUtil.createTextLine(animation.isRunning() ?
+//              "Stop" : "Start", textSize.get()))
+//            .setColor(textColor)
+//            .build()
+//          )
           .setAction(() -> {
             if (animation.isRunning()) {
               System.out.println("stop");
