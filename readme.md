@@ -5,12 +5,11 @@ from [SolidJS](https://www.solidjs.com/).
 
 ## Motivation
 
-After decades of different approaches to GUI design patterns and abstractions, the modern software landscape seems to
-have largely settled on the declarative/reactive paradigm for GUI libraries (React, Flutter, SwiftUI, Jetpack Compose,
-etc.). Though, when it comes to Java there is a clear lack of choices in this category, and traditional options like
-Swing, JavaFX and SWT feel quite outdated by today's standards. Considering that Java is one of the most popular
-languages, used extensively in educational settings and for enterprise software development, this project is an
-ambitious attempt to fill in that void.
+The declarative/reactive paradigm has become the defacto standard it comes to GUI library design in the modern 
+software landscape (React, Flutter, SwiftUI, Jetpack Compose,etc.). Though, when it comes to Java there is a 
+clear lack of choices in this category, and traditional options like Swing, JavaFX and SWT feel quite outdated 
+by today's standards. Considering that Java is one of the most popular languages, used extensively in educational
+settings and for enterprise software development, this project is an attempt to fill in that void.
 
 ## Module Disambiguation
 
@@ -20,7 +19,7 @@ ambitious attempt to fill in that void.
 | [Sigui](./sigui)     | desktop graphical user interface library built on top of JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
 | [Sigwig](./sigwig)   | a standard component library for Sigui                                                                                                                                                                                     |
 
-## Obligatory Example
+## Short Example
 
 ```java
 
