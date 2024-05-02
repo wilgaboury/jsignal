@@ -8,14 +8,10 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.function.Supplier;
 
-/**
- * This class is not thread safe for performance reasons
- * TODO: this needs to be made thread safe in some cases
- */
 public class Cleanups implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(Cleanups.class);
 
-  public static final Context<Optional<Cleanups>> context = Context.create(Optional.empty());
+  public static final OptionalContext<Cleanups> context = OptionalContext.createEmpty();
 
   private final Queue<Runnable> queue;
 

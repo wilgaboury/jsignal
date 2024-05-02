@@ -6,7 +6,6 @@ import com.github.wilgaboury.sigui.layout.Layout;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzNode;
-import com.github.wilgaboury.sigwig.text.Para;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
@@ -38,6 +37,16 @@ public class Button implements Renderable {
 
   @Override
   public Nodes render() {
+    var resolvedChildren = Para.style.withComputed(style -> style.toBuilder()
+        .setTextStyle(text -> text
+          .setFontSize(textSize())
+          .setColor(ColorUtil.contrastText(color.get()))
+        )
+        .setMaxLinesCount(1L)
+        .build()
+      )
+      .provide(() -> children.get().getNodes());
+
     return EzNode.builder()
       .ref(ref)
       .listen(
@@ -57,13 +66,7 @@ public class Button implements Renderable {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(Para.style.withComputed(style -> style.toBuilder()
-        .setTextStyle(text -> text
-          .setFontSize(textSize())
-          .setColor(ColorUtil.contrastText(color.get()))
-        )
-        .setMaxLinesCount(1L)
-        .build()).provide(children))
+      .children(resolvedChildren)
       .build();
   }
 
@@ -136,10 +139,12 @@ public class Button implements Renderable {
   }
 
   public static class Builder {
-    private Consumer<MetaNode> ref = ignored -> {};
+    private Consumer<MetaNode> ref = ignored -> {
+    };
     private Supplier<Integer> color = () -> EzColors.BLUE_400;
     private Supplier<Size> size = () -> Size.MD;
-    private Supplier<Runnable> action = () -> () -> {};
+    private Supplier<Runnable> action = () -> () -> {
+    };
     private Supplier<NodesSupplier> children = Nodes::empty;
 
     public Builder ref(Consumer<MetaNode> ref) {

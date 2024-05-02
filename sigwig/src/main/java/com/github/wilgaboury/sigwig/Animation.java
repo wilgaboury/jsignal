@@ -1,6 +1,8 @@
-package com.github.wilgaboury.sigui;
+package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Signal;
+import com.github.wilgaboury.sigui.SiguiThread;
+import com.github.wilgaboury.sigui.SiguiWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

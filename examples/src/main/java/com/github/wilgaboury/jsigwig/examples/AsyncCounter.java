@@ -12,7 +12,7 @@ import com.github.wilgaboury.sigui.SiguiWindow;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
-import com.github.wilgaboury.sigwig.text.Para;
+import com.github.wilgaboury.sigwig.Para;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;

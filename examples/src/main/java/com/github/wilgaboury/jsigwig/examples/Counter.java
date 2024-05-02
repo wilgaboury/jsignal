@@ -11,7 +11,7 @@ import com.github.wilgaboury.sigwig.Button;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
-import com.github.wilgaboury.sigwig.text.Para;
+import com.github.wilgaboury.sigwig.Para;
 
 @SiguiComponent
 public class Counter implements Renderable {

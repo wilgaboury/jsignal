@@ -5,11 +5,11 @@ from [SolidJS](https://www.solidjs.com/).
 
 ## Motivation
 
-The declarative/reactive paradigm has become the defacto standard it comes to GUI library design in the modern 
-software landscape (React, Flutter, SwiftUI, Jetpack Compose, etc.). Though, when it comes to Java there is a 
-clear lack of choices in this category, and traditional options like Swing, JavaFX and SWT feel quite outdated 
+The declarative/reactive paradigm has become the defacto standard it comes to GUI library design in the modern
+software landscape (React, Flutter, SwiftUI, Jetpack Compose, etc.). Though, when it comes to Java there is a
+clear lack of choices in this category, and traditional options like Swing, JavaFX and SWT feel quite outdated
 by today's standards. Considering that Java is one of the most popular languages, used extensively in educational
-settings and for enterprise software development, this project is an attempt to build a modern, performant Java 
+settings and for enterprise software development, this project is an attempt to build a modern, performant Java
 library that makes it fast and easy to develop graphical desktop applications.
 
 ## Module Disambiguation
@@ -23,39 +23,41 @@ library that makes it fast and easy to develop graphical desktop applications.
 ## Short Example
 
 ```java
-
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> {
+    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new SiguiWindow(window, Counter::new);
-    });
+    }));
   }
 
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
   public Nodes render() {
-    return Node.builder()
-      .layout(Flex.builder()
-        .stretch()
+    return EzNode.builder()
+      .layout(EzLayout.builder()
+        .fill()
         .center()
         .column()
         .gap(10f)
         .build()
       )
       .children(
-        TextLine.builder()
-          .setLine(() -> InterFontUtil.createTextLine("Count: " + count.get(), 20f))
-          .setColor(EzColors.BLUE_500)
+        Para.builder()
+          .setString(() -> "Count: " + count.get())
+          .constantStyle(style -> style.setTextStyle(text -> text
+            .setFontSize(20f)
+            .setColor(EzColors.BLUE_500)
+          ))
           .build(),
         Button.builder()
           .setColor(EzColors.BLUE_300)
           .setAction(() -> count.accept(c -> c + 1))
-          .setChildren(InterFontUtil.createButtonText("Increment"))
+          .setChildren(() -> Para.fromString("Increment"))
           .build()
       )
       .build();
@@ -112,58 +114,31 @@ developer ergonomics.
 
 ### Brief Example
 
-```java
+```
 Signal<Integer> value = Signal.create(5);
 Effect effect = Effect.create(() -> System.out.println(value.get()));
 // prints 5
-value.
-
-accept(6); // prints 6
-value.
-
-accept(7); // prints 7
-effect.
-
-dispose();
-value.
-
-accept(8); // prints nothing
+value.accept(6); // prints 6
+value.accept(7); // prints 7
+effect.dispose();
+value.accept(8); // prints nothing
 
 // create an automatically computed value
 Computed<Integer> squared = createComputed(() -> value.get() * value.get());
-effect =Effect.
+effect = Effect.create(() ->System.out.println(squared.get())); // prints 64
+value.accept(9); // prints 81
+value.accept(10); // prints 100
 
-create(() ->System.out.
-
-println(squared.get())); // prints 64
-  value.
-
-accept(9); // prints 81
-value.
-
-accept(10); // prints 100
-
-effect =null;
-  Runtime.
-
-getRuntime().
-
-gc();
-value.
-
-accept(11); // prints nothing
+effect = null;
+Runtime.getRuntime().gc();
+value.accept(11); // prints nothing
 
 // explicitly define dependency to get current and previous value on change
-effect =Effect.
-
-create(on(squared, (cur, prev) ->System.out.
-
-println(cur +", "+prev)));
+effect = Effect.create(on(squared, (cur, prev) -> 
+    System.out.println(cur + ", " + prev)
+));
 // prints 121, null
-
-  value.
-
-accept(12); // prints 144, 121
+value.accept(12); // prints 144, 121
 ```
 
 One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the

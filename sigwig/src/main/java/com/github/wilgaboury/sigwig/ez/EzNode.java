@@ -22,6 +22,7 @@ public class EzNode implements Node {
   private final Layouter layout;
   private final Transformer transformer;
   private final Painter paint;
+  private final Painter paintAfter;
 
   public EzNode(Builder builder) {
     this.toMeta = builder.toMeta;
@@ -33,6 +34,7 @@ public class EzNode implements Node {
     this.layout = builder.layout;
     this.transformer = builder.transformer;
     this.paint = builder.paint;
+    this.paintAfter = builder.paintAfter;
   }
 
   @Override
@@ -65,6 +67,11 @@ public class EzNode implements Node {
     return paint;
   }
 
+  @Override
+  public Painter getAfterPainter() {
+    return paintAfter;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -79,6 +86,7 @@ public class EzNode implements Node {
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
+    private Painter paintAfter = null;
 
     public Builder toMeta(Function<Node, MetaNode> toMeta) {
       this.toMeta = toMeta;
@@ -127,6 +135,11 @@ public class EzNode implements Node {
 
     public Builder paint(Painter paint) {
       this.paint = paint;
+      return this;
+    }
+
+    public Builder paintAfter(Painter paintAfter) {
+      this.paintAfter = paintAfter;
       return this;
     }
 

@@ -1,4 +1,4 @@
-package com.github.wilgaboury.sigwig.text;
+package com.github.wilgaboury.sigwig;
 
 import com.github.wilgaboury.jsignal.Computed;
 import com.github.wilgaboury.jsignal.ComputedContext;
@@ -128,6 +128,12 @@ public class Para implements Renderable {
       .build();
   }
 
+  public Paragraph getParagraph() {
+    return para.get();
+  }
+
+
+
   public static BuilderSetContent builder() {
     return new Builder();
   }
@@ -159,7 +165,7 @@ public class Para implements Renderable {
     private @Nullable Supplier<String> string;
     private Supplier<Style> style = Para.style.use();
 
-    private @Nullable Supplier<Paragraph> paragraph;
+    private Supplier<Paragraph> paragraph;
     private Supplier<Boolean> line = Constant.of(false);
 
     @Override
