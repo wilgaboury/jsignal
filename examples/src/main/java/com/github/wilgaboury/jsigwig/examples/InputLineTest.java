@@ -1,6 +1,7 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Constant;
+import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.InputLine;
 import com.github.wilgaboury.sigwig.Para;
@@ -19,6 +20,8 @@ public class InputLineTest implements Renderable {
     }));
   }
 
+  private final Signal<String> content = Signal.create("HELLO");
+
   @Override
   public Nodes render() {
     return EzNode.builder()
@@ -31,7 +34,7 @@ public class InputLineTest implements Renderable {
       )
       .children(
         Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
-          new InputLine(Constant.of("HELLO"), ignored -> {}).getNodes()
+          new InputLine(content, content).getNodes()
         )
       )
       .build();

@@ -196,8 +196,11 @@ public class SiguiWindow {
               && focusTemp.getParent() != null) {
               focusTemp = focusTemp.getParent();
             }
-            if (focus != null && focusTemp != focus) {
-              focus.fire(new FocusEvent(EventType.BLUR, focus));
+
+            if (focus != focusTemp) {
+              if (focus != null) {
+                focus.fire(new FocusEvent(EventType.BLUR, focus));
+              }
               focus = focusTemp;
               focus.fire(new FocusEvent(EventType.FOCUS, focus));
             }
@@ -241,20 +244,24 @@ public class SiguiWindow {
     // then a new event will be fired automatically (i.e. switching a node from hit to pass through)
     var newHovered = root.pick(point);
     if (hovered != newHovered) {
-      var parents = hovered == null ? null : hovered.getParents();
-      var newParents = newHovered == null ? null : newHovered.getParents();
+      var parents = hovered == null ? Collections.emptySet() : hovered.getParents();
+      var newParents = newHovered == null ? Collections.emptySet() : newHovered.getParents();
 
       if (hovered != null) {
         hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
         var node = hovered;
-        while (node != null && node != newHovered && (newParents == null || !newParents.contains(node))) {
+        while (node != null && node != newHovered && !newParents.contains(node)) {
           node.fire(new MouseEvent(EventType.MOUSE_LEAVE, hovered, mousePosition.get()));
           node = node.getParent();
         }
       }
 
-      if (newHovered != null && (parents == null || !parents.contains(newHovered))) {
-        newHovered.fire(new MouseEvent(EventType.MOUSE_IN, newHovered, mousePosition.get()));
+      if (newHovered != null) {
+        var node = newHovered;
+        while (node != null && !parents.contains(node)) {
+          node.fire(new MouseEvent(EventType.MOUSE_IN, node, mousePosition.get()));
+          node = node.getParent();
+        }
       }
 
       hovered = newHovered;

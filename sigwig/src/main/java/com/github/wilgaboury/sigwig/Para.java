@@ -93,6 +93,7 @@ public class Para implements Renderable {
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(
         new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new)))
+      .id("para")
       .layout(config -> {
         SiguiThread.queueMicrotask(() -> {
           provider.provide(() -> {
