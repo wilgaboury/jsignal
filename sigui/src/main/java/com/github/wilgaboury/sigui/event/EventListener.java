@@ -56,7 +56,7 @@ public class EventListener {
     }
 
     public static EventListener onFocus(Consumer<FocusEvent> listener) {
-        return new EventListener(EventType.SCROLL, listener);
+        return new EventListener(EventType.FOCUS, listener);
     }
 
     public static EventListener onBlur(Consumer<FocusEvent> listener) {

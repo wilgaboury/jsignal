@@ -5,6 +5,7 @@ import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.ez.EzColors;
+import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseCursor;
@@ -20,6 +21,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.event.EventListener.*;
+import static com.github.wilgaboury.sigui.layout.Insets.insets;
+import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class InputLine implements Renderable {
@@ -71,6 +74,7 @@ public class InputLine implements Renderable {
           consumer.accept(str.substring(0, split) + insert + str.substring(split));
         })
       )
+      // TODO fix index check calculation in paint after
 //      .layout(EzLayout.builder()
 //        .border(insets(2f))
 //        .padding(insets(pixel(4f)))
@@ -80,7 +84,7 @@ public class InputLine implements Renderable {
 //        if (isFocused.get()) {
 //          try (var paint = new Paint()) {
 //            paint.setColor(EzColors.SKY_500);
-//            float radius = 2f;
+//            float radius = 4f;
 //            canvas.drawDRRect(layout.getBorderRect().withRadii(radius),
 //              layout.getPaddingRect().withRadii(radius), paint);
 //          }
