@@ -7,6 +7,7 @@ import com.github.wilgaboury.sigui.SiguiComponent;
 import com.github.wilgaboury.sigui.SiguiThread;
 import com.github.wilgaboury.sigui.SiguiUtil;
 import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigui.hotswap.HotswapComponent;
 import com.github.wilgaboury.sigwig.BasicPainter;
 import com.github.wilgaboury.sigwig.Blob;
 import com.github.wilgaboury.sigwig.BlobException;
@@ -61,6 +62,10 @@ public class SimpleTest implements Renderable {
 
   @Override
   public Nodes render() {
+    System.out.println("hi");
+
+    HotswapComponent.context.use().ifPresent(h -> h.addTag(SimpleTest.class));
+
     return Scroll.builder()
       .setBarWidth(15f)
       .setChildren(
@@ -100,7 +105,7 @@ public class SimpleTest implements Renderable {
                   .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
-                  .setChildren(() -> Para.fromString("abcdefghijklmnopqrstuvwxyz"))
+                  .setChildren(() -> Para.fromString("Increase Bruh"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.BLUE_700)

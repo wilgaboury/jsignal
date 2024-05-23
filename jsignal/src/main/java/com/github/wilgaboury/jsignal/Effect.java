@@ -4,17 +4,17 @@ import com.github.wilgaboury.jsignal.interfaces.EffectLike;
 import com.github.wilgaboury.jsignal.interfaces.SignalLike;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class Effect implements EffectLike {
   public static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
+  public static final OptionalContext<LinkedList<StackTraceElement[]>> causeContext = OptionalContext.createEmpty();
   protected static final AtomicInteger nextId = new AtomicInteger(0);
 
+  protected StackTraceElement[] cause;
   protected final int id;
   protected final Runnable effect;
   protected final Cleanups cleanups;
@@ -24,6 +24,8 @@ public class Effect implements EffectLike {
   protected boolean disposed;
 
   public Effect(Runnable effect, boolean isSync) {
+    var trace = Thread.currentThread().getStackTrace();
+    this.cause = Arrays.copyOfRange(trace, 1, trace.length);
     this.id = nextId();
     this.effect = effect;
     this.cleanups = Cleanups.create();
@@ -89,7 +91,15 @@ public class Effect implements EffectLike {
       if (disposed)
         return;
 
-      batch(() -> provider.provide(() -> {
+      var cause = Effect.causeContext.use()
+        .map(c -> {
+          var list = ((LinkedList<StackTraceElement[]>)c.clone());
+          list.addFirst(this.cause);
+          return list;
+        })
+        .orElseGet(() -> new LinkedList<>(Collections.singletonList(this.cause)));
+
+      batch(() -> provider.add(Effect.causeContext.withValue(cause)).provide(() -> {
         clear();
         inner.run();
       }));

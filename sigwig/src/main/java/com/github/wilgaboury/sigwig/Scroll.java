@@ -214,11 +214,7 @@ public class Scroll implements Renderable {
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
             // spacer
             EzNode.builder()
-              .layout(yoga -> EzLayout.builder()
-                .height(() -> pixel(xBarWidth.get()))
-                .build()
-                .layout(yoga)
-              )
+              .layout(EzLayout.builder().height(() -> pixel(xBarWidth.get())).build())
               .build()
           )
           .build()

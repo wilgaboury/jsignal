@@ -26,12 +26,12 @@ library that makes it fast and easy to develop graphical desktop applications.
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new SiguiWindow(window, Counter::new);
-    }));
+    });
   }
 
   private final Signal<Integer> count = Signal.create(0);
@@ -82,7 +82,7 @@ The user code also needs to be changed in order to add hotswap component instrum
 by changing the app start code to look like
 this: `SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> { ... }));`
 
-### Espresso
+### Espresso (Recommended)
 
 Also known as Java on Truffle, this is an implementation of Java using GraalVM's truffle language framework. It also
 supports advanced hotswap capabilities, and a has a nice plugin API. Instructions for setting this up in Intellij Idea

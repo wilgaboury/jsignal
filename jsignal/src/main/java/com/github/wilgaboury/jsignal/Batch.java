@@ -1,13 +1,15 @@
 package com.github.wilgaboury.jsignal;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class Batch {
     static final ThreadLocal<Batch> batch = ThreadLocal.withInitial(Batch::new);
 
     private boolean inBatch;
-    private final Flipper<Map<Integer, EffectRef>> effects;
+    private final Flipper<Map<Integer, Entry>> effects;
 
     public Batch() {
         inBatch = false;
@@ -25,7 +27,7 @@ public class Batch {
                     effects.flip();
                     try {
                         for (var effect : effects.getBack().values()) {
-                            effect.run();
+                            Effect.causeContext.withValue(effect.cause).provide(effect.ref);
                         }
                     } finally {
                         effects.getBack().clear();
@@ -39,6 +41,15 @@ public class Batch {
 
     void add(EffectRef ref) {
         assert inBatch;
-        effects.getFront().put(ref.getId(), ref);
+
+        var cause = Effect.causeContext.use()
+          .map(list -> (LinkedList<StackTraceElement[]>)list.clone())
+          .orElseGet(LinkedList::new);
+        var trace = Thread.currentThread().getStackTrace();
+        cause.addFirst(Arrays.copyOfRange(trace, 1, trace.length));
+
+        effects.getFront().put(ref.getId(), new Entry(ref, cause));
     }
+
+    private record Entry(EffectRef ref, LinkedList<StackTraceElement[]> cause) {}
 }

@@ -108,7 +108,7 @@ public class InputLine implements Renderable {
         var x = pos <= middle ? rect.getLeft() : rect.getRight();
         paint.setColor(EzColors.BLACK);
         paint.setAntiAlias(false);
-        paint.setStrokeWidth(1f);
+        paint.setStrokeWidth(2f);
         canvas.drawLine(x, rect.getTop(), x, rect.getBottom(), paint);
       }
     });

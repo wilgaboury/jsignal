@@ -1,6 +1,5 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.InputLine;

@@ -4,9 +4,7 @@ import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.SiguiThread;
 import com.github.wilgaboury.sigui.SiguiWindow;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HotswapRerenderService {
@@ -14,8 +12,14 @@ public class HotswapRerenderService {
 
   public static void rerender(List<String> classNames) {
     SiguiThread.invokeLater(() -> {
+      for (var className : classNames) {
+        System.out.println(className);
+      }
+
       Set<HotswapComponent> components = classNames.stream()
-        .flatMap(className -> HotswapComponent.getClassNameToHotswap().get(className).stream())
+        .map(className -> HotswapComponent.getClassNameToHotswap().get(className))
+        .filter(Objects::nonNull)
+        .flatMap(Collection::stream)
         .collect(Collectors.toSet());
 
       Set<HotswapComponent> rerenderComponents = new LinkedHashSet<>();
@@ -38,11 +42,11 @@ public class HotswapRerenderService {
         component.getRerender().trigger();
       }
 
-      for (SiguiWindow window : SiguiWindow.getWindows()) {
-        setAllDirty(window.getRoot());
-        window.requestTransformUpdate();
-        window.requestLayout();
-      }
+//      for (SiguiWindow window : SiguiWindow.getWindows()) {
+//        setAllDirty(window.getRoot());
+//        window.requestTransformUpdate();
+//        window.requestLayout();
+//      }
     });
   }
 

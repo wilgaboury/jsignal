@@ -44,7 +44,7 @@ public class SiguiUtil {
   }
 
   public static void conditionallyProvideHotswapInstrumentation(Runnable runnable) {
-    conditionallyProvideHotswapInstrumentation("jsignal.hotswap", runnable);
+    conditionallyProvideHotswapInstrumentation("sigui.hotswap", runnable);
   }
 
   public static void conditionallyProvideHotswapInstrumentation(String property, Runnable runnable) {
