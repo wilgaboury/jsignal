@@ -90,7 +90,7 @@ public class SimpleTest implements Renderable {
           .children(
             Para.builder()
               .setString(() -> String.format("Count: %s", count.get()))
-              .constantStyle(style -> style.setTextStyle(text -> text.setFontSize(20f)))
+              .setStyle(style -> style.setTextStyle(text -> text.setFontSize(20f)))
               .setLine(true)
               .build(),
             EzNode.builder()
@@ -105,7 +105,7 @@ public class SimpleTest implements Renderable {
                   .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
-                  .setChildren(() -> Para.fromString("Increase Bruh"))
+                  .setChildren(() -> Para.fromString("Increase Bruh 2"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.BLUE_700)
@@ -124,14 +124,14 @@ public class SimpleTest implements Renderable {
                   .build()
               )
               .build(),
-            Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() -> Nodes.compose(
-              Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
+            Para.style.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() -> Nodes.compose(
+              Para.style.customize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.constantCustomize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
+              Para.style.customize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.constantCustomize(style -> style
+              Para.style.customize(style -> style
                   .setTextStyle(text -> text
                     .setFontSize(16f)
                   )
@@ -143,7 +143,7 @@ public class SimpleTest implements Renderable {
                 ),
               Para.builder()
                 .setString("Hello")
-                .constantStyle(style -> style
+                .setStyle(style -> style
                   .setTextStyle(text -> text
                     .setFontSize(26f)
                     .setFontStyle(FontStyle.ITALIC)

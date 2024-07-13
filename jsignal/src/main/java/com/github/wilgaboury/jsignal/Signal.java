@@ -104,6 +104,10 @@ public class Signal<T> implements SignalLike<T> {
     }));
   }
 
+  public static <T> Signal<T> empty() {
+    return Signal.<T>builder(null).build();
+  }
+
   public static <T> Signal<T> create(T value) {
     return builder(value).build();
   }

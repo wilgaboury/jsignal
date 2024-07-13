@@ -50,7 +50,7 @@ public class AsyncCounter implements Renderable {
       .children(
         Para.builder()
           .setString(() -> "Count: " + count.get())
-          .constantStyle(style -> style.setTextStyle(text -> text
+          .setStyle(style -> style.setTextStyle(text -> text
             .setColor(EzColors.BLUE_300)
             .setFontSize(20f)
           ))

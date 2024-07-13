@@ -39,7 +39,7 @@ public class Counter implements Renderable {
       .children(
         Para.builder()
           .setString(() -> "Count: " + count.get())
-          .constantStyle(style -> style.setTextStyle(text -> text
+          .setStyle(style -> style.setTextStyle(text -> text
             .setFontSize(20f)
             .setColor(EzColors.BLUE_500)
           ))

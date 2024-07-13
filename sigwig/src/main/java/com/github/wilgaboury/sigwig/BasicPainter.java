@@ -12,7 +12,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.github.wilgaboury.jsignal.JSignalUtil.maybeComputed;
+import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
+import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
 public class BasicPainter implements Painter {
   private final Supplier<Float> radius;
@@ -69,7 +70,7 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setRadius(Supplier<Float> radius) {
-      this.radius = maybeComputed(radius);
+      this.radius = createMemo(radius);
       return this;
     }
 
@@ -82,7 +83,7 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBorder(Supplier<Float> border) {
-      this.border = maybeComputed(border);
+      this.border = createMemo(border);
       return this;
     }
 
@@ -95,7 +96,7 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBackgroundColor(Supplier<Optional<Integer>> background) {
-      this.backgroundColor = maybeComputed(background);
+      this.backgroundColor = createMemo(background);
       return this;
     }
 
@@ -108,7 +109,7 @@ public class BasicPainter implements Painter {
     }
 
     public Builder setBorderColor(Supplier<Optional<Integer>> borderColor) {
-      this.borderColor = maybeComputed(borderColor);
+      this.borderColor = createMemo(borderColor);
       return this;
     }
 

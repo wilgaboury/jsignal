@@ -20,19 +20,20 @@ public class JSignalUtil {
     }
   }
 
-  public static <T> Supplier<T> maybeComputed(Supplier<T> supplier) {
-    if (supplier instanceof Constant<T> || supplier instanceof Computed<T>) {
-      return supplier;
-    } else {
-      return Computed.create(supplier);
-    }
+  public static <T> Supplier<T> createMemo(Supplier<T> supplier) {
+    return createMemo(Signal::empty, supplier);
   }
 
-  public static <T> Supplier<T> maybeComputed(Supplier<SignalLike<T>> signal, Supplier<T> supplier) {
+  public static <T> Supplier<T> createMemo(Supplier<SignalLike<T>> signal, Supplier<T> supplier) {
     if (supplier instanceof Constant<T> || supplier instanceof Computed<T>) {
       return supplier;
+    }
+
+    var computed = Computed.create(signal.get(), supplier);
+    if (computed.getEffect().getSignals().isEmpty()) {
+      return Constant.of(untrack(computed));
     } else {
-      return Computed.create(signal.get(), supplier);
+      return computed;
     }
   }
 

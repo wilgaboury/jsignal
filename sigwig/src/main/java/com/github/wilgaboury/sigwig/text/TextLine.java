@@ -17,7 +17,7 @@ public class TextLine implements Renderable {
   private final Supplier<Integer> color;
 
   public TextLine(Builder builder) {
-    this.line = JSignalUtil.maybeComputed(builder.line);
+    this.line = JSignalUtil.createMemo(builder.line);
     this.color = builder.color;
   }
 

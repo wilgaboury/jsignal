@@ -5,7 +5,6 @@ import com.github.wilgaboury.jsignal.ComputedContext;
 import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Effect;
-import com.github.wilgaboury.jsignal.JSignalUtil;
 import com.github.wilgaboury.jsignal.Provider;
 import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.Renderable;
@@ -40,6 +39,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
 @SiguiComponent
 public class Para implements Renderable {
@@ -149,8 +150,7 @@ public class Para implements Renderable {
   public interface BuilderContentString {
     BuilderContentString setStyle(Style style);
     BuilderContentString setStyle(Supplier<Style> style);
-    BuilderContentString constantStyle(Function<StyleBuilder, StyleBuilder> customize);
-    BuilderContentString computeStyle(Function<StyleBuilder, StyleBuilder> customize);
+    BuilderContentString setStyle(Function<StyleBuilder, StyleBuilder> customize);
     BuilderContentParagraph setLine(boolean line);
     BuilderContentParagraph setLine(Supplier<Boolean> line);
     Para build();
@@ -177,7 +177,7 @@ public class Para implements Renderable {
 
     @Override
     public Builder setString(Supplier<String> string) {
-      this.string = JSignalUtil.maybeComputed(string);
+      this.string = createMemo(string);
       return this;
     }
 
@@ -188,19 +188,13 @@ public class Para implements Renderable {
 
     @Override
     public Builder setStyle(Supplier<Style> style) {
-      this.style = JSignalUtil.maybeComputed(style);
+      this.style = createMemo(style);
       return this;
     }
 
     @Override
-    public Builder constantStyle(Function<StyleBuilder, StyleBuilder> customize) {
-      this.style = JSignalUtil.maybeConstant(Para.style.use(), s -> customize.apply(s.toBuilder()).build());
-      return this;
-    }
-
-    @Override
-    public Builder computeStyle(Function<StyleBuilder, StyleBuilder> customize) {
-      this.style = Computed.create(() -> customize.apply(Para.style.use().get().toBuilder()).build());
+    public Builder setStyle(Function<StyleBuilder, StyleBuilder> customize) {
+      this.style = createMemo(() -> customize.apply(Para.style.use().get().toBuilder()).build());
       return this;
     }
 
@@ -255,11 +249,7 @@ public class Para implements Renderable {
       super(Constant.of(styleBuilder().build()));
     }
 
-    public Provider.Entry constantCustomize(Function<StyleBuilder, StyleBuilder> customize) {
-      return withConstant(s -> customize.apply(s.toBuilder()).build());
-    }
-
-    public Provider.Entry computedCustomize(Function<StyleBuilder, StyleBuilder> customize) {
+    public Provider.Entry customize(Function<StyleBuilder, StyleBuilder> customize) {
       return withComputed(s -> customize.apply(s.toBuilder()).build());
     }
   }

@@ -5,14 +5,12 @@ import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.ez.EzColors;
-import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseCursor;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.paragraph.Affinity;
-import io.github.humbleui.skija.paragraph.PositionWithAffinity;
 import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
 
@@ -22,7 +20,6 @@ import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.event.EventListener.*;
 import static com.github.wilgaboury.sigui.layout.Insets.insets;
-import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class InputLine implements Renderable {
@@ -37,7 +34,7 @@ public class InputLine implements Renderable {
   private Para para;
 
   public InputLine(Supplier<String> supplier, Consumer<String> consumer) {
-    this.supplier = JSignalUtil.maybeComputed(supplier);
+    this.supplier = JSignalUtil.createMemo(supplier);
     this.consumer = consumer;
   }
 
@@ -47,7 +44,7 @@ public class InputLine implements Renderable {
 
     para = Para.builder()
       .setString(supplier)
-      .constantStyle(style -> style.setMaxLinesCount(1L))
+      .setStyle(style -> style.setMaxLinesCount(1L))
       .setLine(true)
       .build();
 
