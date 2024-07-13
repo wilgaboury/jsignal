@@ -86,6 +86,10 @@ public class Effect implements EffectLike {
     run(effect);
   }
 
+  public Collection<SignalLike<?>> getSignals() {
+    return Collections.unmodifiableSet(signals.getFront());
+  }
+
   protected void run(Runnable inner) {
     threadBound.maybeSynchronize(() -> {
       if (disposed)
