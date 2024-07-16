@@ -26,12 +26,12 @@ library that makes it fast and easy to develop graphical desktop applications.
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> {
+    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new SiguiWindow(window, Counter::new);
-    });
+    }));
   }
 
   private final Signal<Integer> count = Signal.create(0);
@@ -49,7 +49,7 @@ public class Counter implements Renderable {
       .children(
         Para.builder()
           .setString(() -> "Count: " + count.get())
-          .constantStyle(style -> style.setTextStyle(text -> text
+          .setStyle(style -> style.setTextStyle(text -> text
             .setFontSize(20f)
             .setColor(EzColors.BLUE_500)
           ))
@@ -114,7 +114,7 @@ developer ergonomics.
 
 ### Brief Example
 
-```
+```java
 Signal<Integer> value = Signal.create(5);
 Effect effect = Effect.create(() -> System.out.println(value.get()));
 // prints 5

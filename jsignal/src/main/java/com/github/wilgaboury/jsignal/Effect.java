@@ -20,7 +20,7 @@ public class Effect implements EffectLike {
   protected final Cleanups cleanups;
   protected final Provider provider;
   protected final ThreadBound threadBound;
-  protected final Flipper<Set<SignalLike<?>>> signals;
+  protected final LinkedHashSet<SignalLike<?>> signals;
   protected boolean disposed;
 
   public Effect(Runnable effect, boolean isSync) {
@@ -34,7 +34,7 @@ public class Effect implements EffectLike {
       context.with(Optional.of(this))
     );
     this.threadBound = new ThreadBound(isSync);
-    this.signals = new Flipper<>(HashSet::new);
+    this.signals = new LinkedHashSet<>();
     this.disposed = false;
 
     Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
@@ -45,7 +45,7 @@ public class Effect implements EffectLike {
    */
   @Override
   public void onTrack(SignalLike<?> signal) {
-    signals.getFront().add(signal);
+    signals.add(signal);
   }
 
   /**
@@ -53,7 +53,7 @@ public class Effect implements EffectLike {
    */
   @Override
   public void onUntrack(SignalLike<?> signal) {
-    signals.getFront().remove(signal);
+    signals.remove(signal);
   }
 
   @Override
@@ -72,7 +72,8 @@ public class Effect implements EffectLike {
         return;
 
       disposed = true;
-      clear();
+
+      provider.provide(this::clear);
     });
   }
 
@@ -87,7 +88,7 @@ public class Effect implements EffectLike {
   }
 
   public Collection<SignalLike<?>> getSignals() {
-    return Collections.unmodifiableSet(signals.getFront());
+    return Collections.unmodifiableSet(signals);
   }
 
   protected void run(Runnable inner) {
@@ -111,13 +112,8 @@ public class Effect implements EffectLike {
   }
 
   protected void clear() {
-    signals.flip();
-    try {
-      for (var signal : signals.getBack()) {
-        signal.untrack();
-      }
-    } finally {
-      signals.getBack().clear();
+    while (!signals.isEmpty()) {
+      signals.getFirst().untrack();
     }
 
     cleanups.run();

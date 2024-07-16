@@ -68,10 +68,8 @@ public class AnimationTest implements Renderable {
           .setChildren(() -> Para.fromString(() -> animation.isRunning() ? "Stop" : "Start"))
           .setAction(() -> {
             if (animation.isRunning()) {
-              System.out.println("stop");
               animation.stop();
             } else {
-              System.out.println("start");
               animation.start();
             }
           })
