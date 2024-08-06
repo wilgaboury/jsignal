@@ -169,8 +169,7 @@ public class SimpleTest implements Renderable {
           )
           .build()
       )
-      .build()
-      .getNodes();
+      .build();
   }
 
   private String buttonText() {
@@ -184,7 +183,6 @@ public class SimpleTest implements Renderable {
           .setBlob(fire)
           .setHeight(pixel(200))
           .build()
-          .getNodes()
         );
       } else {
         return Nodes.empty();

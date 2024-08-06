@@ -33,7 +33,7 @@ public class InputLineTest implements Renderable {
       )
       .children(
         Para.style.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
-          new InputLine(content, content).getNodes()
+          new InputLine(content, content)
         )
       )
       .build();

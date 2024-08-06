@@ -12,14 +12,6 @@ public class JSignalUtil {
   private JSignalUtil() {
   }
 
-  public static <T, V> Supplier<V> maybeConstant(Supplier<T> supplier, Function<T, V> func) {
-    if (supplier instanceof Constant<T>) {
-      return Constant.of(func.apply(supplier.get()));
-    } else {
-      return Computed.create(() -> func.apply(supplier.get()));
-    }
-  }
-
   public static <T> Supplier<T> createMemo(Supplier<T> supplier) {
     return createMemo(Signal::empty, supplier);
   }
@@ -34,6 +26,14 @@ public class JSignalUtil {
       return Constant.of(untrack(computed));
     } else {
       return computed;
+    }
+  }
+
+  public static <T, V> Supplier<V> maybeConstant(Supplier<T> supplier, Function<T, V> func) {
+    if (supplier instanceof Constant<T>) {
+      return Constant.of(func.apply(supplier.get()));
+    } else {
+      return Computed.create(() -> func.apply(supplier.get()));
     }
   }
 
@@ -201,7 +201,8 @@ public class JSignalUtil {
     });
   }
 
-  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {}
+  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {
+  }
 
   public static <T, U> Computed<List<U>> createIndexed(Supplier<? extends List<T>> list, BiFunction<Supplier<T>, Integer, U> map) {
     List<Indexed<T>> indexes = new ArrayList<>();
@@ -238,5 +239,6 @@ public class JSignalUtil {
     });
   }
 
-  private record Indexed<T>(Signal<T> value, Cleanups cleanups) {}
+  private record Indexed<T>(Signal<T> value, Cleanups cleanups) {
+  }
 }

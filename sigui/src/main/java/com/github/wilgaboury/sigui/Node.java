@@ -6,16 +6,20 @@ import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * The primary layout and rendering primitive of Sigui
  */
-public interface Node {
+public interface Node extends Nodes {
   default MetaNode toMeta() {
     return MetaNodeInitInstrumentation.context.use().instrument(() -> new MetaNode(this));
   }
 
-  default Nodes getChildren() {
-    return Nodes.empty();
+  @Override
+  default List<Node> getChildren() {
+    return Collections.emptyList();
   }
 
   default @Nullable Layouter getLayouter() {

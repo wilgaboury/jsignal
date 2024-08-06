@@ -48,8 +48,8 @@ public class EzNode implements Node {
   }
 
   @Override
-  public Nodes getChildren() {
-    return children;
+  public List<Node> getChildren() {
+    return children.getChildren();
   }
 
   @Override
@@ -81,7 +81,8 @@ public class EzNode implements Node {
     private List<EventListener> listeners = Collections.emptyList();
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
-    private Consumer<MetaNode> reference = n -> {};
+    private Consumer<MetaNode> reference = n -> {
+    };
     private Nodes children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
@@ -118,8 +119,13 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Builder children(NodesSupplier... nodes) {
-      children = Nodes.compose(Arrays.asList(nodes));
+    public Builder children(Nodes... nodes) {
+      children = Nodes.compose(nodes);
+      return this;
+    }
+
+    public Builder children(List<Nodes> nodes) {
+      children = Nodes.compose(nodes);
       return this;
     }
 
@@ -143,12 +149,8 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Node node() {
+    public Node build() {
       return new EzNode(this);
-    }
-
-    public Nodes.Fixed build() {
-      return Nodes.fixed(node());
     }
   }
 }

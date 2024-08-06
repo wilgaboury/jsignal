@@ -22,7 +22,7 @@ public class Button implements Renderable {
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
-  private final Supplier<NodesSupplier> children;
+  private final Supplier<Nodes> children;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
@@ -37,7 +37,7 @@ public class Button implements Renderable {
 
   @Override
   public Nodes render() {
-    var resolvedChildren = Para.style.withComputed(style -> style.toBuilder()
+    var resolvedChildren = Nodes.from(() -> Para.style.withComputed(style -> style.toBuilder()
         .setTextStyle(text -> text
           .setFontSize(textSize())
           .setColor(ColorUtil.contrastText(color.get()))
@@ -45,7 +45,7 @@ public class Button implements Renderable {
         .setMaxLinesCount(1L)
         .build()
       )
-      .provide(() -> children.get().getNodes());
+      .provide(() -> children.get().getChildren()));
 
     return EzNode.builder()
       .ref(ref)
@@ -145,7 +145,7 @@ public class Button implements Renderable {
     private Supplier<Size> size = () -> Size.MD;
     private Supplier<Runnable> action = () -> () -> {
     };
-    private Supplier<NodesSupplier> children = Nodes::empty;
+    private Supplier<Nodes> children = Nodes::empty;
 
     public Builder ref(Consumer<MetaNode> ref) {
       this.ref = ref;
@@ -191,11 +191,11 @@ public class Button implements Renderable {
       return this;
     }
 
-    public Supplier<NodesSupplier> getChildren() {
+    public Supplier<Nodes> getChildren() {
       return children;
     }
 
-    public Builder setChildren(Supplier<NodesSupplier> children) {
+    public Builder setChildren(Supplier<Nodes> children) {
       this.children = children;
       return this;
     }

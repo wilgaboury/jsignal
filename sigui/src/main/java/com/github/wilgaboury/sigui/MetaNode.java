@@ -1,12 +1,6 @@
 package com.github.wilgaboury.sigui;
 
-import com.github.wilgaboury.jsignal.Cleanups;
-import com.github.wilgaboury.jsignal.Constant;
-import com.github.wilgaboury.jsignal.Context;
-import com.github.wilgaboury.jsignal.Effect;
-import com.github.wilgaboury.jsignal.JSignalUtil;
-import com.github.wilgaboury.jsignal.Ref;
-import com.github.wilgaboury.jsignal.SideEffect;
+import com.github.wilgaboury.jsignal.*;
 import com.github.wilgaboury.sigui.event.Event;
 import com.github.wilgaboury.sigui.event.EventListener;
 import com.github.wilgaboury.sigui.event.EventType;
@@ -37,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 import static com.github.wilgaboury.jsignal.JSignalUtil.onDefer;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 
@@ -81,7 +76,6 @@ public class MetaNode {
     this.afterPainter = node.getAfterPainter();
     this.transformer = node.getTransformer() != null ? node.getTransformer() : n -> Matrix33.IDENTITY;
     this.layouter = node.getLayouter();
-    var nodeChildren = node.getChildren();
 
     this.yoga = Yoga.YGNodeNew();
     this.layout = new Layout(yoga);
@@ -98,7 +92,7 @@ public class MetaNode {
     this.transformEffect = SideEffect.create(this::transformEffectInner);
     this.layoutEffect = layouter != null ? Effect.create(this::runLayouter) : null;
 
-    this.children = createChildren(nodeChildren);
+    this.children = createChildren();
 
     Cleanups.onCleanup(this::cleanup);
   }
@@ -140,7 +134,8 @@ public class MetaNode {
 
   public void setPaintCacheStrategy(PaintCacheStrategy paintCacheStrategy) {
     this.paintCacheStrategy = paintCacheStrategy;
-    paintCacheEffect.run(() -> {}); // clear side effect dependencies
+    paintCacheEffect.run(() -> {
+    }); // clear side effect dependencies
     paintEffectInner();
   }
 
@@ -199,20 +194,21 @@ public class MetaNode {
     }
   }
 
-  private Supplier<List<MetaNode>> createChildren(Nodes children) {
-    return switch (children) {
-      case Nodes.Fixed fixed -> {
-        var nodes = fixed.getNodeList();
-        List<MetaNode> result = new ArrayList<>(nodes.size());
-        for (int i = 0; i < nodes.size(); i++) {
-          var node = nodes.get(i);
-          var meta = parentContext.with(this).provide(node::toMeta);
-          Yoga.YGNodeInsertChild(yoga, meta.yoga, i);
-          result.add(meta);
-        }
-        yield Constant.of(result);
+  private Supplier<List<MetaNode>> createChildren() {
+    var memo = createMemo(node::getChildren);
+
+    if (memo instanceof Constant<List<Node>> c) {
+      var nodes = c.get();
+      List<MetaNode> result = new ArrayList<>(nodes.size());
+      for (int i = 0; i < nodes.size(); i++) {
+        var node = nodes.get(i);
+        var meta = parentContext.with(this).provide(node::toMeta);
+        Yoga.YGNodeInsertChild(yoga, meta.yoga, i);
+        result.add(meta);
       }
-      case Nodes.Dynamic dynamic -> JSignalUtil.createMapped(dynamic::getNodeList, (node, idx) -> {
+      return Constant.of(result);
+    } else {
+      return JSignalUtil.createMapped(memo, (node, idx) -> {
         var meta = parentContext.with(this).provide(node::toMeta);
 
         Yoga.YGNodeInsertChild(yoga, meta.yoga, idx.get());
@@ -225,7 +221,7 @@ public class MetaNode {
 
         return meta;
       });
-    };
+    }
   }
 
   private static Point createTestPoint(Point p, Matrix33 transform) {
@@ -402,8 +398,8 @@ public class MetaNode {
       }
 
       @Override
-      public Nodes getChildren() {
-        return new RootComponent(component).getNodes();
+      public List<Node> getChildren() {
+        return new RootComponent(component).getChildren();
       }
     });
   }
@@ -415,7 +411,7 @@ public class MetaNode {
   private record RootComponent(Supplier<Renderable> child) implements Renderable {
     @Override
     public Nodes render() {
-      return child.get().getNodes();
+      return child.get();
     }
   }
 }

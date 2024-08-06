@@ -34,7 +34,7 @@ public class Scroll implements Renderable {
   private final Supplier<Float> xBarWidth;
   private final Supplier<Float> yBarWidth;
   private final Supplier<Float> yBarOverlayWidth;
-  private final Supplier<NodesSupplier> children;
+  private final Supplier<Nodes> children;
 
   private final Signal<Float> xOffset = Signal.create(0f);
   private final Signal<Float> yOffset = Signal.create(0f);
@@ -273,7 +273,7 @@ public class Scroll implements Renderable {
     private Supplier<Float> xBarWidth = barWidth;
     private Supplier<Float> yBarWidth = barWidth;
     private Supplier<Float> yBarOverlayWidth = () -> yBarWidth.get() / 2f;
-    private Supplier<NodesSupplier> children = Nodes::empty;
+    private Supplier<Nodes> children = Nodes::empty;
 
     public Supplier<Boolean> getOverlay() {
       return overlay;
@@ -341,15 +341,15 @@ public class Scroll implements Renderable {
       return this;
     }
 
-    public Supplier<NodesSupplier> getChildren() {
+    public Supplier<Nodes> getChildren() {
       return children;
     }
 
-    public Builder setChildren(NodesSupplier children) {
+    public Builder setChildren(Nodes children) {
       return setChildren(() -> children);
     }
 
-    public Builder setChildren(Supplier<NodesSupplier> children) {
+    public Builder setChildren(Supplier<Nodes> children) {
       this.children = children;
       return this;
     }
