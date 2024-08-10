@@ -11,15 +11,20 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
 @FunctionalInterface
-public interface Nodes {
-  List<Node> getChildren();
+public interface Nodes extends Supplier<Nodes> {
+  @Override
+  default Nodes get() {
+    return this;
+  }
+
+  List<Node> getNodeList();
 
   static Nodes from(Supplier<List<Node>> supplier) {
     return supplier::get;
   }
 
   static Nodes lazy(Supplier<Nodes> nodes) {
-    return () -> nodes.get().getChildren();
+    return () -> nodes.get().getNodeList();
   }
 
   static Nodes empty() {
@@ -31,7 +36,7 @@ public interface Nodes {
   }
 
   static Nodes compose(List<Nodes> compose) {
-    var memos = compose.stream().map(nodes -> createMemo(nodes::getChildren)).toList();
+    var memos = compose.stream().map(nodes -> createMemo(nodes::getNodeList)).toList();
     return Nodes.from(createMemo(() -> memos.stream().flatMap(memo -> memo.get().stream()).toList()));
   }
 
@@ -41,17 +46,17 @@ public interface Nodes {
 
   static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
     var mapped = JSignalUtil.createMapped(list, map);
-    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.getChildren().stream()).toList()));
+    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
   }
 
   static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
     var cache = new CacheOne();
-    return Nodes.from(Computed.create(() -> inner.apply(cache).getChildren()));
+    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodeList()));
   }
 
   static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
     var cache = new CacheMany<K>(new HashMap<>());
-    return Nodes.from(Computed.create(() -> inner.apply(cache).getChildren()));
+    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodeList()));
   }
 
   final class CacheOne {

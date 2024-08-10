@@ -49,7 +49,7 @@ public class EzNode implements Node {
 
   @Override
   public List<Node> getChildren() {
-    return children.getChildren();
+    return children.getNodeList();
   }
 
   @Override

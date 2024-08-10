@@ -4,8 +4,8 @@ import java.util.List;
 
 public interface Renderable extends Nodes {
   @Override
-  default List<Node> getChildren() {
-    return RenderInstrumentation.context.use().instrument(this, () -> render().getChildren());
+  default List<Node> getNodeList() {
+    return RenderInstrumentation.context.use().instrument(this, () -> render().getNodeList());
   }
 
   /**

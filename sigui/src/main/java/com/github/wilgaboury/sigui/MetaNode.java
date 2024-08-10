@@ -399,7 +399,7 @@ public class MetaNode {
 
       @Override
       public List<Node> getChildren() {
-        return new RootComponent(component).getChildren();
+        return new RootComponent(component).getNodeList();
       }
     });
   }

@@ -13,11 +13,15 @@ import java.util.List;
  * The primary layout and rendering primitive of Sigui
  */
 public interface Node extends Nodes {
+  @Override
+  default List<Node> getNodeList() {
+    return Collections.singletonList(this);
+  }
+
   default MetaNode toMeta() {
     return MetaNodeInitInstrumentation.context.use().instrument(() -> new MetaNode(this));
   }
 
-  @Override
   default List<Node> getChildren() {
     return Collections.emptyList();
   }

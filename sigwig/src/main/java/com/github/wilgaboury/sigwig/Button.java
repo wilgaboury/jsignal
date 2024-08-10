@@ -45,7 +45,7 @@ public class Button implements Renderable {
         .setMaxLinesCount(1L)
         .build()
       )
-      .provide(() -> children.get().getChildren()));
+      .provide(() -> children.get().getNodeList()));
 
     return EzNode.builder()
       .ref(ref)
