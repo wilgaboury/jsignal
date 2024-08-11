@@ -22,7 +22,7 @@ public class TextLine implements Renderable {
   }
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     return EzNode.builder()
       .layout(config -> {
         var tmp = line.get();

@@ -10,6 +10,8 @@ import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Matrix33;
 
+import java.util.function.Supplier;
+
 @SiguiComponent
 public class AnimationTest implements Renderable {
   public static void main(String[] args) {
@@ -36,7 +38,7 @@ public class AnimationTest implements Renderable {
   private final Signal<Float> angle = Signal.create(0f);
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     var animation = new Animation(deltaTimeNano ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 

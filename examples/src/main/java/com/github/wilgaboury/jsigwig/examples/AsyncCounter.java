@@ -16,6 +16,7 @@ import com.github.wilgaboury.sigwig.Para;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @SiguiComponent
 public class AsyncCounter implements Renderable {
@@ -34,7 +35,7 @@ public class AsyncCounter implements Renderable {
     .atomic();
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     var executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);

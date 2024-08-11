@@ -67,7 +67,7 @@ public class Scroll implements Renderable {
   }
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     var window = SiguiWindow.context.use();
 
     createEffectLater(() -> {
@@ -378,7 +378,7 @@ public class Scroll implements Renderable {
     private final Signal<Boolean> mouseDown = Signal.create(false);
 
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       return EzNode.builder()
         .listen(
           onMouseClick(e -> action.run()),

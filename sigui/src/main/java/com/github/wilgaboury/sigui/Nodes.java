@@ -19,6 +19,10 @@ public interface Nodes extends Supplier<Nodes> {
 
   List<Node> getNodeList();
 
+  static Nodes from(List<Node> list) {
+    return () -> list;
+  }
+
   static Nodes from(Supplier<List<Node>> supplier) {
     return supplier::get;
   }
@@ -31,22 +35,24 @@ public interface Nodes extends Supplier<Nodes> {
     return Collections::emptyList;
   }
 
-  static Nodes compose(Nodes... nodes) {
+  @SafeVarargs
+  static Nodes compose(Supplier<Nodes>... nodes) {
     return compose(Arrays.asList(nodes));
   }
 
-  static Nodes compose(List<Nodes> compose) {
-    var memos = compose.stream().map(nodes -> createMemo(nodes::getNodeList)).toList();
+  static Nodes compose(List<? extends Supplier<Nodes>> compose) {
+    var memos = compose.stream().map(s -> createMemo(() -> s.get().getNodeList())).toList();
     return Nodes.from(createMemo(() -> memos.stream().flatMap(memo -> memo.get().stream()).toList()));
   }
 
-  static Nodes compose(Supplier<? extends List<Nodes>> nodes) {
-    return forEach(nodes, (n, i) -> n);
+  static Nodes compose(Supplier<? extends List<? extends Supplier<Nodes>>> nodes) {
+    // TODO: idk is this a problem
+    return forEach((Supplier<List<Supplier<Nodes>>>)nodes, (n, i) -> n);
   }
 
-  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, Nodes> map) {
+  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Supplier<Nodes>> map) {
     var mapped = JSignalUtil.createMapped(list, map);
-    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
+    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.get().getNodeList().stream()).toList()));
   }
 
   static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
@@ -62,9 +68,9 @@ public interface Nodes extends Supplier<Nodes> {
   final class CacheOne {
     private Nodes cached = null;
 
-    public Nodes get(Supplier<Nodes> ifAbsent) {
+    public Nodes get(Supplier<? extends Supplier<Nodes>> ifAbsent) {
       if (cached == null) {
-        cached = ifAbsent.get();
+        cached = ifAbsent.get().get();
       }
       return cached;
     }

@@ -13,6 +13,8 @@ import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.Para;
 
+import java.util.function.Supplier;
+
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
@@ -27,7 +29,7 @@ public class Counter implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

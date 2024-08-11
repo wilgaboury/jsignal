@@ -399,7 +399,7 @@ public class MetaNode {
 
       @Override
       public List<Node> getChildren() {
-        return new RootComponent(component).getNodeList();
+        return new RootComponent(component).get().getNodeList();
       }
     });
   }
@@ -410,7 +410,7 @@ public class MetaNode {
   @SiguiComponent
   private record RootComponent(Supplier<Renderable> child) implements Renderable {
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       return child.get();
     }
   }

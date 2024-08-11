@@ -8,6 +8,7 @@ import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
@@ -32,7 +33,7 @@ public class OrderedPortal {
     }
 
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
       return Nodes.compose(() -> map.get().values().stream().flatMap(Collection::stream).toList());
@@ -52,7 +53,7 @@ public class OrderedPortal {
     }
 
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       var suppliers = getNodesMap(id);
       suppliers.mutate(map -> {
         ((TreeMap<T, List<Nodes>>) map)

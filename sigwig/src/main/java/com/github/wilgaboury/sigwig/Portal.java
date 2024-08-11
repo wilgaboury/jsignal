@@ -10,6 +10,7 @@ import com.github.wilgaboury.sigui.SiguiComponent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Portal {
   private static final Context<HashMap<Object, Signal<List<Nodes>>>> context =
@@ -28,7 +29,7 @@ public class Portal {
     }
 
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       // TODO: find way to assert no duplicate out points
       var suppliers = getSuppliers(id);
       return Nodes.forEach(suppliers, (supplier, idx) -> supplier);
@@ -46,7 +47,7 @@ public class Portal {
     }
 
     @Override
-    public Nodes render() {
+    public Supplier<Nodes> render() {
       var suppliers = getSuppliers(id);
       suppliers.mutate(list -> {
         list.add(child);

@@ -23,6 +23,7 @@ import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.layout.Insets.insets;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
@@ -61,7 +62,7 @@ public class SimpleTest implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     System.out.println("hi");
 
     HotswapComponent.context.use().ifPresent(h -> h.addTag(SimpleTest.class));

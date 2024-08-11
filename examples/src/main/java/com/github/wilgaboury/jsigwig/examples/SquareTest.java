@@ -6,6 +6,8 @@ import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.skija.Paint;
 
+import java.util.function.Supplier;
+
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
@@ -21,7 +23,7 @@ public class SquareTest implements Renderable {
   }
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .width(percent(50))

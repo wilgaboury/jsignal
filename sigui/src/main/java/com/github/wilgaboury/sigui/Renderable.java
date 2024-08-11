@@ -1,17 +1,17 @@
 package com.github.wilgaboury.sigui;
 
-import java.util.List;
+import java.util.function.Supplier;
 
-public interface Renderable extends Nodes {
+public interface Renderable extends Supplier<Nodes> {
   @Override
-  default List<Node> getNodeList() {
-    return RenderInstrumentation.context.use().instrument(this, () -> render().getNodeList());
+  default Nodes get() {
+    return Nodes.lazy(() -> Nodes.from(RenderInstrumentation.context.use().instrument(this, () -> render().get().getNodeList())));
   }
 
   /**
    * This method should be overridden but never called directly
    */
-  default Nodes render() {
+  default Supplier<Nodes> render() {
     return Nodes.empty();
   }
 }

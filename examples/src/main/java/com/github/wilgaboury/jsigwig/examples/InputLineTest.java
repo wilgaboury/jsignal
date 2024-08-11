@@ -8,6 +8,8 @@ import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 
+import java.util.function.Supplier;
+
 @SiguiComponent
 public class InputLineTest implements Renderable {
   public static void main(String[] args) {
@@ -22,7 +24,7 @@ public class InputLineTest implements Renderable {
   private final Signal<String> content = Signal.create("HELLO");
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

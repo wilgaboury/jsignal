@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class EzNode implements Node {
   private final Function<Node, MetaNode> toMeta;
@@ -18,7 +19,7 @@ public class EzNode implements Node {
   private final Set<Object> tags;
   private final List<EventListener> listeners;
   private final Consumer<MetaNode> ref;
-  private final Nodes children;
+  private final Supplier<Nodes> children;
   private final Layouter layout;
   private final Transformer transformer;
   private final Painter paint;
@@ -49,7 +50,7 @@ public class EzNode implements Node {
 
   @Override
   public List<Node> getChildren() {
-    return children.getNodeList();
+    return children.get().getNodeList();
   }
 
   @Override
@@ -82,7 +83,7 @@ public class EzNode implements Node {
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
     private Consumer<MetaNode> reference = n -> {};
-    private Nodes children = Nodes.empty();
+    private Supplier<Nodes> children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
@@ -113,17 +114,17 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Builder children(Nodes nodes) {
+    public Builder children(Supplier<Nodes> nodes) {
       children = nodes;
       return this;
     }
 
-    public Builder children(Nodes... nodes) {
+    public Builder children(Supplier<Nodes>... nodes) {
       children = Nodes.compose(nodes);
       return this;
     }
 
-    public Builder children(List<Nodes> nodes) {
+    public Builder children(List<? extends Supplier<Nodes>> nodes) {
       children = Nodes.compose(nodes);
       return this;
     }

@@ -89,7 +89,7 @@ public class Para implements Renderable {
   }
 
   @Override
-  public Nodes render() {
+  public Supplier<Nodes> render() {
     var provider = Provider.get();
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(
