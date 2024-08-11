@@ -41,8 +41,7 @@ public interface Nodes extends Supplier<Nodes> {
   }
 
   static Nodes compose(List<? extends Supplier<Nodes>> compose) {
-    var memos = compose.stream().map(s -> createMemo(() -> s.get().getNodeList())).toList();
-    return Nodes.from(createMemo(() -> memos.stream().flatMap(memo -> memo.get().stream()).toList()));
+    return Nodes.from(createMemo(() -> compose.stream().flatMap(s -> s.get().getNodeList().stream()).toList()));
   }
 
   static Nodes compose(Supplier<? extends List<? extends Supplier<Nodes>>> nodes) {

@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 public interface Renderable extends Supplier<Nodes> {
   @Override
   default Nodes get() {
-    return Nodes.lazy(() -> Nodes.from(RenderInstrumentation.context.use().instrument(this, () -> render().get().getNodeList())));
+    return RenderInstrumentation.context.use().instrument(this, this::render);
   }
 
   /**

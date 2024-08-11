@@ -8,13 +8,13 @@ import java.util.function.Supplier;
 public interface RenderInstrumentation {
   Context<RenderInstrumentation> context = new Context<>(RenderInstrumentation.empty());
 
-  List<Node> instrument(Renderable component, Supplier<List<Node>> render);
+  Nodes instrument(Renderable component, Supplier<? extends Supplier<Nodes>> render);
 
   default RenderInstrumentation add(RenderInstrumentation that) {
     return (component, render) -> this.instrument(component, () -> that.instrument(component, render));
   }
 
   static RenderInstrumentation empty() {
-    return (component, render) -> render.get();
+    return (component, render) -> render.get().get();
   }
 }
