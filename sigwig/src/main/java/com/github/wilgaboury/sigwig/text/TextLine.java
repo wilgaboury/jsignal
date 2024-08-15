@@ -2,6 +2,7 @@ package com.github.wilgaboury.sigwig.text;
 
 import com.github.wilgaboury.jsignal.JSignalUtil;
 import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.NodesSupplier;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
 import com.github.wilgaboury.sigwig.ez.EzNode;
@@ -22,7 +23,7 @@ public class TextLine implements Renderable {
   }
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     return EzNode.builder()
       .layout(config -> {
         var tmp = line.get();

@@ -7,6 +7,7 @@ import com.github.wilgaboury.sigwig.Para;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
+import io.github.humbleui.skija.Paint;
 
 import java.util.function.Supplier;
 
@@ -24,7 +25,7 @@ public class InputLineTest implements Renderable {
   private final Signal<String> content = Signal.create("HELLO");
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()
@@ -33,6 +34,12 @@ public class InputLineTest implements Renderable {
         .gap(10f)
         .build()
       )
+      .paint((canvas, layout) -> {
+        try (var p = new Paint()) {
+          p.setColor(EzColors.BLACK);
+          canvas.drawRect(layout.getBoundingRect(), p);
+        }
+      })
       .children(
         Para.style.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
           new InputLine(content, content)

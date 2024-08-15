@@ -39,7 +39,7 @@ public class InputLine implements Renderable {
   }
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     var ref = new Ref<MetaNode>();
 
     para = Para.builder()

@@ -19,7 +19,7 @@ public class EzNode implements Node {
   private final Set<Object> tags;
   private final List<EventListener> listeners;
   private final Consumer<MetaNode> ref;
-  private final Supplier<Nodes> children;
+  private final NodesSupplier children;
   private final Layouter layout;
   private final Transformer transformer;
   private final Painter paint;
@@ -50,7 +50,7 @@ public class EzNode implements Node {
 
   @Override
   public List<Node> getChildren() {
-    return children.get().getNodeList();
+    return children.getNodes().getNodeList();
   }
 
   @Override
@@ -83,7 +83,7 @@ public class EzNode implements Node {
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
     private Consumer<MetaNode> reference = n -> {};
-    private Supplier<Nodes> children = Nodes.empty();
+    private NodesSupplier children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
@@ -114,17 +114,17 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Builder children(Supplier<Nodes> nodes) {
+    public Builder children(NodesSupplier nodes) {
       children = nodes;
       return this;
     }
 
-    public Builder children(Supplier<Nodes>... nodes) {
+    public Builder children(NodesSupplier... nodes) {
       children = Nodes.compose(nodes);
       return this;
     }
 
-    public Builder children(List<? extends Supplier<Nodes>> nodes) {
+    public Builder children(List<? extends NodesSupplier> nodes) {
       children = Nodes.compose(nodes);
       return this;
     }

@@ -1,12 +1,7 @@
 package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.Nodes;
-import com.github.wilgaboury.sigui.Renderable;
-import com.github.wilgaboury.sigui.SiguiComponent;
-import com.github.wilgaboury.sigui.SiguiThread;
-import com.github.wilgaboury.sigui.SiguiUtil;
-import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.Button;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
@@ -29,7 +24,7 @@ public class Counter implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

@@ -56,7 +56,7 @@ public class Image implements Renderable {
   }
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     return EzNode.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {

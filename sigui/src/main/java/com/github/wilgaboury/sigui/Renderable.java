@@ -2,16 +2,16 @@ package com.github.wilgaboury.sigui;
 
 import java.util.function.Supplier;
 
-public interface Renderable extends Supplier<Nodes> {
+public interface Renderable extends NodesSupplier {
   @Override
-  default Nodes get() {
+  default Nodes getNodes() {
     return RenderInstrumentation.context.use().instrument(this, this::render);
   }
 
   /**
    * This method should be overridden but never called directly
    */
-  default Supplier<Nodes> render() {
+  default NodesSupplier render() {
     return Nodes.empty();
   }
 }

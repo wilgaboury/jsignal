@@ -3,12 +3,7 @@ package com.github.wilgaboury.jsigwig.examples;
 import com.github.wilgaboury.jsignal.AtomicSignal;
 import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.Nodes;
-import com.github.wilgaboury.sigui.Renderable;
-import com.github.wilgaboury.sigui.SiguiComponent;
-import com.github.wilgaboury.sigui.SiguiThread;
-import com.github.wilgaboury.sigui.SiguiUtil;
-import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigwig.ez.EzColors;
 import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
@@ -35,7 +30,7 @@ public class AsyncCounter implements Renderable {
     .atomic();
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     var executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);

@@ -23,7 +23,7 @@ public class SquareTest implements Renderable {
   }
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .width(percent(50))

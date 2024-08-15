@@ -38,7 +38,7 @@ public class AnimationTest implements Renderable {
   private final Signal<Float> angle = Signal.create(0f);
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     var animation = new Animation(deltaTimeNano ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 

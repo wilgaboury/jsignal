@@ -6,11 +6,7 @@ import com.github.wilgaboury.jsignal.Constant;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provider;
-import com.github.wilgaboury.sigui.Nodes;
-import com.github.wilgaboury.sigui.Renderable;
-import com.github.wilgaboury.sigui.SiguiComponent;
-import com.github.wilgaboury.sigui.SiguiThread;
-import com.github.wilgaboury.sigui.SiguiWindow;
+import com.github.wilgaboury.sigui.*;
 import com.github.wilgaboury.sigui.layout.LayoutConfig;
 import com.github.wilgaboury.sigui.paint.SurfacePaintCacheStrategy;
 import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
@@ -89,7 +85,7 @@ public class Para implements Renderable {
   }
 
   @Override
-  public Supplier<Nodes> render() {
+  public NodesSupplier render() {
     var provider = Provider.get();
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(

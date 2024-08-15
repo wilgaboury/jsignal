@@ -4,6 +4,7 @@ import com.github.wilgaboury.jsignal.Cleanups;
 import com.github.wilgaboury.jsignal.Context;
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.Nodes;
+import com.github.wilgaboury.sigui.NodesSupplier;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
 
@@ -33,7 +34,7 @@ public class OrderedPortal {
     }
 
     @Override
-    public Supplier<Nodes> render() {
+    public NodesSupplier render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
       return Nodes.compose(() -> map.get().values().stream().flatMap(Collection::stream).toList());
@@ -53,7 +54,7 @@ public class OrderedPortal {
     }
 
     @Override
-    public Supplier<Nodes> render() {
+    public NodesSupplier render() {
       var suppliers = getNodesMap(id);
       suppliers.mutate(map -> {
         ((TreeMap<T, List<Nodes>>) map)

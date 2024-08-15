@@ -11,9 +11,9 @@ import java.util.function.Supplier;
 import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
 @FunctionalInterface
-public interface Nodes extends Supplier<Nodes> {
+public interface Nodes extends NodesSupplier {
   @Override
-  default Nodes get() {
+  default Nodes getNodes() {
     return this;
   }
 
@@ -35,28 +35,27 @@ public interface Nodes extends Supplier<Nodes> {
     return Collections::emptyList;
   }
 
-  @SafeVarargs
-  static Nodes compose(Supplier<Nodes>... nodes) {
+  static Nodes compose(NodesSupplier... nodes) {
     return compose(Arrays.asList(nodes));
   }
 
-  static Nodes compose(List<? extends Supplier<Nodes>> compose) {
-    return Nodes.from(createMemo(() -> compose.stream().flatMap(s -> s.get().getNodeList().stream()).toList()));
+  static Nodes compose(List<? extends NodesSupplier> compose) {
+    return Nodes.from(createMemo(() -> compose.stream().flatMap(s -> s.getNodes().getNodeList().stream()).toList()));
   }
 
-  static Nodes compose(Supplier<? extends List<? extends Supplier<Nodes>>> nodes) {
+  static Nodes compose(Supplier<? extends List<? extends NodesSupplier>> nodes) {
     // TODO: idk is this a problem
-    return forEach((Supplier<List<Supplier<Nodes>>>)nodes, (n, i) -> n);
+    return forEach((Supplier<List<NodesSupplier>>)nodes, (n, i) -> n);
   }
 
-  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Supplier<Nodes>> map) {
+  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends NodesSupplier> map) {
     var mapped = JSignalUtil.createMapped(list, map);
-    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.get().getNodeList().stream()).toList()));
+    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodes().getNodeList().stream()).toList()));
   }
 
-  static Nodes cacheOne(Function<CacheOne, Nodes> inner) {
+  static Nodes cacheOne(Function<CacheOne, NodesSupplier> inner) {
     var cache = new CacheOne();
-    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodeList()));
+    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodes().getNodeList()));
   }
 
   static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
@@ -65,11 +64,11 @@ public interface Nodes extends Supplier<Nodes> {
   }
 
   final class CacheOne {
-    private Nodes cached = null;
+    private NodesSupplier cached = null;
 
-    public Nodes get(Supplier<? extends Supplier<Nodes>> ifAbsent) {
+    public NodesSupplier get(Supplier<NodesSupplier> ifAbsent) {
       if (cached == null) {
-        cached = ifAbsent.get().get();
+        cached = ifAbsent.get();
       }
       return cached;
     }
