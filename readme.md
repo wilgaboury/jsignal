@@ -23,6 +23,7 @@ library that makes it fast and easy to develop graphical desktop applications.
 ## Short Example
 
 ```java
+
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
@@ -105,6 +106,10 @@ Java's instrumentation API. Instructions for setting this up in Intellij Idea CE
 - Add the following VM command line
   arguments: `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
 
+## Contributing
+
+Discord developer chat invite link: https://discord.gg/YN7tek3CM2
+
 ## Signals and Effects
 
 Fundamentally, a `Signal` is a wrapper around another object providing it with automatic dependency tracking for access
@@ -118,27 +123,55 @@ developer ergonomics.
 Signal<Integer> value = Signal.create(5);
 Effect effect = Effect.create(() -> System.out.println(value.get()));
 // prints 5
-value.accept(6); // prints 6
-value.accept(7); // prints 7
-effect.dispose();
-value.accept(8); // prints nothing
+value.
+
+accept(6); // prints 6
+value.
+
+accept(7); // prints 7
+effect.
+
+dispose();
+value.
+
+accept(8); // prints nothing
 
 // create an automatically computed value
 Computed<Integer> squared = createComputed(() -> value.get() * value.get());
-effect = Effect.create(() ->System.out.println(squared.get())); // prints 64
-value.accept(9); // prints 81
-value.accept(10); // prints 100
+effect =Effect.
 
-effect = null;
-Runtime.getRuntime().gc();
-value.accept(11); // prints nothing
+create(() ->System.out.
+
+println(squared.get())); // prints 64
+  value.
+
+accept(9); // prints 81
+value.
+
+accept(10); // prints 100
+
+effect =null;
+  Runtime.
+
+getRuntime().
+
+gc();
+value.
+
+accept(11); // prints nothing
 
 // explicitly define dependency to get current and previous value on change
-effect = Effect.create(on(squared, (cur, prev) -> 
-    System.out.println(cur + ", " + prev)
+effect =Effect.
+
+create(on(squared, (cur, prev) ->
+  System.out.
+
+println(cur +", "+prev)
 ));
 // prints 121, null
-value.accept(12); // prints 144, 121
+  value.
+
+accept(12); // prints 144, 121
 ```
 
 One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the
