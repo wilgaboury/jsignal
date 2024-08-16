@@ -3,17 +3,22 @@ package com.github.wilgaboury.sigui.hotswap;
 import com.github.wilgaboury.sigui.MetaNode;
 import com.github.wilgaboury.sigui.SiguiThread;
 import com.github.wilgaboury.sigui.SiguiWindow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class HotswapRerenderService {
-  public HotswapRerenderService() {}
+  private static final Logger logger = LoggerFactory.getLogger(HotswapRerenderService.class);
+
+  public HotswapRerenderService() {
+  }
 
   public static void rerender(List<String> classNames) {
     SiguiThread.invokeLater(() -> {
       for (var className : classNames) {
-        System.out.println(className);
+        logger.info("rerendering class: {}", className);
       }
 
       Set<HotswapComponent> components = classNames.stream()
@@ -42,11 +47,11 @@ public class HotswapRerenderService {
         component.getRerender().trigger();
       }
 
-//      for (SiguiWindow window : SiguiWindow.getWindows()) {
-//        setAllDirty(window.getRoot());
-//        window.requestTransformUpdate();
-//        window.requestLayout();
-//      }
+      for (SiguiWindow window : SiguiWindow.getWindows()) {
+        setAllDirty(window.getRoot());
+        window.requestTransformUpdate();
+        window.requestLayout();
+      }
     });
   }
 

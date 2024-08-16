@@ -2,6 +2,7 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Effect;
 import com.github.wilgaboury.jsignal.Provider;
+import com.github.wilgaboury.jsignal.Ref;
 import com.github.wilgaboury.sigui.hotswap.HotswapInstrumentation;
 import com.github.wilgaboury.sigui.hotswap.HotswapRerenderService;
 import com.github.wilgaboury.sigui.hotswap.espresso.EspressoSiguiHotswapPlugin;
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.function.Supplier;
+
+import static com.github.wilgaboury.jsignal.Cleanups.onCleanup;
 
 public class SiguiUtil {
   private static final Logger logger = LoggerFactory.getLogger(SiguiUtil.class);
@@ -64,7 +67,13 @@ public class SiguiUtil {
 
   public static void createEffectLater(Runnable runnable) {
     Provider provider = Provider.get();
-    SiguiWindow.context.use().postFrame(() -> provider.provide(() -> Effect.create(runnable)));
+    Ref<Boolean> run = new Ref<>(true);
+    onCleanup(() -> run.accept(false));
+    SiguiWindow.context.use().postFrame(() -> {
+      if (run.get()) {
+        provider.provide(() -> Effect.create(runnable));
+      }
+    });
   }
 
   public static Window createWindow() {

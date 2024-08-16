@@ -58,7 +58,7 @@ public class SimpleTest implements Renderable {
 
   @Override
   public NodesSupplier render() {
-    System.out.println("hi");
+    System.out.println("SimpleTest render");
 
     HotswapComponent.context.use().ifPresent(h -> h.addTag(SimpleTest.class));
 
@@ -101,7 +101,7 @@ public class SimpleTest implements Renderable {
                   .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
-                  .setChildren(() -> Para.fromString("Increase Bruh 2"))
+                  .setChildren(() -> Para.fromString("Increase"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.BLUE_700)

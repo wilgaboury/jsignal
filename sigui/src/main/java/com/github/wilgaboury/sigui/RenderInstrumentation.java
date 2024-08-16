@@ -2,7 +2,6 @@ package com.github.wilgaboury.sigui;
 
 import com.github.wilgaboury.jsignal.Context;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public interface RenderInstrumentation {

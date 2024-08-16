@@ -42,7 +42,7 @@ public class SiguiWindow {
 
   private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
-  public SiguiWindow(@Nullable Window window, Supplier<Renderable> root) {
+  public SiguiWindow(@Nullable Window window, Supplier<NodesSupplier> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();

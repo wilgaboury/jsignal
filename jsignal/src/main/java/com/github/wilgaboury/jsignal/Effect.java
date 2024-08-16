@@ -11,7 +11,6 @@ import static com.github.wilgaboury.jsignal.JSignalUtil.batch;
 
 public class Effect implements EffectLike {
   public static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
-  public static final OptionalContext<LinkedList<StackTraceElement[]>> causeContext = OptionalContext.createEmpty();
   protected static final AtomicInteger nextId = new AtomicInteger(0);
 
   protected StackTraceElement[] cause;
@@ -96,15 +95,7 @@ public class Effect implements EffectLike {
       if (disposed)
         return;
 
-      var cause = Effect.causeContext.use()
-        .map(c -> {
-          var list = ((LinkedList<StackTraceElement[]>)c.clone());
-          list.addFirst(this.cause);
-          return list;
-        })
-        .orElseGet(() -> new LinkedList<>(Collections.singletonList(this.cause)));
-
-      batch(() -> provider.add(Effect.causeContext.withValue(cause)).provide(() -> {
+      batch(() -> provider.provide(() -> {
         clear();
         inner.run();
       }));
