@@ -47,6 +47,7 @@ dependencies {
     api("io.github.humbleui:skija-linux-x64:${skijaVersion}")
     api("io.github.humbleui:skija-macos-x64:${skijaVersion}")
     api("io.github.humbleui:jwm:0.4.15")
+    api("io.github.humbleui:skija-macos-arm64:${skijaVersion}")
 
     // 2024-03-26
     compileOnly(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
