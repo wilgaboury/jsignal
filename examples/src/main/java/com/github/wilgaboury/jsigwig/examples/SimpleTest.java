@@ -16,6 +16,8 @@ import com.github.wilgaboury.sigwig.Para;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 import java.util.function.Supplier;
@@ -26,6 +28,8 @@ import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 
 @SiguiComponent
 public class SimpleTest implements Renderable {
+  private static final Logger logger = LoggerFactory.getLogger(SimpleTest.class);
+
   private static final String LOREM =
     "Lorem ipsum dolor sit amet, consec tetur adipiscing elit. Proin porttitor erat nec mi cursus semper. Nam dignissim auctor aliquam. Morbi eu arcu tempus, ullamcorper libero ut, faucibus erat. Mauris vel nisl porta, finibus quam nec, blandit lacus. In bibendum ligula porta dolor vehicula blandit tempus finibus orci. Phasellus pulvinar eros eu ipsum aliquam interdum. Curabitur ac arcu feugiat, pellentesque est non, aliquam dolor. Curabitur vel ultrices mi. Nullam eleifend nec tellus a viverra. Sed congue lacus at est maximus, vel elementum libero rhoncus. Donec at fermentum lectus. Vestibulum sodales augue in risus dapibus blandit.";
 
@@ -58,7 +62,7 @@ public class SimpleTest implements Renderable {
 
   @Override
   public NodesSupplier render() {
-    System.out.println("SimpleTest render");
+    logger.info("rendering");
 
     HotswapComponent.context.use().ifPresent(h -> h.addTag(SimpleTest.class));
 

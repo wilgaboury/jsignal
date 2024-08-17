@@ -6,10 +6,10 @@ val skijaVersion = "0.116.1"
 
 val lwjglVersion = "3.3.3"
 val lwjglNatives = listOf(
-    "natives-windows-x86",
-    "natives-linux-x86",
+    "natives-windows",
+    "natives-linux",
     "natives-linux-arm64",
-    "natives-macos-x86",
+    "natives-macos",
     "natives-macos-arm64"
 )
 
@@ -36,7 +36,6 @@ dependencies {
 
     api("io.github.humbleui:skija-windows-x64:${skijaVersion}")
     api("io.github.humbleui:skija-linux-x64:${skijaVersion}")
-    api("io.github.humbleui:skija-linux-arm64:${skijaVersion}")
     api("io.github.humbleui:skija-macos-x64:${skijaVersion}")
     api("io.github.humbleui:skija-macos-arm64:${skijaVersion}")
 
@@ -49,7 +48,7 @@ dependencies {
 
     implementation("org.jetbrains:annotations:24.0.0")
 
-    implementation("org.slf4j:slf4j-api:2.0.12")
+    implementation("org.slf4j:slf4j-api:2.0.16")
     implementation("com.google.guava:guava:32.1.3-jre")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))

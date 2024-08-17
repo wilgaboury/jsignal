@@ -1,7 +1,5 @@
 package com.github.wilgaboury.sigui;
 
-import java.util.function.Supplier;
-
 public interface Renderable extends NodesSupplier {
   @Override
   default Nodes getNodes() {

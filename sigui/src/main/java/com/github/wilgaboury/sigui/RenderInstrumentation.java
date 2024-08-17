@@ -14,6 +14,6 @@ public interface RenderInstrumentation {
   }
 
   static RenderInstrumentation empty() {
-    return (component, render) -> Nodes.from(render.get().getNodes().getNodeList());
+    return (component, render) -> render.get().getNodes();
   }
 }
