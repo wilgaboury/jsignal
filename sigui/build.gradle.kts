@@ -8,7 +8,6 @@ val lwjglVersion = "3.3.3"
 val lwjglNatives = listOf(
     "natives-windows",
     "natives-linux",
-    "natives-linux-arm64",
     "natives-macos",
     "natives-macos-arm64"
 )
