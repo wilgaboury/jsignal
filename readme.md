@@ -5,12 +5,11 @@ from [SolidJS](https://www.solidjs.com/).
 
 ## Motivation
 
-The declarative/reactive paradigm has become the defacto standard it comes to GUI library design in the modern
-software landscape (React, Flutter, SwiftUI, Jetpack Compose, etc.). Though, when it comes to Java there is a
-clear lack of choices in this category, and traditional options like Swing, JavaFX and SWT feel quite outdated
-by today's standards. Considering that Java is one of the most popular languages, used extensively in educational
-settings and for enterprise software development, this project is an attempt to build a modern, performant Java
-library that makes it fast and easy to develop graphical desktop applications.
+The declarative/reactive paradigm has become the defacto standard for modern GUI library design (React, Flutter,
+SwiftUI, Jetpack Compose, etc.). Java is one of the most popular languages, used extensively in education and enterprise
+development, yet it lacks any popular libraries in this category. Traditional imperative libraries like Swing, JavaFX
+and SWT feel quite outdated and do not use modern native graphics backends (DirectX12, Metal, Vulkan). This project's
+goal is to build a modern, declarative Java library for graphical desktop application development.
 
 ## Module Disambiguation
 
@@ -121,8 +120,7 @@ developer ergonomics.
 
 ```java
 Signal<Integer> value = Signal.create(5);
-Effect effect = Effect.create(() -> System.out.println(value.get()));
-// prints 5
+Effect effect = Effect.create(() -> System.out.println(value.get()));// prints 5
 value.
 
 accept(6); // prints 6
@@ -163,12 +161,9 @@ accept(11); // prints nothing
 // explicitly define dependency to get current and previous value on change
 effect =Effect.
 
-create(on(squared, (cur, prev) ->
-  System.out.
+create(on(squared, (cur, prev) ->System.out.
 
-println(cur +", "+prev)
-));
-// prints 121, null
+println(cur +", "+prev))); // prints 121, null
   value.
 
 accept(12); // prints 144, 121
