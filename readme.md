@@ -121,52 +121,24 @@ developer ergonomics.
 ```java
 Signal<Integer> value = Signal.create(5);
 Effect effect = Effect.create(() -> System.out.println(value.get()));// prints 5
-value.
-
-accept(6); // prints 6
-value.
-
-accept(7); // prints 7
-effect.
-
-dispose();
-value.
-
-accept(8); // prints nothing
+value.accept(6); // prints 6
+value.accept(7); // prints 7
+effect.dispose();
+value.accept(8); // prints nothing
 
 // create an automatically computed value
 Computed<Integer> squared = createComputed(() -> value.get() * value.get());
-effect =Effect.
+effect = Effect.create(() -> System.out.println(squared.get())); // prints 64
+value.accept(9); // prints 81
+value.accept(10); // prints 100
 
-create(() ->System.out.
-
-println(squared.get())); // prints 64
-  value.
-
-accept(9); // prints 81
-value.
-
-accept(10); // prints 100
-
-effect =null;
-  Runtime.
-
-getRuntime().
-
-gc();
-value.
-
-accept(11); // prints nothing
+effect = null;
+Runtime.getRuntime().gc();
+value.accept(11); // prints nothing
 
 // explicitly define dependency to get current and previous value on change
-effect =Effect.
-
-create(on(squared, (cur, prev) ->System.out.
-
-println(cur +", "+prev))); // prints 121, null
-  value.
-
-accept(12); // prints 144, 121
+effect = Effect.create(on(squared, (cur, prev) -> System.out.println(cur + ", " +prev))); // prints 121, null
+value.accept(12); // prints 144, 121
 ```
 
 One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the
