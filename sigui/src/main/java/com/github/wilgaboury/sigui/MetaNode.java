@@ -13,20 +13,11 @@ import com.github.wilgaboury.sigui.paint.UpgradingPaintCacheStrategy;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
+import io.github.humbleui.types.Rect;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -64,6 +55,7 @@ public class MetaNode {
   private final Effect layoutEffect; // unused, strong ref
 
   private PaintCacheStrategy paintCacheStrategy;
+  private boolean offscreen = false;
 
   private final Supplier<List<MetaNode>> children;
 
@@ -134,8 +126,7 @@ public class MetaNode {
 
   public void setPaintCacheStrategy(PaintCacheStrategy paintCacheStrategy) {
     this.paintCacheStrategy = paintCacheStrategy;
-    paintCacheEffect.run(() -> {
-    }); // clear side effect dependencies
+    paintCacheEffect.run(() -> {}); // clear side effect dependencies
     paintEffectInner();
   }
 
@@ -155,6 +146,31 @@ public class MetaNode {
     return tags;
   }
 
+  // investigate whether this is worthwhile performance-wise
+  void setOffscreen(Canvas canvas) {
+    var count = canvas.save();
+    try {
+      canvas.concat(getTransform());
+      offscreen = canvas.quickReject(Rect.makeWH(layout.getWidth(), layout.getHeight()));
+      if (offscreen) {
+        setOffscreen();
+      } else {
+        for (MetaNode child : getChildren()) {
+          child.setOffscreen(canvas);
+        }
+      }
+    } finally {
+      canvas.restoreToCount(count);
+    }
+  }
+
+  void setOffscreen() {
+    offscreen = true;
+    for (MetaNode child : getChildren()) {
+      child.setOffscreen();
+    }
+  }
+
   void paint(Canvas canvas) {
     var count = canvas.save();
     try {
@@ -165,7 +181,9 @@ public class MetaNode {
           paintEffect.run(() -> painter.paint(cacheCanvas, layout));
         }
 
-        paintChildren(cacheCanvas);
+        for (MetaNode child : getChildren()) {
+          child.paint(cacheCanvas);
+        }
 
         if (afterPainter != null) {
           paintAfterEffect.run(() -> afterPainter.paint(cacheCanvas, layout));
@@ -173,12 +191,6 @@ public class MetaNode {
       });
     } finally {
       canvas.restoreToCount(count);
-    }
-  }
-
-  private void paintChildren(Canvas canvas) {
-    for (MetaNode child : getChildren()) {
-      child.paint(canvas);
     }
   }
 
@@ -232,6 +244,10 @@ public class MetaNode {
    * @param point must be relative to the node
    */
   public @Nullable MetaNode pick(Point point) {
+    if (offscreen) {
+      return null;
+    }
+
     var currentTest = node.hitTest(point, layout);
     if (currentTest == Node.HitTestResult.MISS) {
       return null;

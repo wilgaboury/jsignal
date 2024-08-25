@@ -154,6 +154,7 @@ public class SiguiWindow {
         transformUpdate();
         var canvas = e.getSurface().getCanvas();
         canvas.clear(0xFFFFFFFF);
+        root.setOffscreen(canvas);
         paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
         shouldPaint = false;
 
