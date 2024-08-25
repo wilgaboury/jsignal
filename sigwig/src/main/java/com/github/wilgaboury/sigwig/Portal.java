@@ -11,7 +11,6 @@ import com.github.wilgaboury.sigui.SiguiComponent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class Portal {
   private static final Context<HashMap<Object, Signal<List<Nodes>>>> context =
@@ -42,9 +41,9 @@ public class Portal {
     public final Object id;
     public final Nodes child;
 
-    public In(Object id, Nodes child) {
+    public In(Object id, NodesSupplier child) {
       this.id = id;
-      this.child = child;
+      this.child = child.getNodes();
     }
 
     @Override

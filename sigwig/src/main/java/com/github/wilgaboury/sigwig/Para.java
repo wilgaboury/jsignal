@@ -130,8 +130,6 @@ public class Para implements Renderable {
     return para.get();
   }
 
-
-
   public static BuilderSetContent builder() {
     return new Builder();
   }

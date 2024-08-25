@@ -6,8 +6,6 @@ import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.skija.Paint;
 
-import java.util.function.Supplier;
-
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
 

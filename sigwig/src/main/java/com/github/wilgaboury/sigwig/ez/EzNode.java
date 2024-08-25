@@ -19,7 +19,7 @@ public class EzNode implements Node {
   private final Set<Object> tags;
   private final List<EventListener> listeners;
   private final Consumer<MetaNode> ref;
-  private final NodesSupplier children;
+  private final Nodes children;
   private final Layouter layout;
   private final Transformer transformer;
   private final Painter paint;
@@ -83,7 +83,7 @@ public class EzNode implements Node {
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
     private Consumer<MetaNode> reference = n -> {};
-    private NodesSupplier children = Nodes.empty();
+    private Nodes children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
@@ -115,7 +115,7 @@ public class EzNode implements Node {
     }
 
     public Builder children(NodesSupplier nodes) {
-      children = nodes;
+      children = nodes.getNodes();
       return this;
     }
 

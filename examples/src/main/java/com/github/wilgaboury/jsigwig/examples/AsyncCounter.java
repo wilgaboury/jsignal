@@ -11,7 +11,6 @@ import com.github.wilgaboury.sigwig.Para;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 @SiguiComponent
 public class AsyncCounter implements Renderable {

@@ -12,9 +12,10 @@ public class HotswapInstrumentation implements RenderInstrumentation {
   @Override
   public Nodes instrument(Renderable component, Supplier<NodesSupplier> render) {
     var haComponent = new HotswapComponent(component);
-    return Nodes.lazy(Computed.create(() -> {
+    var rendered = Computed.create(() -> {
       haComponent.getRerender().track();
-      return Nodes.from(render.get().getNodes().getNodeList());
-    }));
+      return render.get().getNodes();
+    });
+    return Nodes.from(() -> rendered.get().getNodeList());
   }
 }

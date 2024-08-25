@@ -9,8 +9,6 @@ import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import io.github.humbleui.skija.Paint;
 
-import java.util.function.Supplier;
-
 @SiguiComponent
 public class InputLineTest implements Renderable {
   public static void main(String[] args) {

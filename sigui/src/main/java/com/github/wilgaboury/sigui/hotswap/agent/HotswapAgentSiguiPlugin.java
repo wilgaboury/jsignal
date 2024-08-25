@@ -16,37 +16,37 @@ import org.hotswap.agent.util.PluginManagerInvoker;
  * Important caveat is that classes cannot be renamed
  */
 @Plugin(
-        name = "SiguiPlugin",
-        description = "Reactive java UI Plugin For Component Hot Swapping",
-        testedVersions = {"1.4.1"},
-        expectedVersions = {"1.4.1"}
+  name = "SiguiPlugin",
+  description = "Reactive java UI Plugin For Component Hot Swapping",
+  testedVersions = {"1.4.1"},
+  expectedVersions = {"1.4.1"}
 )
 public class HotswapAgentSiguiPlugin {
-    private static final AgentLogger logger = AgentLogger.getLogger(HotswapAgentSiguiPlugin.class);
+  private static final AgentLogger logger = AgentLogger.getLogger(HotswapAgentSiguiPlugin.class);
 
-    @Init
-    Scheduler scheduler;
+  @Init
+  Scheduler scheduler;
 
-    @Init
-    ClassLoader classLoader;
+  @Init
+  ClassLoader classLoader;
 
-    @Init
-    public void init() {
-        logger.info("initializing sigui hotswap plugin");
+  @Init
+  public void init() {
+    logger.info("initializing sigui hotswap plugin");
+  }
+
+  @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.hotswap.HotswapRerenderService")
+  public static void instrumentInitialization(CtClass ct) throws CannotCompileException {
+    for (CtConstructor constructor : ct.getDeclaredConstructors()) {
+      constructor.insertAfter(PluginManagerInvoker.buildInitializePlugin(HotswapAgentSiguiPlugin.class));
     }
+  }
 
-    @OnClassLoadEvent(classNameRegexp = "com.github.wilgaboury.sigui.hotswap.HotswapRerenderService")
-    public static void instrumentInitialization(CtClass ct) throws CannotCompileException {
-        for (CtConstructor constructor : ct.getDeclaredConstructors()) {
-            constructor.insertAfter(PluginManagerInvoker.buildInitializePlugin(HotswapAgentSiguiPlugin.class));
-        }
+  @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
+  public void rerenderComponents(CtClass ct, Class<?> clazz) {
+    // TODO: check if field has been added, if so parent needs to be reloaded or field will be null
+    if (clazz.isAnnotationPresent(SiguiComponent.class)) {
+      scheduler.scheduleCommand(new RerenderCommand(classLoader, ct.getName()), 100);
     }
-
-    @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
-    public void rerenderComponents(CtClass ct, Class<?> clazz) {
-        // TODO: check if field has been added, if so parent needs to be reloaded or field will be null
-        if (clazz.isAnnotationPresent(SiguiComponent.class)) {
-            scheduler.scheduleCommand(new RerenderCommand(classLoader, ct.getName()), 100);
-        }
-    }
+  }
 }

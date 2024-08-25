@@ -389,7 +389,7 @@ public class MetaNode {
 
   public static MetaNode createRoot(Supplier<NodesSupplier> component) {
     var rootComponent = new RootComponent(component.get());
-    var resolved = Nodes.from(createMemo(() -> rootComponent.getNodes().getNodeList()));
+    var rendered = rootComponent.getNodes();
 
     return new MetaNode(new Node() {
       @Override
@@ -402,7 +402,7 @@ public class MetaNode {
 
       @Override
       public List<Node> getChildren() {
-        return resolved.getNodeList();
+        return rendered.getNodeList();
       }
     });
   }

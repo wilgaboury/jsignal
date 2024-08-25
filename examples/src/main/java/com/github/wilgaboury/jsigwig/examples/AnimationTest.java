@@ -10,8 +10,6 @@ import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Matrix33;
 
-import java.util.function.Supplier;
-
 @SiguiComponent
 public class AnimationTest implements Renderable {
   public static void main(String[] args) {

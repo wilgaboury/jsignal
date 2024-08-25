@@ -8,8 +8,6 @@ import com.github.wilgaboury.sigwig.ez.EzLayout;
 import com.github.wilgaboury.sigwig.ez.EzNode;
 import com.github.wilgaboury.sigwig.Para;
 
-import java.util.function.Supplier;
-
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {

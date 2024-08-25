@@ -27,10 +27,6 @@ public interface Nodes extends NodesSupplier {
     return supplier::get;
   }
 
-  static Nodes lazy(Supplier<Nodes> nodes) {
-    return () -> nodes.get().getNodeList();
-  }
-
   static Nodes empty() {
     return Collections::emptyList;
   }
@@ -40,12 +36,13 @@ public interface Nodes extends NodesSupplier {
   }
 
   static Nodes compose(List<? extends NodesSupplier> compose) {
-    return Nodes.from(createMemo(() -> compose.stream().flatMap(s -> s.getNodes().getNodeList().stream()).toList()));
+    List<Nodes> rendered = compose.stream().map(NodesSupplier::getNodes).toList();
+    return Nodes.from(createMemo(() -> rendered.stream().flatMap(s -> s.getNodes().getNodeList().stream()).toList()));
   }
 
   static Nodes compose(Supplier<? extends List<? extends NodesSupplier>> nodes) {
     // TODO: idk is this a problem
-    return forEach((Supplier<List<NodesSupplier>>)nodes, (n, i) -> n);
+    return forEach((Supplier<List<NodesSupplier>>) nodes, (n, i) -> n);
   }
 
   static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends NodesSupplier> map) {

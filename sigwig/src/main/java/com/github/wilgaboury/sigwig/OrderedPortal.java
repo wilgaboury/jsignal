@@ -9,7 +9,6 @@ import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 import static com.github.wilgaboury.jsignal.JSignalUtil.createMemo;
 
@@ -47,10 +46,10 @@ public class OrderedPortal {
     public final T level;
     public final Nodes child;
 
-    public In(Key<T> id, T level, Nodes child) {
+    public In(Key<T> id, T level, NodesSupplier child) {
       this.id = id;
       this.level = level;
-      this.child = child;
+      this.child = child.getNodes();
     }
 
     @Override

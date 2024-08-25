@@ -30,7 +30,6 @@ public class HotswapRerenderService {
       Set<HotswapComponent> rerenderComponents = new LinkedHashSet<>();
 
       for (HotswapComponent component : components) {
-        // shortcut
         if (rerenderComponents.contains(component))
           continue;
 

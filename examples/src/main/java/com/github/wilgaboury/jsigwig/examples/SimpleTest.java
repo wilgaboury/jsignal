@@ -2,7 +2,6 @@ package com.github.wilgaboury.jsigwig.examples;
 
 import com.github.wilgaboury.jsignal.Signal;
 import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.hotswap.HotswapComponent;
 import com.github.wilgaboury.sigwig.BasicPainter;
 import com.github.wilgaboury.sigwig.Blob;
 import com.github.wilgaboury.sigwig.BlobException;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Random;
-import java.util.function.Supplier;
 
 import static com.github.wilgaboury.sigui.layout.Insets.insets;
 import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
@@ -63,8 +61,6 @@ public class SimpleTest implements Renderable {
   @Override
   public NodesSupplier render() {
     logger.info("rendering");
-
-    HotswapComponent.context.use().ifPresent(h -> h.addTag(SimpleTest.class));
 
     return Scroll.builder()
       .setBarWidth(15f)

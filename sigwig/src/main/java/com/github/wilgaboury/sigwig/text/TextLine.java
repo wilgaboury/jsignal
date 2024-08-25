@@ -1,7 +1,6 @@
 package com.github.wilgaboury.sigwig.text;
 
 import com.github.wilgaboury.jsignal.JSignalUtil;
-import com.github.wilgaboury.sigui.Nodes;
 import com.github.wilgaboury.sigui.NodesSupplier;
 import com.github.wilgaboury.sigui.Renderable;
 import com.github.wilgaboury.sigui.SiguiComponent;
