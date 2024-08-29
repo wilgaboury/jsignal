@@ -67,4 +67,4 @@ public class Counter implements Renderable {
 }
 ```
 
-![Counter Example Screencapture](./resources/readme/counter.gif)
+![Counter Example Screencapture](resources/counter_border.gif)
