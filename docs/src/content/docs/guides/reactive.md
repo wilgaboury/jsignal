@@ -38,9 +38,9 @@ value.accept(12); // prints 144, 121
 One thing demonstrated by this example is that effects can be stopped manually, but they will also be cleaned up by the
 garbage collector if there is no longer a strong reference to the effect. This is a convenience feature that makes it
 easier to add reactivity to objects without having to worry about cleanup procedures. Another thing to note is that in
-most Sigui code, there is no need to manually create strong references to effects. When effects are created inside
+most JSignal code, there is no need to manually create strong references to effects. When effects are created inside
 another effect, the outer one will automatically hold a strong reference to the inner one. The entire component tree of
-Sigui is computed inside an effect, which makes handles unnecessary.
+JSignal is computed inside an effect, which makes handles unnecessary.
 
 ## Update Equality Check
 

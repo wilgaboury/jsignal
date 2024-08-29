@@ -3,7 +3,7 @@ title: Hotswap Setup
 description: Setup guide for using JSignal's hotswap fetaure
 ---
 
-One of Sigui's main features is it's built in support for hotswap development, as in it can apply certain code changes to the user interface without having to restart a running application. This feature is supported via both [Espresso](https://github.com/oracle/graal/tree/master/espresso)(recommended) and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent).
+One of JSignal's main features is it's built in support for hotswap development, as in it can apply certain code changes to the user interface without having to restart a running application. This feature is supported via both [Espresso](https://github.com/oracle/graal/tree/master/espresso)(recommended) and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent).
 
 ## Intellij Settings
 
@@ -14,7 +14,7 @@ To set up hotswap in Intellij Idea CE change the following:
 
 ## Application Code
 
-The application code also needs to be changed in order to add hotswap component instrumentation. The easiest way to do this is by changing the app start code to look like this: `SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> { ... }));`. The library also provides a `SiguiUtil.conditionallyProvideHotswapInstrumentation` which will check only enable hotswap if the system variable `sigui.hotswap` is set to true.
+The application code also needs to be changed in order to add hotswap component instrumentation. The easiest way to do this is by changing the app start code to look like this: `UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> { ... }));`. The library also provides a `UiUtil.conditionallyProvideHotswapInstrumentation` which will check only enable hotswap if the system variable `jsignal.hotswap` is set to true.
 
 ## Espresso (Recommended)
 
@@ -37,4 +37,4 @@ Java's instrumentation API. Instructions for setting this up in Intellij Idea CE
 - Download and use the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK 21, which contains the
   DCEVM JVM patch
 - Add the following VM command line
-  arguments: `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:sigui/hotswap-agent-1.4.2-SNAPSHOT.jar`
+  arguments: `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:ui/hotswap-agent-1.4.2-SNAPSHOT.jar`

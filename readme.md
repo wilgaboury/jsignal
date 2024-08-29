@@ -2,18 +2,20 @@
 
 # JSignal
 
-**[Website](https://wilgaboury.github.io/jsignal) • [Javadocs](https://wilgaboury.github.io/jsignal/javadoc/index.html) • [Discord](https://discord.gg/YN7tek3CM2)**
+*
+*[Website](https://wilgaboury.github.io/jsignal) • [Javadocs](https://wilgaboury.github.io/jsignal/javadoc/index.html) • [Discord](https://discord.gg/YN7tek3CM2)
+**
 
 A declarative GUI library for Java desktop applications that takes strong inspiration
 from [SolidJS](https://www.solidjs.com/).
 
 ## Module Disambiguation
 
-| Module               | Description                                                                                                                                                                                   |
-|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [JSignal](./jsignal) | reactive primitives                                                                                                                                                                           |
-| [Sigui](./sigui)     | desktop GUI framework using JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
-| [Sigwig](./sigwig)   | standard component library                                                                                                                                                                    |
+| Module       | Description                                                                                                                                                                          |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [rx](./rx)   | reactive primitives                                                                                                                                                                  |
+| [ui](./ui)   | UI system built on JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
+| [std](./std) | standard component library                                                                                                                                                           |
 
 ## Key Features
 
@@ -27,14 +29,13 @@ from [SolidJS](https://www.solidjs.com/).
 ## Example
 
 ```java
-@SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> {
-      var window = SiguiUtil.createWindow();
+    UiThread.start(() -> {
+      var window = UiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
-      new SiguiWindow(window, Counter::new);
+      new UiWindow(window, Counter::new);
     }));
   }
 

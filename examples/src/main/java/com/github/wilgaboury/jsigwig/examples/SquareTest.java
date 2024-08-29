@@ -1,22 +1,21 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigwig.ez.EzColors;
-import com.github.wilgaboury.sigwig.ez.EzLayout;
-import com.github.wilgaboury.sigwig.ez.EzNode;
+import com.github.wilgaboury.jsignal.std.ez.EzColors;
+import com.github.wilgaboury.jsignal.std.ez.EzLayout;
+import com.github.wilgaboury.jsignal.std.ez.EzNode;
+import com.github.wilgaboury.jsignal.ui.*;
 import io.github.humbleui.skija.Paint;
 
-import static com.github.wilgaboury.sigui.layout.LayoutValue.percent;
-import static com.github.wilgaboury.sigui.layout.LayoutValue.pixel;
+import static com.github.wilgaboury.jsignal.ui.layout.LayoutValue.percent;
+import static com.github.wilgaboury.jsignal.ui.layout.LayoutValue.pixel;
 
-@SiguiComponent
 public class SquareTest implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = SiguiUtil.createWindow();
+    UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
+      var window = UiUtil.createWindow();
       window.setTitle("Test Square");
       window.setContentSize(400, 400);
-      new SiguiWindow(window, SquareTest::new);
+      new UiWindow(window, SquareTest::new);
     }));
   }
 

@@ -1,31 +1,30 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.jsignal.AtomicSignal;
-import com.github.wilgaboury.jsignal.Cleanups;
-import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigwig.ez.EzColors;
-import com.github.wilgaboury.sigwig.ez.EzLayout;
-import com.github.wilgaboury.sigwig.ez.EzNode;
-import com.github.wilgaboury.sigwig.Para;
+import com.github.wilgaboury.jsignal.rx.AtomicSignal;
+import com.github.wilgaboury.jsignal.rx.Cleanups;
+import com.github.wilgaboury.jsignal.rx.Signal;
+import com.github.wilgaboury.jsignal.std.Para;
+import com.github.wilgaboury.jsignal.std.ez.EzColors;
+import com.github.wilgaboury.jsignal.std.ez.EzLayout;
+import com.github.wilgaboury.jsignal.std.ez.EzNode;
+import com.github.wilgaboury.jsignal.ui.*;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@SiguiComponent
 public class AsyncCounter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
-      var window = SiguiUtil.createWindow();
+    UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
+      var window = UiUtil.createWindow();
       window.setTitle("Async Counter");
       window.setContentSize(250, 250);
-      new SiguiWindow(window, AsyncCounter::new);
+      new UiWindow(window, AsyncCounter::new);
     }));
   }
 
   private final AtomicSignal<Integer> count = Signal.builder()
     .setValue(0)
-    .setDefaultExecutor(SiguiThread::invokeLater)
+    .setDefaultExecutor(UiThread::invokeLater)
     .atomic();
 
   @Override

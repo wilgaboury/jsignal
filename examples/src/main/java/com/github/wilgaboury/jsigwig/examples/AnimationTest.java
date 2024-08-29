@@ -1,23 +1,22 @@
 package com.github.wilgaboury.jsigwig.examples;
 
-import com.github.wilgaboury.jsignal.Signal;
-import com.github.wilgaboury.sigui.*;
-import com.github.wilgaboury.sigui.layout.LayoutValue;
-import com.github.wilgaboury.sigwig.*;
-import com.github.wilgaboury.sigwig.ez.EzColors;
-import com.github.wilgaboury.sigwig.ez.EzLayout;
-import com.github.wilgaboury.sigwig.ez.EzNode;
+import com.github.wilgaboury.jsignal.rx.Signal;
+import com.github.wilgaboury.jsignal.std.*;
+import com.github.wilgaboury.jsignal.std.ez.EzColors;
+import com.github.wilgaboury.jsignal.std.ez.EzLayout;
+import com.github.wilgaboury.jsignal.std.ez.EzNode;
+import com.github.wilgaboury.jsignal.ui.*;
+import com.github.wilgaboury.jsignal.ui.layout.LayoutValue;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Matrix33;
 
-@SiguiComponent
 public class AnimationTest implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = SiguiUtil.createWindow();
+    UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
+      var window = UiUtil.createWindow();
       window.setTitle("Test App");
       window.setContentSize(400, 400);
-      new SiguiWindow(window, AnimationTest::new);
+      new UiWindow(window, AnimationTest::new);
     }));
   }
 

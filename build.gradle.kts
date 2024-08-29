@@ -3,9 +3,9 @@ plugins {
 }
 
 var exportedProjects = listOf(
-    ":jsignal",
-    ":sigui",
-    ":sigwig"
+    ":rx",
+    ":ui",
+    ":std"
 )
 
 

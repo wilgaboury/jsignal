@@ -1,13 +1,12 @@
 ---
 export const exampleCode = `
-@SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> {
-      var window = SiguiUtil.createWindow();
+    UiThread.start(() -> {
+      var window = UiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
-      new SiguiWindow(window, Counter::new);
+      new UiWindow(window, Counter::new);
     }));
   }
 
