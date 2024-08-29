@@ -22,6 +22,7 @@ hero:
 
 import { Card, CardGrid, Code } from "@astrojs/starlight/components";
 import { exampleCode } from "../../components/exampleCode.astro";
+import counter from "../../assets/counter.gif";
 
 <CardGrid stagger>
   <Card title="Signals & Effects" icon="rss">
@@ -43,4 +44,12 @@ import { exampleCode } from "../../components/exampleCode.astro";
 
 ## Example
 
-<Code code={exampleCode} lang="java" />
+<div class="flex gap-2 flex-wrap justify-center">
+  <Code code={exampleCode} lang="java" />
+  <div class="flex-grow flex items-start justify-center">
+    <img
+      class="object-contain shadow-xl w-[400px] min-w-[250px]"
+      src={counter.src}
+    />
+  </div>
+</div>
