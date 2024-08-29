@@ -3,14 +3,6 @@
 A declarative GUI library for Java desktop applications that takes strong inspiration
 from [SolidJS](https://www.solidjs.com/).
 
-## Motivation
-
-The declarative/reactive paradigm has become the defacto standard for modern GUI library design (React, Flutter,
-SwiftUI, Jetpack Compose, etc.). Java is one of the most popular languages, used extensively in education and enterprise
-development, yet it lacks any popular libraries in this category. Traditional imperative libraries like Swing, JavaFX
-and SWT feel quite outdated and do not use modern native graphics backends (DirectX12, Metal, Vulkan). This project's
-goal is to build a modern, declarative Java library for graphical desktop application development.
-
 ## Module Disambiguation
 
 | Module               | Description                                                                                                                                                                                                                |
@@ -26,7 +18,7 @@ goal is to build a modern, declarative Java library for graphical desktop applic
 @SiguiComponent
 public class Counter implements Renderable {
   public static void main(String[] args) {
-    SiguiThread.start(() -> SiguiUtil.provideHotswapInstrumentation(() -> {
+    SiguiThread.start(() -> {
       var window = SiguiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
