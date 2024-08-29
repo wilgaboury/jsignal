@@ -2,9 +2,7 @@
 
 # JSignal
 
-*
-*[Website](https://wilgaboury.github.io/jsignal) • [Javadocs](https://wilgaboury.github.io/jsignal/javadoc/index.html) • [Discord](https://discord.gg/YN7tek3CM2)
-**
+**[Website](https://wilgaboury.github.io/jsignal) • [Javadocs](https://wilgaboury.github.io/jsignal/javadoc/index.html) • [Discord](https://discord.gg/YN7tek3CM2)**
 
 A declarative GUI library for Java desktop applications that takes strong inspiration
 from [SolidJS](https://www.solidjs.com/).
