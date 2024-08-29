@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BUILD_PATH: "." # default value when not using subfolders
+  BUILD_PATH: "docs" # default value when not using subfolders
   # BUILD_PATH: subfolder
 
 jobs:
@@ -38,7 +38,6 @@ jobs:
       - name: Detect package manager
         id: detect-package-manager
         run: |
-          cd docs
           echo "manager=npm" >> $GITHUB_OUTPUT
           echo "command=ci" >> $GITHUB_OUTPUT
           echo "runner=npx --no-install" >> $GITHUB_OUTPUT
