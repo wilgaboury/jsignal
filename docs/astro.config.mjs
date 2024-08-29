@@ -25,6 +25,19 @@ export default defineConfig({
             },
           ],
         },
+        {
+          label: "Guides",
+          items: [
+            {
+              label: "Signals and Effects",
+              slug: "guides/reactive",
+            },
+            {
+              label: "Hotswap Setup",
+              slug: "guides/hotswap",
+            },
+          ],
+        },
       ],
       customCss: ["./src/tailwind.css"],
     }),

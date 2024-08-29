@@ -20,21 +20,27 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { Card, CardGrid, Code } from "@astrojs/starlight/components";
+import { exampleCode } from "../../components/exampleCode.astro";
 
 <CardGrid stagger>
   <Card title="Signals & Effects" icon="rss">
-    Fine-grained reactivity simplifies state management and rendering logic.
+    Fine-grained reactivity and automatic dependency tracking makes rendering
+    fast and state management intuitive.
   </Card>
   <Card title="Hotswap" icon="rocket">
-    Reload code changes to components without restarting your application.
+    Code changes intelligently trigger parts of the component tree to be
+    rerendered without stopping the application.
   </Card>
-  <Card title="Advanced Graphics" icon="pen">
-    Supports software and hardware accelerated rendering on all major desktop
-    platforms by using [Skia](https://skia.org/).
+  <Card title="Skia Graphics" icon="pen">
+    Powerful canvas API with support for advanced software and hardware
+    rendering on all major desktop platforms.
   </Card>
-  <Card title="Web Layout" icon="document">
-    Supports flexbox layouts using the battle tested
-    [Yoga](https://www.yogalayout.dev/) layout engine.
+  <Card title="Yoga Layout" icon="document">
+    Use familiar, web-standard Flexbox layouts
   </Card>
 </CardGrid>
+
+## Example
+
+<Code code={exampleCode} lang="java" />
