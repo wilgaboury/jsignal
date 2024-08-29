@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* https://starlight.astro.build/guides/css-and-tailwind/#color-theme-editor */
+
+/* Dark mode colors. */
+:root {
+  --sl-color-accent-low: #460b04;
+  --sl-color-accent: #c41900;
+  --sl-color-accent-high: #feb3a5;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e4effe;
+  --sl-color-gray-2: #b7c3d5;
+  --sl-color-gray-3: #768daf;
+  --sl-color-gray-4: #445979;
+  --sl-color-gray-5: #253956;
+  --sl-color-gray-6: #142743;
+  --sl-color-black: #101825;
+}
+/* Light mode colors. */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #ffc8bd;
+  --sl-color-accent: #c71900;
+  --sl-color-accent-high: #630700;
+  --sl-color-white: #101825;
+  --sl-color-gray-1: #142743;
+  --sl-color-gray-2: #253956;
+  --sl-color-gray-3: #445979;
+  --sl-color-gray-4: #768daf;
+  --sl-color-gray-5: #b7c3d5;
+  --sl-color-gray-6: #e4effe;
+  --sl-color-gray-7: #f2f7fe;
+  --sl-color-black: #ffffff;
+}

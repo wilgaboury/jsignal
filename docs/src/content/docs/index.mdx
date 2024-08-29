@@ -1,0 +1,40 @@
+---
+title: JSignal
+description: Declarative desktop GUI library in Java
+template: splash
+hero:
+  tagline: Declarative desktop GUI library for Java
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Get Started
+      link: /guides/example/
+      icon: right-arrow
+    - text: Javadocs
+      link: /guides/example/
+      icon: right-arrow
+      variant: "secondary"
+    - text: Code
+      link: https://github.com/wilgaboury/jsignal
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid stagger>
+  <Card title="Signals & Effects" icon="rss">
+    Fine-grained reactivity simplifies state management and rendering logic.
+  </Card>
+  <Card title="Hotswap" icon="rocket">
+    Reload code changes to components without restarting your application.
+  </Card>
+  <Card title="Advanced Graphics" icon="pen">
+    Supports software and hardware accelerated rendering on all major desktop
+    platforms by using [Skia](https://skia.org/).
+  </Card>
+  <Card title="Web Layout" icon="document">
+    Supports flexbox layouts using the battle tested
+    [Yoga](https://www.yogalayout.dev/) layout engine.
+  </Card>
+</CardGrid>
