@@ -12,24 +12,18 @@ export default defineConfig({
         src: "./src/assets/logo.svg",
       },
       social: {
-        github: "https://github.com/withastro/starlight",
+        github: "https://github.com/wilgaboury/jsignal",
+        discord: "https://discord.gg/YN7tek3CM2",
       },
       sidebar: [
         {
-          label: "Guides",
+          label: "Getting Started",
           items: [
-            // Each item here is one entry in the navigation menu.
             {
-              label: "Example Guide",
-              slug: "guides/example",
+              label: "Why JSignal?",
+              slug: "start/why",
             },
           ],
-        },
-        {
-          label: "Reference",
-          autogenerate: {
-            directory: "reference",
-          },
         },
       ],
       customCss: ["./src/tailwind.css"],
