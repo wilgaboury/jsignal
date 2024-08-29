@@ -1,3 +1,5 @@
+<img align="left" height="60px" hspace="10" src="resources/logo.svg"/>
+
 # JSignal
 
 **[Website](https://wilgaboury.github.io/jsignal) • [Javadocs](https://wilgaboury.github.io/jsignal/javadoc/index.html) • [Discord](https://discord.gg/YN7tek3CM2)**
