@@ -1,5 +1,6 @@
 package org.jsignal.ui.hotswap;
 
+import org.jsignal.ui.HotswapConstructor;
 import org.jsignal.ui.MetaNode;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
@@ -25,6 +26,14 @@ public class HotswapRerenderService {
         .map(className -> HotswapComponent.getClassNameToHotswap().get(className))
         .filter(Objects::nonNull)
         .flatMap(Collection::stream)
+        .map(component -> {
+          if (component.getClass().isAnnotationPresent(HotswapConstructor.class)
+            && component.getParent().isPresent()) {
+            return component.getParent().get();
+          } else {
+            return component;
+          }
+        })
         .collect(Collectors.toSet());
 
       Set<HotswapComponent> rerenderComponents = new LinkedHashSet<>();

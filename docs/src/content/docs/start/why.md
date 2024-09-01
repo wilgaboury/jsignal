@@ -1,8 +1,12 @@
 ---
 title: Why JSignal?
-description: A guide in my new Starlight docs site.
+description: Justification of this libraries existance
 ---
 
-The declarative/reactive paradigm has become the defacto standard for modern GUI library design (React, Flutter, SwiftUI, Jetpack Compose, etc.). Java is one of the most popular languages, used extensively in education and enterprise development, yet it lacks any popular libraries in this category. Traditional imperative libraries like Swing, JavaFX and SWT feel quite outdated and do not use modern native graphics backends (DirectX12, Metal, Vulkan). This project's goal is to build a modern, declarative Java library for graphical desktop application development.
+In short, because Java does not have a popular declarative GUI library, and building desktop applications should be fun and easy!
 
-This projects reactive system is highly inspired by [SolidJS](https://www.solidjs.com/). I have the upmost respect for frameworks like React and Flutter, both of which have been influential on this project in many ways. But I find that the component/widget based state and tree diffing (VDOM) used by these frameworks often introduces unneccesary complexity to what should be simple problems. A fine-grain reactive model on the other hand allows for state to treated like any other variables and automatically tracked when accessed, which leads to more intuitive code.
+The declarative/reactive paradigm has become the defacto standard for modern GUI library design (React, Flutter, SwiftUI, Jetpack Compose, etc.). Java is one of the most popular languages, used extensively in enterprise and education, yet it's ecosystem of GUI solutions, like Swing, JavaFX and SWT, have not kept up with the times. This project aims to fill the gap by providing a modern set of features.
+
+## Why Signals?
+
+The fine-grained reactive system used by this library was directly inspired by [SolidJS](https://www.solidjs.com/), and is fundamentally different from frameworks like React and Flutter where state is tied to the components. Signals, the most basic state wrapper objects, are very flexible in their usage. They can be local, global, passed around, and stored in arbitrary data structures which makes them intuitive to work with and removes the need for third-party state management utilities which are pervasive in many other libraries.

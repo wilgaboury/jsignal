@@ -23,6 +23,10 @@ export default defineConfig({
               label: "Why JSignal?",
               slug: "start/why",
             },
+            {
+              label: "Hotswap Setup",
+              slug: "start/hotswap",
+            },
           ],
         },
         {
@@ -33,7 +37,7 @@ export default defineConfig({
               slug: "guides/reactive",
             },
             {
-              label: "Hotswap Setup",
+              label: "Hotswap Details",
               slug: "guides/hotswap",
             },
           ],
