@@ -12,7 +12,6 @@ TOKEN=$(echo "${MAVEN_CENTRAL_USERNAME}:${MAVEN_CENTRAL_PASSWORD}" | base64)
 MODULES=("rx" "ui" "std")
 for MODULE in "${MODULES[@]}"
 do
-  echo ${MODULE}
   cd ${SCRIPT_DIR}/${MODULE}/build/repo
   zip -r ${MODULE}.zip org
   curl --request POST \
