@@ -5,24 +5,28 @@ plugins {
 }
 
 subprojects {
-    apply(plugin = "java-library")
-    apply(plugin = "maven-publish")
-    apply(plugin = "signing")
-
     group = "org.jsignal"
     version = "0.0.1"
-
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
-
+    
     repositories {
         mavenCentral()
         maven {
             url = uri("https://releases.usethesource.io/maven")
         }
         mavenLocal()
+    }
+
+    if (project.name == "examples") {
+        return@subprojects
+    }
+
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
+
+    java {
+        withSourcesJar()
+        withJavadocJar()
     }
 
     publishing {
