@@ -1,14 +1,3 @@
-plugins {
-    id("java-library")
-}
-
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://releases.usethesource.io/maven")
-    }
-}
-
 dependencies {
     api(project(":ui"))
     api("com.google.guava:guava:32.1.3-jre")
