@@ -10,7 +10,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/examples" />
             <option value="$PROJECT_DIR$/rx" />
             <option value="$PROJECT_DIR$/std" />
             <option value="$PROJECT_DIR$/ui" />
