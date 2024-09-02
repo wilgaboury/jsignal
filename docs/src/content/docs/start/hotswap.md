@@ -3,11 +3,11 @@ title: Hotswap Setup
 description: Setup guide for using JSignal's hotswap fetaure
 ---
 
-One of JSignal's main features is it's built in support for hotswap development, as in it can apply certain code changes to the user interface without having to restart a running application. This feature is supported via both [Espresso](https://github.com/oracle/graal/tree/master/espresso)(recommended) and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent).
+One of JSignal's main features is it's built in support for hotswap development, as in it can apply certain code changes to the user interface without having to restart a running application. This feature is supported via both [Espresso](https://github.com/oracle/graal/tree/master/espresso) (recommended) and [Hotswap Agent](https://github.com/HotswapProjects/HotswapAgent).
 
-## Intellij Settings
+## Intellij Gradle Settings
 
-To set up hotswap in Intellij Idea CE change the following:
+To set up hotswap in Intellij Idea with Gradle, change the following:
 
 - set `Build, Execution, Deployment > Build Tools > Gradle > Build and run using & Run tests using` to `IntelliJ IDEA`
 - disable `Build, Execution, Deployment > Debugger > HotSwap > Build project before reloading classes`
@@ -24,9 +24,12 @@ CE are below:
 
 - Download and use
   the [GraalVM Espresso JVM](https://www.graalvm.org/jdk21/reference-manual/java-on-truffle/#getting-started)
-- set `Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM` to a normal JDK like OpenJDK, as it will not
-  function correctly on Espresso
-- Add the following VM command line arguments: `-truffle -XX:+IgnoreUnrecognizedVMOptions`
+- If using Intellij and Gradle, set `Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM` to a normal JDK like OpenJDK, as it will not function correctly on Espresso
+- Add the following VM command line arguments:
+
+```
+-truffle -XX:+IgnoreUnrecognizedVMOptions
+```
 
 ## Hotswap Agent
 
@@ -36,5 +39,10 @@ Java's instrumentation API. Instructions for setting this up in Intellij Idea CE
 
 - Download and use the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK 21, which contains the
   DCEVM JVM patch
+- Download a snapshot of the hotswap agent jar from here: https://github.com/wilgaboury/jsignal/blob/master/ui/hotswap-agent-1.4.2-SNAPSHOT.jar
 - Add the following VM command line
-  arguments: `-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:ui/hotswap-agent-1.4.2-SNAPSHOT.jar`
+  arguments:
+
+```
+-XX:+AllowEnhancedClassRedefinition -XX:HotswapAgent=external -javaagent:<path/to/jar>
+```
