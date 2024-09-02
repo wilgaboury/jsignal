@@ -20,6 +20,10 @@ export default defineConfig({
           label: "Getting Started",
           items: [
             {
+              label: "Install",
+              slug: "start/install",
+            },
+            {
               label: "Why JSignal?",
               slug: "start/why",
             },
@@ -39,6 +43,10 @@ export default defineConfig({
             {
               label: "Hotswap Details",
               slug: "guides/hotswap",
+            },
+            {
+              label: "Context API",
+              slug: "guides/context",
             },
           ],
         },

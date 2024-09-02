@@ -1,0 +1,75 @@
+---
+title: Install
+description: Get started with JSignal
+---
+
+import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
+
+JSignal offers three public packages with different capabilities.
+
+<Tabs>
+  <TabItem label="std">
+    `std` is JSignal's standard component library, and depends both on `ui` and `rx`. This is the reccomended package if you are looking to start building GUIs quickly.
+
+    <Tabs syncKey="buildSystem">
+      <TabItem label="Maven">
+        ```xml
+        <dependency>
+          <groupId>org.jsignal</groupId>
+          <artifactId>std</artifactId>
+          <version>0.0.1</version>
+        </dependency>
+        ```
+      </TabItem>
+      <TabItem label="Gradle (Kotlin)">
+        <Code code={'implementation("org.jsignal:std:0.0.1")'} lang="kotlin" />
+      </TabItem>
+      <TabItem label="Gradle (Groovy)">
+        <Code code={"implementation 'org.jsignal:std:0.0.1'"} lang="groovy" />
+      </TabItem>
+    </Tabs>
+
+  </TabItem>
+  <TabItem label="ui">
+    `ui` is JSignal`s core interface library: windowing, events, rendering and layout. This is the reccomended package if you are looking for a good foundation but are willing to implement all your own widgets.
+
+    <Tabs syncKey="buildSystem">
+      <TabItem label="Maven">
+        ```xml
+        <dependency>
+          <groupId>org.jsignal</groupId>
+          <artifactId>ui</artifactId>
+          <version>0.0.1</version>
+        </dependency>
+        ```
+      </TabItem>
+      <TabItem label="Gradle (Kotlin)">
+        <Code code={'implementation("org.jsignal:ui:0.0.1")'} lang="kotlin" />
+      </TabItem>
+      <TabItem label="Gradle (Groovy)">
+        <Code code={"implementation 'org.jsignal:ui:0.0.1'"} lang="groovy" />
+      </TabItem>
+    </Tabs>
+
+  </TabItem>
+  <TabItem label="rx">
+    `rx` is JSignal`s core reactive library, only providing reactive primitives and associated utilities.
+    <Tabs syncKey="buildSystem">
+      <TabItem label="Maven">
+        ```xml
+        <dependency>
+          <groupId>org.jsignal</groupId>
+          <artifactId>rx</artifactId>
+          <version>0.0.1</version>
+        </dependency>
+        ```
+      </TabItem>
+      <TabItem label="Gradle (Kotlin)">
+        <Code code={'implementation("org.jsignal:rx:0.0.1")'} lang="kotlin" />
+      </TabItem>
+      <TabItem label="Gradle (Groovy)">
+        <Code code={"implementation 'org.jsignal:rx:0.0.1'"} lang="groovy" />
+      </TabItem>
+    </Tabs>
+  </TabItem>
+</Tabs>
