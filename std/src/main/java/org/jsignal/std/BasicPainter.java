@@ -3,12 +3,12 @@ package org.jsignal.std;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.RRect;
+import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Ref;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 

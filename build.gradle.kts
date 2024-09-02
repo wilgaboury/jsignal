@@ -6,14 +6,13 @@ plugins {
 
 subprojects {
     group = "org.jsignal"
-    version = "0.0.1"
-    
+    version = "0.0.2"
+
     repositories {
         mavenCentral()
         maven {
             url = uri("https://releases.usethesource.io/maven")
         }
-        mavenLocal()
     }
 
     if (project.name == "examples") {
@@ -38,7 +37,9 @@ subprojects {
 
         publications {
             create<MavenPublication>("mavenCentral") {
-                from(components["java"])
+                if (project.name != "rx") {
+                    from(components["java"])
+                }
 
                 pom {
                     name = "JSignal"

@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(realpath $(dirname "$0"))
 cd ${SCRIPT_DIR}
 
-./gradlew publish
+./gradlew clean publish
 
 source .env
 
