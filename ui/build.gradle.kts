@@ -1,7 +1,3 @@
-plugins {
-    id("java-library")
-}
-
 val skijaVersion = "0.116.1"
 
 val lwjglVersion = "3.3.3"
@@ -11,13 +7,6 @@ val lwjglNatives = listOf(
     "natives-macos",
     "natives-macos-arm64"
 )
-
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://releases.usethesource.io/maven")
-    }
-}
 
 dependencies {
     api(project(":rx"))
