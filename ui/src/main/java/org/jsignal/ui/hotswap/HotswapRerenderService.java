@@ -26,12 +26,12 @@ public class HotswapRerenderService {
         .map(className -> HotswapComponent.getClassNameToHotswap().get(className))
         .filter(Objects::nonNull)
         .flatMap(Collection::stream)
-        .map(component -> {
-          if (component.getClass().isAnnotationPresent(HotswapConstructor.class)
-            && component.getParent().isPresent()) {
-            return component.getParent().get();
+        .map(haComponent -> {
+          if (haComponent.getComponent().getClass().isAnnotationPresent(HotswapConstructor.class)
+            && haComponent.getParent().isPresent()) {
+            return haComponent.getParent().get();
           } else {
-            return component;
+            return haComponent;
           }
         })
         .collect(Collectors.toSet());
@@ -52,7 +52,7 @@ public class HotswapRerenderService {
       }
 
       for (HotswapComponent component : rerenderComponents) {
-        component.getRerender().trigger();
+        component.getRenderTrigger().trigger();
       }
 
       for (UiWindow window : UiWindow.getWindows()) {

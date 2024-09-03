@@ -13,8 +13,10 @@ public class HotswapInstrumentation implements RenderInstrumentation {
   public Nodes instrument(Renderable component, Supplier<NodesSupplier> render) {
     var haComponent = new HotswapComponent(component);
     var rendered = Computed.create(() -> {
-      haComponent.getRerender().track();
-      return render.get().getNodes();
+      haComponent.getRenderTrigger().track();
+      return HotswapComponent.context.withValue(haComponent).provide(() ->
+        render.get().getNodes()
+      );
     });
     return Nodes.from(() -> rendered.get().getNodeList());
   }

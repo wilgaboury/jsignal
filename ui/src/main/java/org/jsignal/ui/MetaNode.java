@@ -402,8 +402,8 @@ public class MetaNode {
     }
   }
 
-  public static MetaNode createRoot(Supplier<NodesSupplier> component) {
-    var rootComponent = new RootComponent(component.get());
+  public static MetaNode createRoot(Supplier<NodesSupplier> constructComponent) {
+    var rootComponent = new RootComponent(constructComponent);
     var rendered = rootComponent.getNodes();
 
     return new MetaNode(new Node() {
@@ -425,10 +425,11 @@ public class MetaNode {
   /**
    * provide hook for hotswap instrumentation at root
    */
-  private record RootComponent(NodesSupplier child) implements Renderable {
+  private record RootComponent(Supplier<NodesSupplier> child) implements Renderable {
     @Override
     public NodesSupplier render() {
-      return child;
+      System.out.println("root render");
+      return child.get();
     }
   }
 }

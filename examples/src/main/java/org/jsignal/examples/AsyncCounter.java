@@ -1,27 +1,38 @@
-package org.jsigwig.examples;
+package org.jsignal.examples;
 
+import org.jsignal.rx.AtomicSignal;
+import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Signal;
-import org.jsignal.std.Button;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 
-public class Counter implements Renderable {
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class AsyncCounter implements Renderable {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
-      window.setTitle("Counter");
+      window.setTitle("Async Counter");
       window.setContentSize(250, 250);
-      new UiWindow(window, Counter::new);
+      new UiWindow(window, AsyncCounter::new);
     }));
   }
 
-  private final Signal<Integer> count = Signal.create(0);
+  private final AtomicSignal<Integer> count = Signal.builder()
+    .setValue(0)
+    .setDefaultExecutor(UiThread::invokeLater)
+    .atomic();
 
   @Override
   public NodesSupplier render() {
+    var executorService = Executors.newSingleThreadScheduledExecutor();
+    executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
+    Cleanups.onCleanup(executorService::shutdown);
+
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()
@@ -34,14 +45,9 @@ public class Counter implements Renderable {
         Para.builder()
           .setString(() -> "Count: " + count.get())
           .setStyle(style -> style.setTextStyle(text -> text
+            .setColor(EzColors.BLUE_300)
             .setFontSize(20f)
-            .setColor(EzColors.BLUE_500)
           ))
-          .build(),
-        Button.builder()
-          .setColor(EzColors.BLUE_300)
-          .setAction(() -> count.accept(c -> c + 1))
-          .setChildren(() -> Para.fromString("Increment"))
           .build()
       )
       .build();

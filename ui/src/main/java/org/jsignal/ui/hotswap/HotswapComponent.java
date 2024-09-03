@@ -16,11 +16,13 @@ public class HotswapComponent {
     return Collections.unmodifiableMap(classNameToHotswap);
   }
 
+  private final Renderable component;
   private final HotswapComponent parent;
   private final Trigger rerender;
   private final Set<Object> tags;
 
   public HotswapComponent(Renderable component) {
+    this.component = component;
     this.parent = context.use().orElse(null);
     this.rerender = new Trigger();
     this.tags = new HashSet<>();
@@ -38,11 +40,15 @@ public class HotswapComponent {
     });
   }
 
+  public Renderable getComponent() {
+    return component;
+  }
+
   public Optional<HotswapComponent> getParent() {
     return Optional.ofNullable(parent);
   }
 
-  public Trigger getRerender() {
+  public Trigger getRenderTrigger() {
     return rerender;
   }
 

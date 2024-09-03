@@ -1,4 +1,4 @@
-package org.jsigwig.examples;
+package org.jsignal.examples;
 
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Matrix33;

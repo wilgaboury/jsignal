@@ -1,4 +1,4 @@
-package org.jsigwig.examples;
+package org.jsignal.examples;
 
 import io.github.humbleui.skija.Font;
 import org.slf4j.Logger;

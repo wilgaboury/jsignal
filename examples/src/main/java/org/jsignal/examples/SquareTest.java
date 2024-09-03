@@ -1,4 +1,4 @@
-package org.jsigwig.examples;
+package org.jsignal.examples;
 
 import io.github.humbleui.skija.Paint;
 import org.jsignal.std.ez.EzColors;
