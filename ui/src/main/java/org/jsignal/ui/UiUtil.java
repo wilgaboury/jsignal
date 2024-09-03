@@ -65,17 +65,6 @@ public class UiUtil {
     }
   }
 
-  public static void createEffectLater(Runnable runnable) {
-    Provider provider = Provider.get();
-    Ref<Boolean> run = new Ref<>(true);
-    onCleanup(() -> run.accept(false));
-    UiWindow.context.use().postFrame(() -> {
-      if (run.get()) {
-        provider.provide(() -> Effect.create(runnable));
-      }
-    });
-  }
-
   public static Window createWindow() {
     return App.makeWindow();
   }

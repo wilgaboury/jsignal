@@ -9,7 +9,7 @@ public class AtomicSignal<T> extends Signal<T> {
   private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
   public AtomicSignal(Builder<T> builder) {
-    super(builder.setAsync());
+    super(builder);
   }
 
   @Override
@@ -25,8 +25,6 @@ public class AtomicSignal<T> extends Signal<T> {
 
   @Override
   public void mutate(Mutate<T> mutate) {
-    assertThread();
-
     boolean changed;
     lock.writeLock().lock();
     try {
@@ -38,5 +36,10 @@ public class AtomicSignal<T> extends Signal<T> {
     if (changed) {
       runEffects();
     }
+  }
+
+  @Override
+  protected void runEffects() {
+    // TODO: actually implement atomic signals correctly
   }
 }

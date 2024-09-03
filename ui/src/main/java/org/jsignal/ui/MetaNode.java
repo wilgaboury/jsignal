@@ -428,7 +428,6 @@ public class MetaNode {
   private record RootComponent(Supplier<NodesSupplier> child) implements Renderable {
     @Override
     public NodesSupplier render() {
-      System.out.println("root render");
       return child.get();
     }
   }

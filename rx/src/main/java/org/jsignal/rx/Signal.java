@@ -12,11 +12,8 @@ import java.util.function.Function;
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
-  public static final Context<Optional<Executor>> executorContext = new Context<>(Optional.empty());
-
   protected T value;
 
-  protected final ThreadBound threadBound;
   protected final Equals<T> equals;
   protected final Clone<T> clone;
   protected final @Nullable Executor defaultExecutor;
@@ -25,7 +22,6 @@ public class Signal<T> implements SignalLike<T> {
 
   public Signal(Builder<T> builder) {
     this.value = builder.value;
-    this.threadBound = new ThreadBound(builder.isSync);
     this.equals = builder.equals;
     this.clone = builder.clone;
     this.defaultExecutor = builder.defaultExecutor;
@@ -33,34 +29,18 @@ public class Signal<T> implements SignalLike<T> {
     this.effects = new LinkedHashMap<>();
   }
 
-  protected void assertThread() {
-    assert threadBound.isCurrentThread() : "using signal in wrong thread";
-  }
-
   @Override
   public void track() {
-    assertThread();
     Effect.context.use().ifPresent(effect -> {
-      assert threadBound.getThreadId() == null ||
-        (effect instanceof Effect e && Objects.equals(threadBound.getThreadId(), e.getThreadId()))
-        : "signal thread does not match effect thread";
-      threadBound.maybeSynchronize(() -> {
-        effects.computeIfAbsent(effect.getId(), k -> new EffectRef(effect, getExecutor()));
-      });
+      effects.computeIfAbsent(effect.getId(), k -> new EffectRef(effect));
       effect.onTrack(this);
     });
-  }
-
-  private Executor getExecutor() {
-    return executorContext.use().orElseGet(() -> Optional.ofNullable(defaultExecutor).orElse(Runnable::run));
   }
 
   @Override
   public void untrack() {
     Effect.context.use().ifPresent(effect -> {
-      threadBound.maybeSynchronize(() -> {
-        effects.remove(effect.getId());
-      });
+      effects.remove(effect.getId());
       effect.onUntrack(this);
     });
   }
@@ -81,8 +61,6 @@ public class Signal<T> implements SignalLike<T> {
 
   @Override
   public void mutate(Mutate<T> mutate) {
-    assertThread();
-
     if (mutate.mutate(value)) {
       runEffects();
     }
@@ -90,7 +68,7 @@ public class Signal<T> implements SignalLike<T> {
 
   protected void runEffects() {
     var batch = Batch.batch.get();
-    batch.run(() -> threadBound.maybeSynchronize(() -> {
+    batch.run(() -> {
       Iterator<EffectRef> itr = effects.values().iterator();
       while (itr.hasNext()) {
         EffectRef ref = itr.next();
@@ -101,11 +79,15 @@ public class Signal<T> implements SignalLike<T> {
         else
           batch.add(ref);
       }
-    }));
+    });
   }
 
   public static <T> Signal<T> empty() {
     return Signal.<T>builder(null).build();
+  }
+
+  public static <T> Signal<T> create() {
+    return create(null);
   }
 
   public static <T> Signal<T> create(T value) {
@@ -127,7 +109,7 @@ public class Signal<T> implements SignalLike<T> {
   }
 
   public static class Builder<T> {
-    protected T value;
+    protected T value = null;
     protected boolean isSync = true;
     protected Equals<T> equals = Objects::deepEquals;
     protected Clone<T> clone = Clone::identity;
@@ -148,11 +130,6 @@ public class Signal<T> implements SignalLike<T> {
 
     public Builder<T> setSync(boolean sync) {
       isSync = sync;
-      return this;
-    }
-
-    public Builder<T> setAsync() {
-      isSync = false;
       return this;
     }
 

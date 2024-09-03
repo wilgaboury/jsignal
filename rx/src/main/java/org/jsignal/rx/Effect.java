@@ -1,6 +1,5 @@
 package org.jsignal.rx;
 
-import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.interfaces.EffectLike;
 import org.jsignal.rx.interfaces.SignalLike;
 
@@ -18,11 +17,10 @@ public class Effect implements EffectLike {
   protected final Runnable effect;
   protected final Cleanups cleanups;
   protected final Provider provider;
-  protected final ThreadBound threadBound;
   protected final LinkedHashSet<SignalLike<?>> signals;
   protected boolean disposed;
 
-  public Effect(Runnable effect, boolean isSync) {
+  public Effect(Runnable effect) {
     var trace = Thread.currentThread().getStackTrace();
     this.cause = Arrays.copyOfRange(trace, 1, trace.length);
     this.id = nextId();
@@ -32,7 +30,6 @@ public class Effect implements EffectLike {
       Cleanups.context.with(Optional.of(cleanups)),
       context.with(Optional.of(this))
     );
-    this.threadBound = new ThreadBound(isSync);
     this.signals = new LinkedHashSet<>();
     this.disposed = false;
 
@@ -60,25 +57,19 @@ public class Effect implements EffectLike {
     return id;
   }
 
-  public @Nullable Long getThreadId() {
-    return threadBound.getThreadId();
-  }
-
   @Override
   public void dispose() {
-    threadBound.maybeSynchronize(() -> {
-      if (disposed)
-        return;
+    if (disposed)
+      return;
 
-      disposed = true;
+    disposed = true;
 
-      provider.provide(this::clear);
-    });
+    provider.provide(this::clear);
   }
 
   @Override
   public boolean isDisposed() {
-    return threadBound.maybeSynchronize(() -> disposed);
+    return disposed;
   }
 
   @Override
@@ -91,15 +82,13 @@ public class Effect implements EffectLike {
   }
 
   protected void run(Runnable inner) {
-    threadBound.maybeSynchronize(() -> {
-      if (disposed)
-        return;
+    if (disposed)
+      return;
 
-      batch(() -> provider.provide(() -> {
-        clear();
-        inner.run();
-      }));
-    });
+    batch(() -> provider.provide(() -> {
+      clear();
+      inner.run();
+    }));
   }
 
   protected void clear() {
@@ -132,13 +121,7 @@ public class Effect implements EffectLike {
   }
 
   public static Effect create(Runnable runnable) {
-    var effect = new Effect(runnable, true);
-    effect.run();
-    return effect;
-  }
-
-  public static Effect createAsync(Runnable runnable) {
-    var effect = new Effect(runnable, false);
+    var effect = new Effect(runnable);
     effect.run();
     return effect;
   }

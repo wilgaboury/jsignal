@@ -23,7 +23,7 @@ public class RxUtil {
 
     var computed = Computed.create(signal.get(), supplier);
     if (computed.getEffect().getSignals().isEmpty()) {
-      return Constant.of(untrack(computed));
+      return Constant.of(ignore(computed));
     } else {
       return computed;
     }
@@ -41,11 +41,11 @@ public class RxUtil {
     Batch.batch.get().run(inner);
   }
 
-  public static void untrack(Runnable inner) {
-    untrack(toSupplier(inner));
+  public static void ignore(Runnable inner) {
+    ignore(toSupplier(inner));
   }
 
-  public static <T> T untrack(Supplier<T> signal) {
+  public static <T> T ignore(Supplier<T> signal) {
     return Effect.context.with(Optional.empty()).provide(signal);
   }
 
@@ -185,7 +185,7 @@ public class RxUtil {
         } else {
           var idx = Signal.create(i);
           var cleanups = new Cleanups();
-          var value = Cleanups.provide(cleanups, () -> untrack(() -> map.apply(key, idx)));
+          var value = Cleanups.provide(cleanups, () -> ignore(() -> map.apply(key, idx)));
           mapped = new Mapped<>(value, idx, cleanups);
         }
         mapping.getFront().put(key, mapped);
@@ -224,7 +224,7 @@ public class RxUtil {
           var key = Signal.create(keys.get(i));
           var cleanups = new Cleanups();
           var idx = i;
-          var value = Cleanups.provide(cleanups, () -> untrack(() -> map.apply(key, idx)));
+          var value = Cleanups.provide(cleanups, () -> ignore(() -> map.apply(key, idx)));
           indexes.add(new Indexed<>(key, cleanups));
           result.add(value);
         }

@@ -6,7 +6,7 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
 import org.jsignal.rx.Computed;
-import org.jsignal.rx.Ref;
+import org.jsignal.rx.Effect;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
@@ -19,8 +19,7 @@ import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static org.jsignal.rx.RxUtil.untrack;
-import static org.jsignal.ui.UiUtil.createEffectLater;
+import static org.jsignal.rx.RxUtil.ignore;
 import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
@@ -46,10 +45,10 @@ public class Scroll implements Renderable {
   private final Signal<Boolean> xBarMouseOver = Signal.create(false);
   private final Signal<Boolean> yBarMouseOver = Signal.create(false);
 
-  private final Ref<MetaNode> content = new Ref<>();
-  private final Ref<MetaNode> view = new Ref<>();
-  private final Ref<MetaNode> xBar = new Ref<>();
-  private final Ref<MetaNode> yBar = new Ref<>();
+  private final Signal<MetaNode> content = Signal.create();
+  private final Signal<MetaNode> view = Signal.create();
+  private final Signal<MetaNode> xBar = Signal.create();
+  private final Signal<MetaNode> yBar = Signal.create();
 
   private final Signal<Float> xScale = Signal.create(0f);
   private final Signal<Float> yScale = Signal.create(0f);
@@ -69,30 +68,32 @@ public class Scroll implements Renderable {
   public NodesSupplier render() {
     var window = UiWindow.context.use();
 
-    createEffectLater(() -> {
-      if (xBarMouseDown.get()) {
+    Effect.create(() -> {
+      if (xBar.get() != null && xBarMouseDown.get()) {
         var pos = window.getMousePosition();
         var rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos);
-        var newOffset = (rel.getX() - xMouseDownOffset) / untrack(xScale);
+        var newOffset = (rel.getX() - xMouseDownOffset) / ignore(xScale);
         xOffset.accept(-newOffset);
       }
     });
 
-    createEffectLater(() -> {
-      if (yBarMouseDown.get()) {
+    Effect.create(() -> {
+      if (yBar.get() != null && yBarMouseDown.get()) {
         var pos = window.getMousePosition();
         var rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos);
         var newOffset =
-          (rel.getY() - yMouseDownOffset) / untrack(() -> yScale.get() * (yBar.get().getLayout().getHeight()
+          (rel.getY() - yMouseDownOffset) / ignore(() -> yScale.get() * (yBar.get().getLayout().getHeight()
             / view.get().getLayout().getHeight()));
         yOffset.accept(-newOffset);
       }
     });
 
-    createEffectLater(() -> {
-      var viewSize = view.get().getLayout().getSize();
-      var contentSize = content.get().getLayout().getSize();
-      yScale.accept(viewSize.getY() / contentSize.getY());
+    Effect.create(() -> {
+      if (view.get() != null && content.get() != null) {
+        var viewSize = view.get().getLayout().getSize();
+        var contentSize = content.get().getLayout().getSize();
+        yScale.accept(viewSize.getY() / contentSize.getY());
+      }
     });
 
     return EzNode.builder()

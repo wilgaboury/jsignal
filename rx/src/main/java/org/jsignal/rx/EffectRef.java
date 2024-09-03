@@ -9,12 +9,10 @@ import java.util.concurrent.Executor;
 public class EffectRef implements Runnable {
   private final int id;
   private final WeakReference<EffectLike> effect;
-  private final Executor executor;
 
-  public EffectRef(EffectLike effect, Executor executor) {
+  public EffectRef(EffectLike effect) {
     this.id = effect.getId();
     this.effect = new WeakReference<>(effect);
-    this.executor = executor;
   }
 
   public int getId() {
@@ -26,7 +24,7 @@ public class EffectRef implements Runnable {
   }
 
   public void run() {
-    getEffect().ifPresent(executor::execute);
+    getEffect().ifPresent(Runnable::run);
   }
 
   @Override
