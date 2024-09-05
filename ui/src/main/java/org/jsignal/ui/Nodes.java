@@ -18,11 +18,11 @@ public interface Nodes extends Renderable {
 
   List<Node> getNodeList();
 
-  static Nodes from(List<NodeImpl> list) {
+  static Nodes from(List<Node> list) {
     return () -> list;
   }
 
-  static Nodes from(Supplier<List<NodeImpl>> supplier) {
+  static Nodes from(Supplier<List<Node>> supplier) {
     return supplier::get;
   }
 

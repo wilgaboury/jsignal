@@ -10,14 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class EzNode implements NodeImpl {
-  private final Function<NodeImpl, Node> toMeta;
-  private final @Nullable Object id;
-  private final Set<Object> tags;
-  private final List<EventListener<?>> listeners;
-  private final Consumer<Node> ref;
   private final Nodes children;
   private final Layouter layout;
   private final Transformer transformer;
@@ -25,11 +19,6 @@ public class EzNode implements NodeImpl {
   private final Painter paintAfter;
 
   public EzNode(Builder builder) {
-    this.toMeta = builder.toMeta;
-    this.id = builder.id;
-    this.tags = builder.tags;
-    this.listeners = builder.listeners;
-    this.ref = builder.reference;
     this.children = builder.children;
     this.layout = builder.layout;
     this.transformer = builder.transformer;
@@ -38,17 +27,7 @@ public class EzNode implements NodeImpl {
   }
 
   @Override
-  public Node toMeta() {
-    var meta = toMeta.apply(this);
-    meta.setId(id);
-    meta.getTags().addAll(tags);
-    meta.listen(listeners);
-    ref.accept(meta);
-    return meta;
-  }
-
-  @Override
-  public List<NodeImpl> getChildren() {
+  public List<Node> getChildren() {
     return children.render().getNodeList();
   }
 
@@ -77,7 +56,6 @@ public class EzNode implements NodeImpl {
   }
 
   public static class Builder {
-    private Function<NodeImpl, Node> toMeta = Node::new;
     private List<EventListener<?>> listeners = Collections.emptyList();
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
@@ -87,11 +65,6 @@ public class EzNode implements NodeImpl {
     private Transformer transformer = null;
     private Painter paint = null;
     private Painter paintAfter = null;
-
-    public Builder toMeta(Function<NodeImpl, Node> toMeta) {
-      this.toMeta = toMeta;
-      return this;
-    }
 
     public Builder ref(Consumer<Node> reference) {
       this.reference = reference;
@@ -108,7 +81,7 @@ public class EzNode implements NodeImpl {
       return this;
     }
 
-    public Builder listen(EventListener... listeners) {
+    public Builder listen(EventListener<?>... listeners) {
       this.listeners = Arrays.asList(listeners);
       return this;
     }
@@ -148,8 +121,13 @@ public class EzNode implements NodeImpl {
       return this;
     }
 
-    public NodeImpl build() {
-      return new EzNode(this);
+    public Node build() {
+      var node = new Node(new EzNode(this));
+      node.setId(id);
+      node.getTags().addAll(tags);
+      node.listen(listeners);
+      reference.accept(node);
+      return node;
     }
   }
 }

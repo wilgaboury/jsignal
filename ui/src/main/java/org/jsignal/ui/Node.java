@@ -10,7 +10,6 @@ import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
 import org.jsignal.ui.layout.Layout;
-import org.jsignal.ui.layout.LayoutValue;
 import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.layout.YogaLayoutConfig;
 import org.jsignal.ui.paint.PaintCacheStrategy;
@@ -25,9 +24,9 @@ import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.createMemo;
 import static org.jsignal.rx.RxUtil.onDefer;
+import static org.jsignal.ui.layout.LayoutValue.percent;
 
 public class Node implements Nodes {
-  private static final Context<Node> parentContext = Context.create(null);
   public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
     () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
@@ -55,7 +54,7 @@ public class Node implements Nodes {
   private final Effect layoutEffect; // unused, strong ref
 
   private PaintCacheStrategy paintCacheStrategy;
-  private boolean offscreen = false;
+  private boolean offScreen = false;
 
   private WeakHashMap<NodeImpl, Node> metaNodeCache;
 
@@ -92,7 +91,6 @@ public class Node implements Nodes {
 
   private void cleanup() {
     Yoga.YGNodeFree(yoga);
-    window.requestLayout();
   }
 
   private void paintEffectInner() {
@@ -117,9 +115,8 @@ public class Node implements Nodes {
     });
   }
 
-  private void setParent(Node parent) {
+  private void setParent(@Nullable Node parent) {
     this.parent = parent;
-
   }
 
   @Override
@@ -137,10 +134,6 @@ public class Node implements Nodes {
     paintEffectInner();
   }
 
-  public Optional<Layouter> getLayouter() {
-    return Optional.ofNullable(layouter);
-  }
-
   public void setId(@Nullable Object id) {
     this.id = id;
   }
@@ -154,16 +147,16 @@ public class Node implements Nodes {
   }
 
   // investigate whether this is worthwhile performance-wise
-  void setOffscreen(Canvas canvas) {
+  void setOffScreen(Canvas canvas) {
     var count = canvas.save();
     try {
       canvas.concat(getTransform());
-      offscreen = canvas.quickReject(Rect.makeWH(layout.getWidth(), layout.getHeight()));
-      if (offscreen) {
-        setOffscreen();
+      offScreen = canvas.quickReject(Rect.makeWH(layout.getWidth(), layout.getHeight()));
+      if (offScreen) {
+        setOffScreen();
       } else {
         for (Node child : getChildren()) {
-          child.setOffscreen(canvas);
+          child.setOffScreen(canvas);
         }
       }
     } finally {
@@ -171,10 +164,10 @@ public class Node implements Nodes {
     }
   }
 
-  void setOffscreen() {
-    offscreen = true;
+  void setOffScreen() {
+    offScreen = true;
     for (Node child : getChildren()) {
-      child.setOffscreen();
+      child.setOffScreen();
     }
   }
 
@@ -228,10 +221,12 @@ public class Node implements Nodes {
       return RxUtil.createMapped(memo, (node, idx) -> {
         node.setParent(this);
         Yoga.YGNodeInsertChild(yoga, node.yoga, idx.get());
+        window.requestLayout();
 
         Cleanups.onCleanup(() -> {
           Yoga.YGNodeRemoveChild(yoga, node.yoga);
           node.setParent(null);
+          window.requestLayout();
         });
 
         Effect.create(onDefer(idx, (cur) -> {
@@ -252,7 +247,7 @@ public class Node implements Nodes {
    * @param point must be relative to the node
    */
   public @Nullable Node pick(Point point) {
-    if (offscreen) {
+    if (offScreen) {
       return null;
     }
 
@@ -358,6 +353,7 @@ public class Node implements Nodes {
     return listeners != null && !listeners.isEmpty();
   }
 
+  @SuppressWarnings("unchecked") // cast here is safe
   public <T extends Event> void fire(T event) {
     for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
       ((Consumer<T>) listener).accept(event);
@@ -418,8 +414,8 @@ public class Node implements Nodes {
       @Override
       public Layouter getLayouter() {
         return config -> {
-          config.setWidth(LayoutValue.percent(100f));
-          config.setHeight(LayoutValue.percent(100f));
+          config.setWidth(percent(100f));
+          config.setHeight(percent(100f));
         };
       }
 

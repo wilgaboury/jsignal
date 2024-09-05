@@ -13,10 +13,6 @@ import java.util.List;
  * The primary layout and rendering primitive of JSignal UI
  */
 public interface NodeImpl {
-  default Node toMeta() {
-    return MetaNodeInitInstrumentation.context.use().instrument(() -> new Node(this));
-  }
-
   default List<Node> getChildren() {
     return Collections.emptyList();
   }
