@@ -11,7 +11,7 @@ import org.jsignal.ui.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class AsyncCounter implements Renderable {
+public class AsyncCounter extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
@@ -24,7 +24,7 @@ public class AsyncCounter implements Renderable {
   private final AtomicSignal<Integer> count = UiUtil.createAtomicSignal(0);
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     var executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);

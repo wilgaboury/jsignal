@@ -9,7 +9,7 @@ import org.jsignal.ui.*;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class SquareTest implements Renderable {
+public class SquareTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
@@ -20,7 +20,7 @@ public class SquareTest implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .width(percent(50))

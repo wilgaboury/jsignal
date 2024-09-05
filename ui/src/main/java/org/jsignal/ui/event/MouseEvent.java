@@ -6,7 +6,7 @@ import io.github.humbleui.jwm.MouseButton;
 import io.github.humbleui.types.Point;
 import org.jetbrains.annotations.Nullable;
 import org.jsignal.ui.MathUtil;
-import org.jsignal.ui.MetaNode;
+import org.jsignal.ui.Node;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -19,14 +19,14 @@ public class MouseEvent extends Event {
 
   public MouseEvent(
     EventType type,
-    MetaNode target,
+    Node target,
     Point screenPoint) {
     this(type, target, screenPoint, null, Collections.emptySet());
   }
 
   public MouseEvent(
     EventType type,
-    MetaNode target,
+    Node target,
     Point screenPoint,
     @Nullable MouseButton mouseButton,
     Set<KeyModifier> modifiers
@@ -54,7 +54,7 @@ public class MouseEvent extends Event {
     return modifiers;
   }
 
-  public static MouseEvent fromJwm(EventType type, MetaNode target, EventMouseButton e) {
+  public static MouseEvent fromJwm(EventType type, Node target, EventMouseButton e) {
     Set<KeyModifier> modifiers = EnumSet.noneOf(KeyModifier.class);
     for (var modifier : KeyModifier.values()) {
       if (e.isModifierDown(modifier)) {

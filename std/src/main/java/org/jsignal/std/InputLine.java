@@ -12,9 +12,9 @@ import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.MetaNode;
-import org.jsignal.ui.NodesSupplier;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Component;
 import org.jsignal.ui.UiWindow;
 
 import java.util.Optional;
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 
 import static org.jsignal.ui.event.EventListener.*;
 
-public class InputLine implements Renderable {
+public class InputLine extends Component {
   private final Supplier<String> supplier;
   private final Consumer<String> consumer;
 
@@ -40,8 +40,8 @@ public class InputLine implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
-    var ref = new Ref<MetaNode>();
+  public Element render() {
+    var ref = new Ref<Node>();
 
     para = Para.builder()
       .setString(supplier)

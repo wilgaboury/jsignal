@@ -86,6 +86,11 @@ public class Effect implements EffectLike {
     return Collections.unmodifiableSet(signals);
   }
 
+  @Override
+  public Cleanups getCleanups() {
+    return cleanups;
+  }
+
   protected void run(Runnable inner) {
     if (disposed)
       return;

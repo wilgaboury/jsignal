@@ -3,14 +3,14 @@ package org.jsignal.std.text;
 import io.github.humbleui.skija.Paint;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.NodesSupplier;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Component;
 
 import java.util.function.Supplier;
 
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class TextLine implements Renderable {
+public class TextLine extends Component {
   private final Supplier<io.github.humbleui.skija.TextLine> line;
   private final Supplier<Integer> color;
 
@@ -20,7 +20,7 @@ public class TextLine implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     return EzNode.builder()
       .layout(config -> {
         var tmp = line.get();

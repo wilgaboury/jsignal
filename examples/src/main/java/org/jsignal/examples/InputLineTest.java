@@ -9,7 +9,7 @@ import org.jsignal.std.ez.EzLayout;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 
-public class InputLineTest implements Renderable {
+public class InputLineTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
@@ -22,7 +22,7 @@ public class InputLineTest implements Renderable {
   private final Signal<String> content = Signal.create("HELLO");
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

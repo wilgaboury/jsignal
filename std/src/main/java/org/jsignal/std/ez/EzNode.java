@@ -10,14 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-public class EzNode implements Node {
-  private final Function<Node, MetaNode> toMeta;
-  private final @Nullable Object id;
-  private final Set<Object> tags;
-  private final List<EventListener<?>> listeners;
-  private final Consumer<MetaNode> ref;
+public class EzNode implements NodeImpl {
   private final Nodes children;
   private final Layouter layout;
   private final Transformer transformer;
@@ -25,11 +19,6 @@ public class EzNode implements Node {
   private final Painter paintAfter;
 
   public EzNode(Builder builder) {
-    this.toMeta = builder.toMeta;
-    this.id = builder.id;
-    this.tags = builder.tags;
-    this.listeners = builder.listeners;
-    this.ref = builder.reference;
     this.children = builder.children;
     this.layout = builder.layout;
     this.transformer = builder.transformer;
@@ -38,18 +27,8 @@ public class EzNode implements Node {
   }
 
   @Override
-  public MetaNode toMeta() {
-    var meta = toMeta.apply(this);
-    meta.setId(id);
-    meta.getTags().addAll(tags);
-    meta.listen(listeners);
-    ref.accept(meta);
-    return meta;
-  }
-
-  @Override
   public List<Node> getChildren() {
-    return children.getNodes().getNodeList();
+    return children.resolve().generate();
   }
 
   @Override
@@ -77,23 +56,17 @@ public class EzNode implements Node {
   }
 
   public static class Builder {
-    private Function<Node, MetaNode> toMeta = MetaNode::new;
     private List<EventListener<?>> listeners = Collections.emptyList();
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
-    private Consumer<MetaNode> reference = n -> {};
+    private Consumer<Node> reference = n -> {};
     private Nodes children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
     private Painter paintAfter = null;
 
-    public Builder toMeta(Function<Node, MetaNode> toMeta) {
-      this.toMeta = toMeta;
-      return this;
-    }
-
-    public Builder ref(Consumer<MetaNode> reference) {
+    public Builder ref(Consumer<Node> reference) {
       this.reference = reference;
       return this;
     }
@@ -108,23 +81,23 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Builder listen(EventListener... listeners) {
+    public Builder listen(EventListener<?>... listeners) {
       this.listeners = Arrays.asList(listeners);
       return this;
     }
 
-    public Builder children(NodesSupplier nodes) {
-      children = nodes.getNodes();
+    public Builder children(Element nodes) {
+      children = nodes.resolve();
       return this;
     }
 
-    public Builder children(NodesSupplier... nodes) {
-      children = Nodes.compose(nodes);
+    public Builder children(Element... elements) {
+      children = Nodes.compose(elements);
       return this;
     }
 
-    public Builder children(List<? extends NodesSupplier> nodes) {
-      children = Nodes.compose(nodes);
+    public Builder children(List<Element> elements) {
+      children = Nodes.compose(elements);
       return this;
     }
 
@@ -149,7 +122,12 @@ public class EzNode implements Node {
     }
 
     public Node build() {
-      return new EzNode(this);
+      var node = new Node(new EzNode(this));
+      node.setId(id);
+      node.getTags().addAll(tags);
+      node.listen(listeners);
+      reference.accept(node);
+      return node;
     }
   }
 }

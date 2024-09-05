@@ -8,20 +8,20 @@ import org.jsignal.std.ez.EzLayout;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 
-public class Counter implements Renderable {
+public class Counter extends Component {
   public static void main(String[] args) {
-    UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
+    UiThread.start(() -> {
       var window = UiUtil.createWindow();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new UiWindow(window, Counter::new);
-    }));
+    });
   }
 
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

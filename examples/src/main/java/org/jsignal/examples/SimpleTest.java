@@ -18,7 +18,7 @@ import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class SimpleTest implements Renderable {
+public class SimpleTest extends Component {
   private static final Logger logger = LoggerFactory.getLogger(SimpleTest.class);
 
   private static final String LOREM =
@@ -52,7 +52,7 @@ public class SimpleTest implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     logger.info("rendering");
 
     return Scroll.builder()
@@ -65,7 +65,7 @@ public class SimpleTest implements Renderable {
             .border(insets(10f))
             .column()
             .gap(16f)
-            .padding(insets(pixel(25f)))
+            .padding(insets(percent(10f)))
             .width(percent(100f))
             .build()
           )
@@ -100,6 +100,10 @@ public class SimpleTest implements Renderable {
                   .setColor(EzColors.BLUE_700)
                   .setAction(() -> count.accept(c -> c - 1))
                   .setChildren(() -> Para.fromString("Decrease"))
+                  .build(),
+                Button.builder()
+                  .setColor(EzColors.CYAN_400)
+                  .setChildren(() -> Para.fromString("NEW BUTTON!"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.RED_300)
@@ -172,7 +176,7 @@ public class SimpleTest implements Renderable {
       if (showFire.get()) {
         return cache.get(() -> {
           var testState = Signal.create(0);
-          
+
           return Nodes.compose(
             Image.builder()
               .setBlob(fire)

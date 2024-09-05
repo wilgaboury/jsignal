@@ -38,6 +38,15 @@ public class Cleanups implements Runnable {
     }
   }
 
+  public void drain() {
+    var parent = Cleanups.context.use();
+    if (parent.isPresent()) {
+      RxUtil.drain(this.queue, parent.get().queue);
+    } else {
+      RxUtil.drain(this.queue);
+    }
+  }
+
   public static Cleanups create() {
     var cleaner = new Cleanups();
     context.use().ifPresent(c -> c.getQueue().add(cleaner));

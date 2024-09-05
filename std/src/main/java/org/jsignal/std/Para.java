@@ -7,8 +7,8 @@ import io.github.humbleui.skija.Typeface;
 import io.github.humbleui.skija.paragraph.*;
 import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.NodesSupplier;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Component;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.createMemo;
 
-public class Para implements Renderable {
+public class Para extends Component {
   private static final FontCollection defaultCollection = new FontCollection();
 
   public static ParaStyleContext style = new ParaStyleContext();
@@ -72,7 +72,7 @@ public class Para implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
+  public Element render() {
     var provider = Provider.get();
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(
