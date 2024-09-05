@@ -39,16 +39,6 @@ public class Button extends Component {
 
   @Override
   public Element render() {
-    var resolvedChildren = Nodes.fromList(() -> Para.style.withComputed(style -> style.toBuilder()
-        .setTextStyle(text -> text
-          .setFontSize(textSize())
-          .setColor(ColorUtil.contrastText(color.get()))
-        )
-        .setMaxLinesCount(1L)
-        .build()
-      )
-      .provide(() -> children.get().resolve().generate()));
-
     return EzNode.builder()
       .ref(ref)
       .listen(
@@ -68,7 +58,16 @@ public class Button extends Component {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(resolvedChildren)
+      .children(Para.style.withComputed(style -> style.toBuilder()
+            .setTextStyle(text -> text
+              .setFontSize(textSize())
+              .setColor(ColorUtil.contrastText(color.get()))
+            )
+            .setMaxLinesCount(1L)
+            .build()
+          )
+          .provide(() -> children.get().resolve())
+      )
       .build();
   }
 
