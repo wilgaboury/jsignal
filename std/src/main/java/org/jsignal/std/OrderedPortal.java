@@ -5,7 +5,7 @@ import org.jsignal.rx.Computed;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Signal;
 import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
 
 import java.util.*;
@@ -30,10 +30,10 @@ public class OrderedPortal {
     }
 
     @Override
-    public Renderable render() {
+    public Element render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
-      return Nodes.from(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream())).toList()));
+      return Nodes.fromList(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.generate().stream())).toList()));
     }
   }
 
@@ -42,14 +42,14 @@ public class OrderedPortal {
     public final T level;
     public final Nodes child;
 
-    public In(Key<T> id, T level, Renderable child) {
+    public In(Key<T> id, T level, Element child) {
       this.id = id;
       this.level = level;
-      this.child = child.doRender();
+      this.child = child.resolve();
     }
 
     @Override
-    public Renderable render() {
+    public Element render() {
       var suppliers = getNodesMap(id);
       suppliers.mutate(map -> {
         ((TreeMap<T, List<Nodes>>) map)

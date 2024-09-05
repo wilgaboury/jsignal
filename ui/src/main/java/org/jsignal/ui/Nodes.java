@@ -7,70 +7,80 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.jsignal.rx.RxUtil.createMemo;
+import static org.jsignal.rx.RxUtil.*;
 
 /**
  * Function for incrementally generating the node tree.
  */
-@FunctionalInterface
-public interface Nodes extends Renderable {
+public sealed interface Nodes extends Element permits Node, NodesImplStatic, NodesImplDynamic {
+
   @Override
-  default Nodes doRender() {
+  default Nodes resolve() {
     return this;
   }
 
-  List<Node> getNodeList();
+  List<Node> generate();
 
-  static Nodes from(List<Node> list) {
-    return () -> list;
+  static Nodes fromList(List<Node> list) {
+    return new NodesImplStatic(list);
   }
 
-  static Nodes from(Supplier<List<Node>> supplier) {
-    return supplier::get;
+  static Nodes fromList(Supplier<List<Node>> supplier) {
+    return new NodesImplDynamic(supplier);
   }
 
-  static Nodes compute(Supplier<Renderable> supplier) {
-    var rendered = RxUtil.createMemo(() -> supplier.get().doRender());
-    return Nodes.from(() -> rendered.get().getNodeList());
+  static Nodes fromNodes(Supplier<Nodes> supplier) {
+    var nodes = createMemo(supplier);
+    return Nodes.fromList(() -> nodes.get().generate());
+  }
+
+  static Nodes fromElement(Supplier<Element> supplier) {
+    var nodes = RxUtil.createMemo(() -> supplier.get().resolve());
+    return Nodes.fromList(() -> nodes.get().generate());
   }
 
   static Nodes empty() {
-    return Collections::emptyList;
+    return Nodes.fromList(Collections.emptyList());
   }
 
-  static Nodes compose(Renderable... nodes) {
+  static Nodes compose(Element... nodes) {
     return compose(Arrays.asList(nodes));
   }
 
-  static Nodes compose(List<? extends Renderable> compose) {
-    List<Nodes> rendered = compose.stream().map(Renderable::doRender).toList();
-    return Nodes.from(createMemo(() -> rendered.stream().flatMap(nodes -> nodes.getNodeList().stream()).toList()));
+  static Nodes compose(List<Element> compose) {
+    var nodesList = compose.stream().map(Element::resolve).toList();
+    return Nodes.fromList(createMemo(() -> nodesList.stream().flatMap(nodes -> nodes.generate().stream()).toList()));
   }
 
-  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Renderable> map) {
-    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).doRender());
-    return Nodes.from(Computed.create(() -> rendered.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
+  static Nodes compose(Supplier<List<Element>> compose) {
+    var nodesList = maybeRemoveComputed(createMapped(compose, (element, idx) -> element.resolve()));
+    return Nodes.fromList(createMemo(() -> nodesList.get().stream().flatMap(nodes -> nodes.generate().stream()).toList()));
   }
 
-  static Nodes cacheOne(Function<CacheOne, Renderable> inner) {
+  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Element> map) {
+    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).resolve());
+    return Nodes.fromList(Computed.create(() -> rendered.get().stream().flatMap(n -> n.generate().stream()).toList()));
+  }
+
+  static Nodes cacheOne(Function<CacheOne, Element> inner) {
     var cache = new CacheOne();
-    var rendered = RxUtil.createMemo(() -> inner.apply(cache).doRender());
-    return Nodes.from(() -> rendered.get().getNodeList());
+    var rendered = RxUtil.createMemo(() -> inner.apply(cache).resolve());
+    return Nodes.fromList(() -> rendered.get().generate());
   }
 
   final class CacheOne {
     private final Provider provider;
-    private Nodes cached = null;
+    private Nodes rendered = null;
 
     public CacheOne() {
       provider = Provider.get();
     }
 
-    public Nodes get(Supplier<Renderable> ifAbsent) {
-      if (cached == null) {
-        cached = provider.provide(() -> ifAbsent.get().doRender());
+    public Nodes get(Supplier<Element> ifAbsent) {
+      if (rendered == null) {
+        rendered = provider.provide(() -> ifAbsent.get().resolve());
       }
-      return cached;
+      return rendered;
     }
   }
 }

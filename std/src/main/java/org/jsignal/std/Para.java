@@ -7,7 +7,7 @@ import io.github.humbleui.skija.Typeface;
 import io.github.humbleui.skija.paragraph.*;
 import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
@@ -72,7 +72,7 @@ public class Para extends Component {
   }
 
   @Override
-  public Renderable render() {
+  public Element render() {
     var provider = Provider.get();
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(

@@ -4,7 +4,7 @@ import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Signal;
 import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class Portal {
     }
 
     @Override
-    public Renderable render() {
+    public Element render() {
       // TODO: find way to assert no duplicate out points
       var suppliers = getSuppliers(id);
       return Nodes.forEach(suppliers, (supplier, idx) -> supplier);
@@ -38,13 +38,13 @@ public class Portal {
     public final Object id;
     public final Nodes child;
 
-    public In(Object id, Renderable child) {
+    public In(Object id, Element child) {
       this.id = id;
-      this.child = child.doRender();
+      this.child = child.resolve();
     }
 
     @Override
-    public Renderable render() {
+    public Element render() {
       var suppliers = getSuppliers(id);
       suppliers.mutate(list -> {
         list.add(child);

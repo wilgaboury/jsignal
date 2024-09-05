@@ -24,7 +24,7 @@ public class AsyncCounter extends Component {
   private final AtomicSignal<Integer> count = UiUtil.createAtomicSignal(0);
 
   @Override
-  public Renderable render() {
+  public Element render() {
     var executorService = Executors.newSingleThreadScheduledExecutor();
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);

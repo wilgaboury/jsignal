@@ -52,7 +52,7 @@ public class SimpleTest extends Component {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Renderable render() {
+  public Element render() {
     logger.info("rendering");
 
     return Scroll.builder()
@@ -65,7 +65,7 @@ public class SimpleTest extends Component {
             .border(insets(10f))
             .column()
             .gap(16f)
-            .padding(insets(pixel(25f)))
+            .padding(insets(percent(10f)))
             .width(percent(100f))
             .build()
           )
@@ -100,6 +100,10 @@ public class SimpleTest extends Component {
                   .setColor(EzColors.BLUE_700)
                   .setAction(() -> count.accept(c -> c - 1))
                   .setChildren(() -> Para.fromString("Decrease"))
+                  .build(),
+                Button.builder()
+                  .setColor(EzColors.CYAN_400)
+                  .setChildren(() -> Para.fromString("NEW BUTTON!"))
                   .build(),
                 Button.builder()
                   .setColor(EzColors.RED_300)

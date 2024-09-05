@@ -21,8 +21,12 @@ public class RxUtil {
       return supplier;
     }
 
-    var computed = Computed.create(signal.get(), supplier);
+    return maybeRemoveComputed(Computed.create(signal.get(), supplier));
+  }
+
+  public static <T> Supplier<T> maybeRemoveComputed(Computed<T> computed) {
     if (computed.getEffect().getSignals().isEmpty()) {
+      computed.getEffect().getCleanups().drain();
       return Constant.of(ignore(computed));
     } else {
       return computed;
@@ -240,5 +244,17 @@ public class RxUtil {
   }
 
   private record Indexed<T>(Signal<T> value, Cleanups cleanups) {
+  }
+
+  public static <T> void drain(Queue<T> from, Queue<T> to) {
+    while (!from.isEmpty()) {
+      to.add(from.remove());
+    }
+  }
+
+  public static <T> void drain(Queue<T> from) {
+    while (!from.isEmpty()) {
+      from.remove();
+    }
   }
 }

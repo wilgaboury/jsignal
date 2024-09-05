@@ -65,7 +65,7 @@ public class Scroll extends Component {
   }
 
   @Override
-  public Renderable render() {
+  public Element render() {
     var window = UiWindow.context.use();
 
     Effect.create(() -> {
@@ -377,7 +377,7 @@ public class Scroll extends Component {
     private final Signal<Boolean> mouseDown = Signal.create(false);
 
     @Override
-    public Renderable render() {
+    public Element render() {
       return EzNode.builder()
         .listen(
           onMouseClick(e -> action.run()),

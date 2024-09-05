@@ -9,7 +9,7 @@ import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import org.jsignal.rx.Computed;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.layout.Layout;
@@ -57,7 +57,7 @@ public class Image extends Component {
   }
 
   @Override
-  public Renderable render() {
+  public Element render() {
     return EzNode.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {

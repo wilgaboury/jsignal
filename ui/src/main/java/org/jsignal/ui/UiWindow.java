@@ -42,7 +42,7 @@ public class UiWindow {
 
   private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
-  public UiWindow(@Nullable Window window, Supplier<Renderable> root) {
+  public UiWindow(@Nullable Window window, Supplier<Element> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();

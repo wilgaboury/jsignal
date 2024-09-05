@@ -22,7 +22,7 @@ public class InputLineTest extends Component {
   private final Signal<String> content = Signal.create("HELLO");
 
   @Override
-  public Renderable render() {
+  public Element render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

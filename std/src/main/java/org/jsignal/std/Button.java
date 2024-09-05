@@ -8,7 +8,7 @@ import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -24,7 +24,7 @@ public class Button extends Component {
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
-  private final Supplier<Renderable> children;
+  private final Supplier<Element> children;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
@@ -38,8 +38,8 @@ public class Button extends Component {
   }
 
   @Override
-  public Renderable render() {
-    var resolvedChildren = Nodes.from(() -> Para.style.withComputed(style -> style.toBuilder()
+  public Element render() {
+    var resolvedChildren = Nodes.fromList(() -> Para.style.withComputed(style -> style.toBuilder()
         .setTextStyle(text -> text
           .setFontSize(textSize())
           .setColor(ColorUtil.contrastText(color.get()))
@@ -47,7 +47,7 @@ public class Button extends Component {
         .setMaxLinesCount(1L)
         .build()
       )
-      .provide(() -> children.get().doRender().getNodeList()));
+      .provide(() -> children.get().resolve().generate()));
 
     return EzNode.builder()
       .ref(ref)
@@ -147,7 +147,7 @@ public class Button extends Component {
     private Supplier<Size> size = () -> Size.MD;
     private Supplier<Runnable> action = () -> () -> {
     };
-    private Supplier<Renderable> children = Nodes::empty;
+    private Supplier<Element> children = Nodes::empty;
 
     public Builder ref(Consumer<Node> ref) {
       this.ref = ref;
@@ -193,11 +193,11 @@ public class Button extends Component {
       return this;
     }
 
-    public Supplier<Renderable> getChildren() {
+    public Supplier<Element> getChildren() {
       return children;
     }
 
-    public Builder setChildren(Supplier<Renderable> children) {
+    public Builder setChildren(Supplier<Element> children) {
       this.children = children;
       return this;
     }

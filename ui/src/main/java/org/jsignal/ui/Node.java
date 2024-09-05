@@ -26,7 +26,7 @@ import static org.jsignal.rx.RxUtil.createMemo;
 import static org.jsignal.rx.RxUtil.onDefer;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 
-public class Node implements Nodes {
+public non-sealed class Node implements Nodes {
   public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
     () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
@@ -120,7 +120,7 @@ public class Node implements Nodes {
   }
 
   @Override
-  public List<Node> getNodeList() {
+  public List<Node> generate() {
     return Collections.singletonList(this);
   }
 
@@ -406,9 +406,9 @@ public class Node implements Nodes {
     }
   }
 
-  public static Node createRoot(Supplier<Renderable> constructComponent) {
+  public static Node createRoot(Supplier<Element> constructComponent) {
     var rootComponent = new RootComponent(constructComponent);
-    var rendered = rootComponent.doRender();
+    var rendered = rootComponent.resolve();
 
     return new Node(new NodeImpl() {
       @Override
@@ -421,7 +421,7 @@ public class Node implements Nodes {
 
       @Override
       public List<Node> getChildren() {
-        return rendered.getNodeList();
+        return rendered.generate();
       }
     });
   }
@@ -430,14 +430,14 @@ public class Node implements Nodes {
    * provide hook for hotswap instrumentation at root
    */
   private static class RootComponent extends Component {
-    private final Supplier<Renderable> child;
+    private final Supplier<Element> child;
 
-    public RootComponent(Supplier<Renderable> child) {
+    public RootComponent(Supplier<Element> child) {
       this.child = child;
     }
 
     @Override
-    public Renderable render() {
+    public Element render() {
       return child.get();
     }
   }

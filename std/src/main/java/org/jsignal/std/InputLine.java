@@ -13,7 +13,7 @@ import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Node;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.UiWindow;
 
@@ -40,7 +40,7 @@ public class InputLine extends Component {
   }
 
   @Override
-  public Renderable render() {
+  public Element render() {
     var ref = new Ref<Node>();
 
     para = Para.builder()

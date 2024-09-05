@@ -28,7 +28,7 @@ public class EzNode implements NodeImpl {
 
   @Override
   public List<Node> getChildren() {
-    return children.doRender().getNodeList();
+    return children.resolve().generate();
   }
 
   @Override
@@ -86,18 +86,18 @@ public class EzNode implements NodeImpl {
       return this;
     }
 
-    public Builder children(Renderable nodes) {
-      children = nodes.doRender();
+    public Builder children(Element nodes) {
+      children = nodes.resolve();
       return this;
     }
 
-    public Builder children(Renderable... nodes) {
-      children = Nodes.compose(nodes);
+    public Builder children(Element... elements) {
+      children = Nodes.compose(elements);
       return this;
     }
 
-    public Builder children(List<? extends Renderable> nodes) {
-      children = Nodes.compose(nodes);
+    public Builder children(List<Element> elements) {
+      children = Nodes.compose(elements);
       return this;
     }
 
