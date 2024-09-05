@@ -4,16 +4,16 @@ import org.jsignal.rx.Context;
 
 import java.util.function.Supplier;
 
-public interface RenderInstrumentation {
-  Context<RenderInstrumentation> context = new Context<>(RenderInstrumentation.empty());
+public interface ComponentRenderInstrumentation {
+  Context<ComponentRenderInstrumentation> context = new Context<>(ComponentRenderInstrumentation.empty());
 
   Nodes instrument(Component component, Supplier<Renderable> render);
 
-  default RenderInstrumentation add(RenderInstrumentation that) {
+  default ComponentRenderInstrumentation add(ComponentRenderInstrumentation that) {
     return (component, render) -> this.instrument(component, () -> that.instrument(component, render));
   }
 
-  static RenderInstrumentation empty() {
+  static ComponentRenderInstrumentation empty() {
     return (component, render) -> render.get().render();
   }
 }

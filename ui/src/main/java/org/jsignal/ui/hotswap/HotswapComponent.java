@@ -1,5 +1,6 @@
 package org.jsignal.ui.hotswap;
 
+import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.OptionalContext;
 import org.jsignal.rx.Trigger;
@@ -8,8 +9,6 @@ import org.jsignal.ui.Component;
 import java.util.*;
 
 public class HotswapComponent {
-  public static final OptionalContext<HotswapComponent> context = OptionalContext.createEmpty();
-
   private static final Map<String, Set<HotswapComponent>> classNameToHotswap = new LinkedHashMap<>();
 
   public static Map<String, Set<HotswapComponent>> getClassNameToHotswap() {
@@ -17,13 +16,13 @@ public class HotswapComponent {
   }
 
   private final Component component;
-  private final HotswapComponent parent;
+  private final @Nullable HotswapComponent parent;
   private final Trigger rerender;
   private final Set<Object> tags;
 
-  public HotswapComponent(Component component) {
+  public HotswapComponent(Component component, @Nullable HotswapComponent parent) {
     this.component = component;
-    this.parent = context.use().orElse(null);
+    this.parent = parent;
     this.rerender = new Trigger();
     this.tags = new HashSet<>();
 

@@ -10,6 +10,7 @@ import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
 import org.jsignal.rx.*;
+import org.jsignal.ui.hotswap.HotswapComponent;
 import org.jsignal.ui.hotswap.HotswapInstrumentation;
 import org.jsignal.ui.hotswap.HotswapRerenderService;
 import org.jsignal.ui.hotswap.espresso.EspressoJSignalHotswapPlugin;
@@ -19,10 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static org.jsignal.rx.Cleanups.onCleanup;
 
 public class UiUtil {
   private static final Logger logger = LoggerFactory.getLogger(UiUtil.class);
@@ -40,8 +39,12 @@ public class UiUtil {
   }
 
   public static void provideHotswapInstrumentation(Runnable runnable) {
-    RenderInstrumentation.context.with(
-        current -> current.add(new HotswapInstrumentation()))
+    Provider.get().add(
+        ComponentConstructorInstrumentation.context.with((Function<ComponentConstructorInstrumentation, ComponentConstructorInstrumentation>)
+          current -> current.add(new HotswapInstrumentation())
+        ),
+        ComponentRenderInstrumentation.context.with(current -> current.add(new HotswapInstrumentation()))
+      )
       .provide(runnable);
   }
 

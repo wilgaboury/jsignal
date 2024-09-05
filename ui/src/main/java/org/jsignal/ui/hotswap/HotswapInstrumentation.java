@@ -1,20 +1,25 @@
 package org.jsignal.ui.hotswap;
 
 import org.jsignal.rx.Computed;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Renderable;
-import org.jsignal.ui.RenderInstrumentation;
-import org.jsignal.ui.Component;
+import org.jsignal.rx.Context;
+import org.jsignal.ui.*;
 
 import java.util.function.Supplier;
 
-public class HotswapInstrumentation implements RenderInstrumentation {
+public class HotswapInstrumentation implements ComponentConstructorInstrumentation, ComponentRenderInstrumentation {
+  private static final Context<HotswapComponent> context = Context.create();
+
+  @Override
+  public void instrument(Component component) {
+    component.getMeta().add(context.with(new HotswapComponent(component, context.use())));
+  }
+
   @Override
   public Nodes instrument(Component component, Supplier<Renderable> render) {
-    var haComponent = new HotswapComponent(component);
+    var hotswapComponent = component.getMeta().use(context);
     var rendered = Computed.create(() -> {
-      haComponent.getRenderTrigger().track();
-      return HotswapComponent.context.withValue(haComponent).provide(() ->
+      hotswapComponent.getRenderTrigger().track();
+      return context.with(hotswapComponent).provide(() ->
         render.get().render()
       );
     });

@@ -1,6 +1,5 @@
 package org.jsignal.ui.hotswap;
 
-import org.jsignal.ui.HotswapConstructor;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
@@ -19,7 +18,7 @@ public class HotswapRerenderService {
   public static void rerender(List<String> classNames) {
     UiThread.invokeLater(() -> {
       for (var className : classNames) {
-        logger.info("rerendering class: {}", className);
+        logger.info("reloading class: {}", className);
       }
 
       Set<HotswapComponent> components = classNames.stream()
@@ -27,8 +26,7 @@ public class HotswapRerenderService {
         .filter(Objects::nonNull)
         .flatMap(Collection::stream)
         .map(haComponent -> {
-          if (haComponent.getComponent().getClass().isAnnotationPresent(HotswapConstructor.class)
-            && haComponent.getParent().isPresent()) {
+          if (haComponent.getParent().isPresent()) {
             return haComponent.getParent().get();
           } else {
             return haComponent;
