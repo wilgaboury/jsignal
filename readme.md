@@ -34,13 +34,13 @@ public class Counter extends Component {
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new UiWindow(window, Counter::new);
-    }));
+    });
   }
 
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Renderable doRender() {
+  public Element render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

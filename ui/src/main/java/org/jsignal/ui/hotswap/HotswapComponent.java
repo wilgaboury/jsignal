@@ -2,7 +2,6 @@ package org.jsignal.ui.hotswap;
 
 import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.Cleanups;
-import org.jsignal.rx.OptionalContext;
 import org.jsignal.rx.Trigger;
 import org.jsignal.ui.Component;
 
