@@ -15,7 +15,7 @@ import static org.jsignal.rx.RxUtil.createMemo;
 @FunctionalInterface
 public interface Nodes extends Renderable {
   @Override
-  default Nodes render() {
+  default Nodes doRender() {
     return this;
   }
 
@@ -30,7 +30,7 @@ public interface Nodes extends Renderable {
   }
 
   static Nodes compute(Supplier<Renderable> supplier) {
-    var rendered = RxUtil.createMemo(() -> supplier.get().render());
+    var rendered = RxUtil.createMemo(() -> supplier.get().doRender());
     return Nodes.from(() -> rendered.get().getNodeList());
   }
 
@@ -43,18 +43,18 @@ public interface Nodes extends Renderable {
   }
 
   static Nodes compose(List<? extends Renderable> compose) {
-    List<Nodes> rendered = compose.stream().map(Renderable::render).toList();
+    List<Nodes> rendered = compose.stream().map(Renderable::doRender).toList();
     return Nodes.from(createMemo(() -> rendered.stream().flatMap(nodes -> nodes.getNodeList().stream()).toList()));
   }
 
   static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Renderable> map) {
-    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).render());
+    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).doRender());
     return Nodes.from(Computed.create(() -> rendered.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
   }
 
   static Nodes cacheOne(Function<CacheOne, Renderable> inner) {
     var cache = new CacheOne();
-    var rendered = RxUtil.createMemo(() -> inner.apply(cache).render());
+    var rendered = RxUtil.createMemo(() -> inner.apply(cache).doRender());
     return Nodes.from(() -> rendered.get().getNodeList());
   }
 
@@ -68,7 +68,7 @@ public interface Nodes extends Renderable {
 
     public Nodes get(Supplier<Renderable> ifAbsent) {
       if (cached == null) {
-        cached = provider.provide(() -> ifAbsent.get().render());
+        cached = provider.provide(() -> ifAbsent.get().doRender());
       }
       return cached;
     }

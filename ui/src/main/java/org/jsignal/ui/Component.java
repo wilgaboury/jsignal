@@ -17,12 +17,9 @@ public abstract class Component implements Renderable {
   }
 
   @Override
-  public final Nodes render() {
-    return ComponentRenderInstrumentation.context.use().instrument(this, () -> ignore(this::doRender));
+  public final Nodes doRender() {
+    return ComponentRenderInstrumentation.context.use().instrument(this, () -> ignore(() -> render().doRender()));
   }
 
-  /**
-   * This method should be overridden but never called directly
-   */
-  protected abstract Renderable doRender();
+  protected abstract Renderable render();
 }

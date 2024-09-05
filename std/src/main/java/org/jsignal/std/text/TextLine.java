@@ -20,7 +20,7 @@ public class TextLine extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     return EzNode.builder()
       .layout(config -> {
         var tmp = line.get();

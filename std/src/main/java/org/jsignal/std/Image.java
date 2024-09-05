@@ -57,7 +57,7 @@ public class Image extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     return EzNode.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {

@@ -72,7 +72,7 @@ public class Para extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     var provider = Provider.get();
     return EzNode.builder()
       .ref(meta -> meta.setPaintCacheStrategy(

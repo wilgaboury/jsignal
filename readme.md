@@ -27,7 +27,7 @@ from [SolidJS](https://www.solidjs.com/).
 ## Example
 
 ```java
-public class Counter implements Renderable {
+public class Counter extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> {
       var window = UiUtil.createWindow();
@@ -40,7 +40,7 @@ public class Counter implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Nodes render() {
+  public Renderable doRender() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

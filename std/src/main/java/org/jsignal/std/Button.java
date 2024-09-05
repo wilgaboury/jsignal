@@ -38,7 +38,7 @@ public class Button extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     var resolvedChildren = Nodes.from(() -> Para.style.withComputed(style -> style.toBuilder()
         .setTextStyle(text -> text
           .setFontSize(textSize())
@@ -47,7 +47,7 @@ public class Button extends Component {
         .setMaxLinesCount(1L)
         .build()
       )
-      .provide(() -> children.get().render().getNodeList()));
+      .provide(() -> children.get().doRender().getNodeList()));
 
     return EzNode.builder()
       .ref(ref)

@@ -27,7 +27,7 @@ public class Portal {
     }
 
     @Override
-    public Renderable doRender() {
+    public Renderable render() {
       // TODO: find way to assert no duplicate out points
       var suppliers = getSuppliers(id);
       return Nodes.forEach(suppliers, (supplier, idx) -> supplier);
@@ -40,11 +40,11 @@ public class Portal {
 
     public In(Object id, Renderable child) {
       this.id = id;
-      this.child = child.render();
+      this.child = child.doRender();
     }
 
     @Override
-    public Renderable doRender() {
+    public Renderable render() {
       var suppliers = getSuppliers(id);
       suppliers.mutate(list -> {
         list.add(child);

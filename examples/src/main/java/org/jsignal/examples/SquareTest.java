@@ -20,7 +20,7 @@ public class SquareTest extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .width(percent(50))

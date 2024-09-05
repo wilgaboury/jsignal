@@ -408,7 +408,7 @@ public class Node implements Nodes {
 
   public static Node createRoot(Supplier<Renderable> constructComponent) {
     var rootComponent = new RootComponent(constructComponent);
-    var rendered = rootComponent.render();
+    var rendered = rootComponent.doRender();
 
     return new Node(new NodeImpl() {
       @Override
@@ -437,7 +437,7 @@ public class Node implements Nodes {
     }
 
     @Override
-    public Renderable doRender() {
+    public Renderable render() {
       return child.get();
     }
   }

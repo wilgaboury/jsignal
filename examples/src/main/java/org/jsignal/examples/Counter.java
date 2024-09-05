@@ -21,7 +21,7 @@ public class Counter extends Component {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

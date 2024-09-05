@@ -40,7 +40,7 @@ public class InputLine extends Component {
   }
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     var ref = new Ref<Node>();
 
     para = Para.builder()

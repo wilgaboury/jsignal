@@ -15,13 +15,11 @@ public class HotswapInstrumentation implements ComponentConstructorInstrumentati
   }
 
   @Override
-  public Nodes instrument(Component component, Supplier<Renderable> render) {
+  public Nodes instrument(Component component, Supplier<Nodes> render) {
     var hotswapComponent = component.getMeta().use(context);
     var rendered = Computed.create(() -> {
       hotswapComponent.getRenderTrigger().track();
-      return context.with(hotswapComponent).provide(() ->
-        render.get().render()
-      );
+      return context.with(hotswapComponent).provide(render);
     });
     return Nodes.from(() -> rendered.get().getNodeList());
   }

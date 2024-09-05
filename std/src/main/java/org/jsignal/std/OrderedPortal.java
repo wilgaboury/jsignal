@@ -30,7 +30,7 @@ public class OrderedPortal {
     }
 
     @Override
-    public Renderable doRender() {
+    public Renderable render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
       return Nodes.from(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream())).toList()));
@@ -45,11 +45,11 @@ public class OrderedPortal {
     public In(Key<T> id, T level, Renderable child) {
       this.id = id;
       this.level = level;
-      this.child = child.render();
+      this.child = child.doRender();
     }
 
     @Override
-    public Renderable doRender() {
+    public Renderable render() {
       var suppliers = getNodesMap(id);
       suppliers.mutate(map -> {
         ((TreeMap<T, List<Nodes>>) map)

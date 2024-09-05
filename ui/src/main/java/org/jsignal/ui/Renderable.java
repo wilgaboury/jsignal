@@ -5,5 +5,5 @@ package org.jsignal.ui;
  */
 @FunctionalInterface
 public interface Renderable {
-  Nodes render();
+  Nodes doRender();
 }

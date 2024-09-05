@@ -52,7 +52,7 @@ public class SimpleTest extends Component {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public Renderable doRender() {
+  public Renderable render() {
     logger.info("rendering");
 
     return Scroll.builder()

@@ -7,13 +7,13 @@ import java.util.function.Supplier;
 public interface ComponentRenderInstrumentation {
   Context<ComponentRenderInstrumentation> context = new Context<>(ComponentRenderInstrumentation.empty());
 
-  Nodes instrument(Component component, Supplier<Renderable> render);
+  Nodes instrument(Component component, Supplier<Nodes> render);
 
   default ComponentRenderInstrumentation add(ComponentRenderInstrumentation that) {
     return (component, render) -> this.instrument(component, () -> that.instrument(component, render));
   }
 
   static ComponentRenderInstrumentation empty() {
-    return (component, render) -> render.get().render();
+    return (component, render) -> render.get();
   }
 }
