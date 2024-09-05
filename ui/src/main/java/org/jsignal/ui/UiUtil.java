@@ -9,9 +9,7 @@ import io.github.humbleui.jwm.skija.LayerD3D12Skija;
 import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
-import org.jsignal.rx.Effect;
-import org.jsignal.rx.Provider;
-import org.jsignal.rx.Ref;
+import org.jsignal.rx.*;
 import org.jsignal.ui.hotswap.HotswapInstrumentation;
 import org.jsignal.ui.hotswap.HotswapRerenderService;
 import org.jsignal.ui.hotswap.espresso.EspressoJSignalHotswapPlugin;
@@ -21,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.Cleanups.onCleanup;
@@ -63,6 +62,18 @@ public class UiUtil {
     } else {
       runnable.run();
     }
+  }
+
+  public static <T> AtomicSignal<T> createAtomicSignal() {
+    return createAtomicSignal(Signal.builder().setValue(null));
+  }
+
+  public static <T> AtomicSignal<T> createAtomicSignal(T value) {
+    return createAtomicSignal(Signal.builder().setValue(value));
+  }
+
+  public static <T> AtomicSignal<T> createAtomicSignal(Signal.Builder<T> builder) {
+    return builder.atomic(UiThread::invokeLater);
   }
 
   public static Window createWindow() {

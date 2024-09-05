@@ -18,8 +18,8 @@ import java.util.function.Supplier;
 import static org.jsignal.rx.RxUtil.batch;
 
 public class UiWindow {
-  public static final Context<UiWindow> context = new Context<>(null);
-  public static final Context<Surface> paintSurfaceContext = new Context<>(null);
+  public static final Context<UiWindow> context = Context.create();
+  public static final Context<Surface> paintSurfaceContext = Context.create();
 
   private static final Set<UiWindow> windows = new HashSet<>();
 

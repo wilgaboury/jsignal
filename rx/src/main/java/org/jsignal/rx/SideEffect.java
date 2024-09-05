@@ -4,8 +4,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SideEffect extends Effect {
-  public SideEffect(Runnable effect, boolean isSync) {
-    super(effect, isSync);
+  public SideEffect(Runnable effect) {
+    super(effect);
   }
 
   @Override
@@ -15,18 +15,16 @@ public class SideEffect extends Effect {
 
   @Override
   public void run(Runnable runnable) {
-    threadBound.maybeSynchronize(() -> {
-      if (disposed)
-        return;
+    if (disposed)
+      return;
 
-      RxUtil.batch(() -> Provider.get().add(
-        Cleanups.context.with(Optional.of(cleanups)),
-        context.with(Optional.of(this))
-      ).provide(() -> {
-        clear();
-        runnable.run();
-      }));
-    });
+    RxUtil.batch(() -> Provider.get().add(
+      Cleanups.context.with(Optional.of(cleanups)),
+      context.with(Optional.of(this))
+    ).provide(() -> {
+      clear();
+      runnable.run();
+    }));
   }
 
   public <T> T run(Supplier<T> supplier) {
@@ -36,10 +34,6 @@ public class SideEffect extends Effect {
   }
 
   public static SideEffect create(Runnable runnable) {
-    return new SideEffect(runnable, false);
-  }
-
-  public static SideEffect createAsync(Runnable runnable) {
-    return new SideEffect(runnable, false);
+    return new SideEffect(runnable);
   }
 }

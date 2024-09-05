@@ -1,6 +1,7 @@
 package org.jsignal.std;
 
 import org.jsignal.rx.Cleanups;
+import org.jsignal.rx.Computed;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Signal;
 import org.jsignal.ui.Nodes;
@@ -32,7 +33,7 @@ public class OrderedPortal {
     public NodesSupplier render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
-      return Nodes.compose(() -> map.get().values().stream().flatMap(Collection::stream).toList());
+      return Nodes.from(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream())).toList()));
     }
   }
 

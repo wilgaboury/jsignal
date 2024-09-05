@@ -2,6 +2,8 @@ package org.jsignal.rx;
 
 import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.interfaces.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -12,28 +14,39 @@ import java.util.function.Function;
  * automatically tracked.
  */
 public class Signal<T> implements SignalLike<T> {
+  private final static Logger logger = LoggerFactory.getLogger(Signal.class);
+
   protected T value;
 
+  protected final Thread thread;
   protected final Equals<T> equals;
   protected final Clone<T> clone;
-  protected final @Nullable Executor defaultExecutor;
 
   protected final Map<Integer, EffectRef> effects;
 
   public Signal(Builder<T> builder) {
+    this.thread = Thread.currentThread();
     this.value = builder.value;
     this.equals = builder.equals;
     this.clone = builder.clone;
-    this.defaultExecutor = builder.defaultExecutor;
 
     this.effects = new LinkedHashMap<>();
   }
 
   @Override
+  public Thread getThread() {
+    return thread;
+  }
+
+  @Override
   public void track() {
     Effect.context.use().ifPresent(effect -> {
-      effects.computeIfAbsent(effect.getId(), k -> new EffectRef(effect));
-      effect.onTrack(this);
+      if (thread.threadId() == effect.getThread().threadId()) {
+        effects.computeIfAbsent(effect.getId(), k -> new EffectRef(effect));
+        effect.onTrack(this);
+      } else {
+        logger.warn("signal is attempting to track in effect that is bound to a different thread");
+      }
     });
   }
 
@@ -86,10 +99,6 @@ public class Signal<T> implements SignalLike<T> {
     return Signal.<T>builder(null).build();
   }
 
-  public static <T> Signal<T> create() {
-    return create(null);
-  }
-
   public static <T> Signal<T> create(T value) {
     return builder(value).build();
   }
@@ -110,10 +119,8 @@ public class Signal<T> implements SignalLike<T> {
 
   public static class Builder<T> {
     protected T value = null;
-    protected boolean isSync = true;
     protected Equals<T> equals = Objects::deepEquals;
     protected Clone<T> clone = Clone::identity;
-    protected Executor defaultExecutor = Runnable::run;
 
     public T getValue() {
       return value;
@@ -121,15 +128,6 @@ public class Signal<T> implements SignalLike<T> {
 
     public Builder<T> setValue(T value) {
       this.value = value;
-      return this;
-    }
-
-    public boolean isSync() {
-      return isSync;
-    }
-
-    public Builder<T> setSync(boolean sync) {
-      isSync = sync;
       return this;
     }
 
@@ -151,21 +149,12 @@ public class Signal<T> implements SignalLike<T> {
       return this;
     }
 
-    public Executor getDefaultExecutor() {
-      return defaultExecutor;
-    }
-
-    public Builder<T> setDefaultExecutor(Executor defaultExecutor) {
-      this.defaultExecutor = defaultExecutor;
-      return this;
-    }
-
     public Signal<T> build() {
       return new Signal<>(this);
     }
 
-    public AtomicSignal<T> atomic() {
-      return new AtomicSignal<>(this);
+    public AtomicSignal<T> atomic(Executor executor) {
+      return new AtomicSignal<>(this, executor);
     }
   }
 }

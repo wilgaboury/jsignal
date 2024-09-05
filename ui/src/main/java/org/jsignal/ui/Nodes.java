@@ -1,7 +1,6 @@
 package org.jsignal.ui;
 
-import org.jsignal.rx.Computed;
-import org.jsignal.rx.RxUtil;
+import org.jsignal.rx.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -27,6 +26,11 @@ public interface Nodes extends NodesSupplier {
     return supplier::get;
   }
 
+  static Nodes compute(Supplier<NodesSupplier> supplier) {
+    var rendered = RxUtil.createMemo(() -> supplier.get().getNodes());
+    return Nodes.from(() -> rendered.get().getNodeList());
+  }
+
   static Nodes empty() {
     return Collections::emptyList;
   }
@@ -37,43 +41,33 @@ public interface Nodes extends NodesSupplier {
 
   static Nodes compose(List<? extends NodesSupplier> compose) {
     List<Nodes> rendered = compose.stream().map(NodesSupplier::getNodes).toList();
-    return Nodes.from(createMemo(() -> rendered.stream().flatMap(s -> s.getNodes().getNodeList().stream()).toList()));
-  }
-
-  static Nodes compose(Supplier<? extends List<? extends NodesSupplier>> nodes) {
-    // TODO: idk is this a problem
-    return forEach((Supplier<List<NodesSupplier>>) nodes, (n, i) -> n);
+    return Nodes.from(createMemo(() -> rendered.stream().flatMap(nodes -> nodes.getNodeList().stream()).toList()));
   }
 
   static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends NodesSupplier> map) {
-    var mapped = RxUtil.createMapped(list, map);
-    return Nodes.from(Computed.create(() -> mapped.get().stream().flatMap(n -> n.getNodes().getNodeList().stream()).toList()));
+    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).getNodes());
+    return Nodes.from(Computed.create(() -> rendered.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
   }
 
   static Nodes cacheOne(Function<CacheOne, NodesSupplier> inner) {
     var cache = new CacheOne();
-    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodes().getNodeList()));
-  }
-
-  static <K> Nodes cacheMany(Function<CacheMany<K>, Nodes> inner) {
-    var cache = new CacheMany<K>(new HashMap<>());
-    return Nodes.from(Computed.create(() -> inner.apply(cache).getNodeList()));
+    var rendered = RxUtil.createMemo(() -> inner.apply(cache).getNodes());
+    return Nodes.from(() -> rendered.get().getNodeList());
   }
 
   final class CacheOne {
-    private NodesSupplier cached = null;
+    private final Provider provider;
+    private Nodes cached = null;
 
-    public NodesSupplier get(Supplier<NodesSupplier> ifAbsent) {
+    public CacheOne() {
+      provider = Provider.get();
+    }
+
+    public Nodes get(Supplier<NodesSupplier> ifAbsent) {
       if (cached == null) {
-        cached = ifAbsent.get();
+        cached = provider.provide(() -> ifAbsent.get().getNodes());
       }
       return cached;
-    }
-  }
-
-  record CacheMany<K>(Map<K, Nodes> cached) {
-    public Nodes get(K key, Supplier<Nodes> ifAbsent) {
-      return cached.computeIfAbsent(key, k -> ifAbsent.get());
     }
   }
 }

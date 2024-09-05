@@ -170,11 +170,20 @@ public class SimpleTest implements Renderable {
   private Nodes maybeFire() {
     return Nodes.cacheOne(cache -> {
       if (showFire.get()) {
-        return cache.get(() -> Image.builder()
-          .setBlob(fire)
-          .setHeight(pixel(200))
-          .build()
-        );
+        return cache.get(() -> {
+          var testState = Signal.create(0);
+          
+          return Nodes.compose(
+            Image.builder()
+              .setBlob(fire)
+              .setHeight(pixel(200))
+              .build(),
+            Button.builder()
+              .setAction(() -> testState.accept(c -> c + 1))
+              .setChildren(() -> Para.fromString(() -> testState.get().toString()))
+              .build()
+          );
+        });
       } else {
         return Nodes.empty();
       }

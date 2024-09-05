@@ -57,6 +57,8 @@ public class MetaNode {
   private PaintCacheStrategy paintCacheStrategy;
   private boolean offscreen = false;
 
+  private WeakHashMap<Node, MetaNode> metaNodeCache;
+
   private final Supplier<List<MetaNode>> children;
 
   public MetaNode(Node node) {
@@ -90,11 +92,7 @@ public class MetaNode {
   }
 
   private void cleanup() {
-    if (parent != null) {
-      Yoga.YGNodeRemoveChild(parent.yoga, yoga);
-    }
     Yoga.YGNodeFree(yoga);
-
     window.requestLayout();
   }
 

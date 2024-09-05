@@ -40,4 +40,9 @@ public class SignalDecorator<T> implements SignalLike<T> {
   public T get() {
     return this.signal.get();
   }
+
+  @Override
+  public Thread getThread() {
+    return signal.getThread();
+  }
 }

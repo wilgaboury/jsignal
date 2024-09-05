@@ -2,7 +2,6 @@ package org.jsignal.examples;
 
 import org.jsignal.rx.AtomicSignal;
 import org.jsignal.rx.Cleanups;
-import org.jsignal.rx.Signal;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
@@ -22,10 +21,7 @@ public class AsyncCounter implements Renderable {
     }));
   }
 
-  private final AtomicSignal<Integer> count = Signal.builder()
-    .setValue(0)
-    .setDefaultExecutor(UiThread::invokeLater)
-    .atomic();
+  private final AtomicSignal<Integer> count = UiUtil.createAtomicSignal(0);
 
   @Override
   public NodesSupplier render() {

@@ -7,4 +7,5 @@ public interface SignalLike<T> extends
   Supplier<T>,
   Acceptable<T>,
   Mutateable<T> {
+  Thread getThread();
 }

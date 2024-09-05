@@ -12,7 +12,7 @@ public class Effect implements EffectLike {
   public static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
   protected static final AtomicInteger nextId = new AtomicInteger(0);
 
-  protected StackTraceElement[] cause;
+  protected final Thread thread;
   protected final int id;
   protected final Runnable effect;
   protected final Cleanups cleanups;
@@ -21,8 +21,7 @@ public class Effect implements EffectLike {
   protected boolean disposed;
 
   public Effect(Runnable effect) {
-    var trace = Thread.currentThread().getStackTrace();
-    this.cause = Arrays.copyOfRange(trace, 1, trace.length);
+    this.thread = Thread.currentThread();
     this.id = nextId();
     this.effect = effect;
     this.cleanups = Cleanups.create();
@@ -34,6 +33,11 @@ public class Effect implements EffectLike {
     this.disposed = false;
 
     Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
+  }
+
+  @Override
+  public Thread getThread() {
+    return thread;
   }
 
   /**
@@ -77,6 +81,7 @@ public class Effect implements EffectLike {
     run(effect);
   }
 
+  @Override
   public Collection<SignalLike<?>> getSignals() {
     return Collections.unmodifiableSet(signals);
   }

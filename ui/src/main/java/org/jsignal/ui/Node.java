@@ -7,6 +7,7 @@ import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**

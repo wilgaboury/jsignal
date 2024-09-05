@@ -13,9 +13,8 @@ public class Computed<T> extends SignalDecorator<T> {
     this.effect = effect;
   }
 
-  // TODO: fix this crap
-  public Effect getEffect() {
-    return (Effect) effect;
+  public EffectLike getEffect() {
+    return effect;
   }
 
   public static <T> Computed<T> create(Supplier<T> supplier) {
