@@ -9,6 +9,9 @@ import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.createMemo;
 
+/**
+ * Function for incrementally generating the node tree.
+ */
 @FunctionalInterface
 public interface Nodes extends Renderable {
   @Override
