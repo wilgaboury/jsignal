@@ -18,7 +18,7 @@ import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class SimpleTest implements Renderable {
+public class SimpleTest extends Component {
   private static final Logger logger = LoggerFactory.getLogger(SimpleTest.class);
 
   private static final String LOREM =
@@ -52,7 +52,7 @@ public class SimpleTest implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public NodesSupplier render() {
+  public Renderable doRender() {
     logger.info("rendering");
 
     return Scroll.builder()
@@ -172,7 +172,7 @@ public class SimpleTest implements Renderable {
       if (showFire.get()) {
         return cache.get(() -> {
           var testState = Signal.create(0);
-          
+
           return Nodes.compose(
             Image.builder()
               .setBlob(fire)

@@ -5,7 +5,6 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
-import org.jsignal.rx.Computed;
 import org.jsignal.rx.Effect;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
@@ -26,7 +25,7 @@ import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class Scroll implements Renderable {
+public class Scroll extends Component {
   private static final float DEFAULT_WIDTH = 15f;
 
   private final Supplier<Boolean> overlay;
@@ -46,10 +45,10 @@ public class Scroll implements Renderable {
   private final Signal<Boolean> xBarMouseOver = Signal.create(false);
   private final Signal<Boolean> yBarMouseOver = Signal.create(false);
 
-  private final Signal<MetaNode> content = Signal.empty();
-  private final Signal<MetaNode> view = Signal.empty();
-  private final Signal<MetaNode> xBar = Signal.empty();
-  private final Signal<MetaNode> yBar = Signal.empty();
+  private final Signal<Node> content = Signal.empty();
+  private final Signal<Node> view = Signal.empty();
+  private final Signal<Node> xBar = Signal.empty();
+  private final Signal<Node> yBar = Signal.empty();
 
   private final Signal<Float> xScale = Signal.create(0f);
   private final Signal<Float> yScale = Signal.create(0f);
@@ -66,7 +65,7 @@ public class Scroll implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
+  public Renderable doRender() {
     var window = UiWindow.context.use();
 
     Effect.create(() -> {
@@ -227,7 +226,7 @@ public class Scroll implements Renderable {
     return yBarMouseOver.get() || yBarMouseDown.get() || !overlay.get();
   }
 
-  private Optional<Rect> vertBarRect(MetaNode meta) {
+  private Optional<Rect> vertBarRect(Node meta) {
     return Optional.empty();
   }
 
@@ -360,7 +359,7 @@ public class Scroll implements Renderable {
     }
   }
 
-  private static class ScrollButton implements Renderable {
+  private static class ScrollButton extends Component {
     private final Supplier<Float> size;
     private final Supplier<Boolean> show;
     private final Runnable action;
@@ -378,7 +377,7 @@ public class Scroll implements Renderable {
     private final Signal<Boolean> mouseDown = Signal.create(false);
 
     @Override
-    public NodesSupplier render() {
+    public Renderable doRender() {
       return EzNode.builder()
         .listen(
           onMouseClick(e -> action.run()),

@@ -8,7 +8,7 @@ import org.jsignal.std.ez.EzLayout;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 
-public class Counter implements Renderable {
+public class Counter extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
@@ -21,7 +21,7 @@ public class Counter implements Renderable {
   private final Signal<Integer> count = Signal.create(0);
 
   @Override
-  public NodesSupplier render() {
+  public Renderable doRender() {
     return EzNode.builder()
       .layout(EzLayout.builder()
         .fill()

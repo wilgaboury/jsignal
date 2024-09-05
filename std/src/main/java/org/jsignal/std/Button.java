@@ -6,10 +6,10 @@ import io.github.humbleui.types.Rect;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.MetaNode;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
-import org.jsignal.ui.NodesSupplier;
 import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Component;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 
@@ -19,12 +19,12 @@ import java.util.function.Supplier;
 import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class Button implements Renderable {
-  private final Consumer<MetaNode> ref;
+public class Button extends Component {
+  private final Consumer<Node> ref;
   private final Supplier<Integer> color;
   private final Supplier<Size> size;
   private final Supplier<Runnable> action;
-  private final Supplier<NodesSupplier> children;
+  private final Supplier<Renderable> children;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
@@ -38,7 +38,7 @@ public class Button implements Renderable {
   }
 
   @Override
-  public NodesSupplier render() {
+  public Renderable doRender() {
     var resolvedChildren = Nodes.from(() -> Para.style.withComputed(style -> style.toBuilder()
         .setTextStyle(text -> text
           .setFontSize(textSize())
@@ -47,7 +47,7 @@ public class Button implements Renderable {
         .setMaxLinesCount(1L)
         .build()
       )
-      .provide(() -> children.get().getNodes().getNodeList()));
+      .provide(() -> children.get().render().getNodeList()));
 
     return EzNode.builder()
       .ref(ref)
@@ -141,15 +141,15 @@ public class Button implements Renderable {
   }
 
   public static class Builder {
-    private Consumer<MetaNode> ref = ignored -> {
+    private Consumer<Node> ref = ignored -> {
     };
     private Supplier<Integer> color = () -> EzColors.BLUE_400;
     private Supplier<Size> size = () -> Size.MD;
     private Supplier<Runnable> action = () -> () -> {
     };
-    private Supplier<NodesSupplier> children = Nodes::empty;
+    private Supplier<Renderable> children = Nodes::empty;
 
-    public Builder ref(Consumer<MetaNode> ref) {
+    public Builder ref(Consumer<Node> ref) {
       this.ref = ref;
       return this;
     }
@@ -193,11 +193,11 @@ public class Button implements Renderable {
       return this;
     }
 
-    public Supplier<NodesSupplier> getChildren() {
+    public Supplier<Renderable> getChildren() {
       return children;
     }
 
-    public Builder setChildren(Supplier<NodesSupplier> children) {
+    public Builder setChildren(Supplier<Renderable> children) {
       this.children = children;
       return this;
     }

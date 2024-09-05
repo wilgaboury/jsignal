@@ -1,7 +1,7 @@
 package org.jsignal.ui.hotswap;
 
 import org.jsignal.ui.HotswapConstructor;
-import org.jsignal.ui.MetaNode;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
 import org.slf4j.Logger;
@@ -63,10 +63,10 @@ public class HotswapRerenderService {
     });
   }
 
-  private static void setAllDirty(MetaNode meta) {
+  private static void setAllDirty(Node meta) {
     meta.getPaintCacheStrategy().markDirty();
     meta.runLayouter();
-    for (MetaNode child : meta.getChildren()) {
+    for (Node child : meta.getChildren()) {
       setAllDirty(child);
     }
   }

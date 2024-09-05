@@ -10,7 +10,7 @@ import org.hotswap.agent.javassist.CtClass;
 import org.hotswap.agent.javassist.CtConstructor;
 import org.hotswap.agent.logging.AgentLogger;
 import org.hotswap.agent.util.PluginManagerInvoker;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Component;
 
 /**
  * Important caveat is that classes cannot be renamed
@@ -45,7 +45,7 @@ public class HotswapAgentJSignalPlugin {
   @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
   public void rerenderComponents(CtClass ct, Class<?> clazz) {
     // TODO: check if field has been added, if so parent needs to be reloaded or field will be null
-    if (Renderable.class.isAssignableFrom(clazz)) {
+    if (Component.class.isAssignableFrom(clazz)) {
       scheduler.scheduleCommand(new RerenderCommand(classLoader, ct.getName()), 100);
     }
   }

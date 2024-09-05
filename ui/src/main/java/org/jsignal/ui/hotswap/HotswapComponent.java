@@ -3,7 +3,7 @@ package org.jsignal.ui.hotswap;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.OptionalContext;
 import org.jsignal.rx.Trigger;
-import org.jsignal.ui.Renderable;
+import org.jsignal.ui.Component;
 
 import java.util.*;
 
@@ -16,12 +16,12 @@ public class HotswapComponent {
     return Collections.unmodifiableMap(classNameToHotswap);
   }
 
-  private final Renderable component;
+  private final Component component;
   private final HotswapComponent parent;
   private final Trigger rerender;
   private final Set<Object> tags;
 
-  public HotswapComponent(Renderable component) {
+  public HotswapComponent(Component component) {
     this.component = component;
     this.parent = context.use().orElse(null);
     this.rerender = new Trigger();
@@ -40,7 +40,7 @@ public class HotswapComponent {
     });
   }
 
-  public Renderable getComponent() {
+  public Component getComponent() {
     return component;
   }
 

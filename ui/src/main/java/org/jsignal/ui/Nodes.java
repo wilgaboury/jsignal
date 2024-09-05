@@ -10,24 +10,24 @@ import java.util.function.Supplier;
 import static org.jsignal.rx.RxUtil.createMemo;
 
 @FunctionalInterface
-public interface Nodes extends NodesSupplier {
+public interface Nodes extends Renderable {
   @Override
-  default Nodes getNodes() {
+  default Nodes render() {
     return this;
   }
 
   List<Node> getNodeList();
 
-  static Nodes from(List<Node> list) {
+  static Nodes from(List<NodeImpl> list) {
     return () -> list;
   }
 
-  static Nodes from(Supplier<List<Node>> supplier) {
+  static Nodes from(Supplier<List<NodeImpl>> supplier) {
     return supplier::get;
   }
 
-  static Nodes compute(Supplier<NodesSupplier> supplier) {
-    var rendered = RxUtil.createMemo(() -> supplier.get().getNodes());
+  static Nodes compute(Supplier<Renderable> supplier) {
+    var rendered = RxUtil.createMemo(() -> supplier.get().render());
     return Nodes.from(() -> rendered.get().getNodeList());
   }
 
@@ -35,23 +35,23 @@ public interface Nodes extends NodesSupplier {
     return Collections::emptyList;
   }
 
-  static Nodes compose(NodesSupplier... nodes) {
+  static Nodes compose(Renderable... nodes) {
     return compose(Arrays.asList(nodes));
   }
 
-  static Nodes compose(List<? extends NodesSupplier> compose) {
-    List<Nodes> rendered = compose.stream().map(NodesSupplier::getNodes).toList();
+  static Nodes compose(List<? extends Renderable> compose) {
+    List<Nodes> rendered = compose.stream().map(Renderable::render).toList();
     return Nodes.from(createMemo(() -> rendered.stream().flatMap(nodes -> nodes.getNodeList().stream()).toList()));
   }
 
-  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends NodesSupplier> map) {
-    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).getNodes());
+  static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Renderable> map) {
+    var rendered = RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).render());
     return Nodes.from(Computed.create(() -> rendered.get().stream().flatMap(n -> n.getNodeList().stream()).toList()));
   }
 
-  static Nodes cacheOne(Function<CacheOne, NodesSupplier> inner) {
+  static Nodes cacheOne(Function<CacheOne, Renderable> inner) {
     var cache = new CacheOne();
-    var rendered = RxUtil.createMemo(() -> inner.apply(cache).getNodes());
+    var rendered = RxUtil.createMemo(() -> inner.apply(cache).render());
     return Nodes.from(() -> rendered.get().getNodeList());
   }
 
@@ -63,9 +63,9 @@ public interface Nodes extends NodesSupplier {
       provider = Provider.get();
     }
 
-    public Nodes get(Supplier<NodesSupplier> ifAbsent) {
+    public Nodes get(Supplier<Renderable> ifAbsent) {
       if (cached == null) {
-        cached = provider.provide(() -> ifAbsent.get().getNodes());
+        cached = provider.provide(() -> ifAbsent.get().render());
       }
       return cached;
     }

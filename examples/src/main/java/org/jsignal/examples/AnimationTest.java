@@ -10,7 +10,7 @@ import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 import org.jsignal.ui.layout.LayoutValue;
 
-public class AnimationTest implements Renderable {
+public class AnimationTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
@@ -35,7 +35,7 @@ public class AnimationTest implements Renderable {
   private final Signal<Float> angle = Signal.create(0f);
 
   @Override
-  public NodesSupplier render() {
+  public Renderable doRender() {
     var animation = new Animation(deltaTimeNano ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 

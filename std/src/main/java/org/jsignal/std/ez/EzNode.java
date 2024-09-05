@@ -12,12 +12,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class EzNode implements Node {
-  private final Function<Node, MetaNode> toMeta;
+public class EzNode implements NodeImpl {
+  private final Function<NodeImpl, Node> toMeta;
   private final @Nullable Object id;
   private final Set<Object> tags;
   private final List<EventListener<?>> listeners;
-  private final Consumer<MetaNode> ref;
+  private final Consumer<Node> ref;
   private final Nodes children;
   private final Layouter layout;
   private final Transformer transformer;
@@ -38,7 +38,7 @@ public class EzNode implements Node {
   }
 
   @Override
-  public MetaNode toMeta() {
+  public Node toMeta() {
     var meta = toMeta.apply(this);
     meta.setId(id);
     meta.getTags().addAll(tags);
@@ -48,8 +48,8 @@ public class EzNode implements Node {
   }
 
   @Override
-  public List<Node> getChildren() {
-    return children.getNodes().getNodeList();
+  public List<NodeImpl> getChildren() {
+    return children.render().getNodeList();
   }
 
   @Override
@@ -77,23 +77,23 @@ public class EzNode implements Node {
   }
 
   public static class Builder {
-    private Function<Node, MetaNode> toMeta = MetaNode::new;
+    private Function<NodeImpl, Node> toMeta = Node::new;
     private List<EventListener<?>> listeners = Collections.emptyList();
     private Object id = null;
     private Set<Object> tags = Collections.emptySet();
-    private Consumer<MetaNode> reference = n -> {};
+    private Consumer<Node> reference = n -> {};
     private Nodes children = Nodes.empty();
     private Layouter layout = null;
     private Transformer transformer = null;
     private Painter paint = null;
     private Painter paintAfter = null;
 
-    public Builder toMeta(Function<Node, MetaNode> toMeta) {
+    public Builder toMeta(Function<NodeImpl, Node> toMeta) {
       this.toMeta = toMeta;
       return this;
     }
 
-    public Builder ref(Consumer<MetaNode> reference) {
+    public Builder ref(Consumer<Node> reference) {
       this.reference = reference;
       return this;
     }
@@ -113,17 +113,17 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Builder children(NodesSupplier nodes) {
-      children = nodes.getNodes();
+    public Builder children(Renderable nodes) {
+      children = nodes.render();
       return this;
     }
 
-    public Builder children(NodesSupplier... nodes) {
+    public Builder children(Renderable... nodes) {
       children = Nodes.compose(nodes);
       return this;
     }
 
-    public Builder children(List<? extends NodesSupplier> nodes) {
+    public Builder children(List<? extends Renderable> nodes) {
       children = Nodes.compose(nodes);
       return this;
     }
@@ -148,7 +148,7 @@ public class EzNode implements Node {
       return this;
     }
 
-    public Node build() {
+    public NodeImpl build() {
       return new EzNode(this);
     }
   }

@@ -24,7 +24,7 @@ public class UiWindow {
   private static final Set<UiWindow> windows = new HashSet<>();
 
   private @Nullable Window window;
-  private final MetaNode root;
+  private final Node root;
   private final Cleanups rootCleanups;
 
   private long prevFrameTimeNano = 0;
@@ -36,13 +36,13 @@ public class UiWindow {
   private boolean shouldPaint;
   private boolean shouldTransformUpdate;
 
-  private MetaNode mouseDown = null;
-  private MetaNode hovered = null;
-  private MetaNode focus = null;
+  private Node mouseDown = null;
+  private Node hovered = null;
+  private Node focus = null;
 
   private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
-  public UiWindow(@Nullable Window window, Supplier<NodesSupplier> root) {
+  public UiWindow(@Nullable Window window, Supplier<Renderable> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();
@@ -58,7 +58,7 @@ public class UiWindow {
         context.with(this),
         Cleanups.context.with(Optional.of(rootCleanups))
       )
-      .provide(() -> MetaNode.createRoot(root));
+      .provide(() -> Node.createRoot(root));
 
     window.setLayer(UiUtil.createLayer());
     UiThread.queueMicrotask(() -> {
@@ -80,7 +80,7 @@ public class UiWindow {
     rootCleanups.run();
   }
 
-  public MetaNode getRoot() {
+  public Node getRoot() {
     return root;
   }
 
