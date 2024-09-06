@@ -6,12 +6,6 @@ tasks.named("jar") {
     enabled = false
 }
 
-repositories {
-    maven {
-        url = uri("https://releases.usethesource.io/maven")
-    }
-}
-
 dependencies {
     shadow("org.slf4j:slf4j-api:2.0.16")
     shadow("org.jetbrains:annotations:24.0.0")
