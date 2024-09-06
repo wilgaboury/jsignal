@@ -102,10 +102,6 @@ public class SimpleTest extends Component {
                   .setChildren(() -> Para.fromString("Decrease"))
                   .build(),
                 Button.builder()
-                  .setColor(EzColors.CYAN_400)
-                  .setChildren(() -> Para.fromString("NEW BUTTON!"))
-                  .build(),
-                Button.builder()
                   .setColor(EzColors.RED_300)
                   .setAction(() -> count.accept(c -> c * 2))
                   .setChildren(() -> Para.fromString("Multiply"))

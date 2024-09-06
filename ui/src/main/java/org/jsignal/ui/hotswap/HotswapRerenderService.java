@@ -27,9 +27,9 @@ public class HotswapRerenderService {
         .flatMap(Collection::stream)
         .map(haComponent -> {
           if (haComponent.getParent().isPresent()) {
-            System.out.println("parent present");
             return haComponent.getParent().get();
           } else {
+            logger.warn("parent component should be present unless component was constructed outside of window constructor");
             return haComponent;
           }
         })
