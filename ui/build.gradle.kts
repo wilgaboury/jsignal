@@ -1,3 +1,8 @@
+plugins {
+    id("jsignal.publish")
+    id("jsignal.deps")
+}
+
 val skijaVersion = "0.116.1"
 
 val lwjglVersion = "3.3.3"
