@@ -4,15 +4,14 @@ plugins {
     id("com.gradleup.shadow") version "8.3.0"
 }
 
-tasks.named<Test>("test") {
-    enabled = false
-}
-
 dependencies {
     implementation("io.usethesource:capsule:0.7.1")
 
     shadow("org.slf4j:slf4j-api:2.0.16")
     shadow("jakarta.annotation:jakarta.annotation-api:3.0.0")
+
+    testImplementation("org.slf4j:slf4j-api:2.0.16")
+    testImplementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
 }
 
 publishing {
