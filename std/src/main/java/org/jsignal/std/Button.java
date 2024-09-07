@@ -6,11 +6,9 @@ import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropBuilder;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
-import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.Element;
-import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 
@@ -20,7 +18,7 @@ import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 @GeneratePropBuilder
-public class Button extends Component /* implements ButtonPropGen */ {
+public class Button extends Component {
   @Prop
   Supplier<Integer> color;
   @Prop
@@ -32,13 +30,6 @@ public class Button extends Component /* implements ButtonPropGen */ {
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
-
-  public Button(Builder builder) {
-    this.color = builder.color;
-    this.size = builder.size;
-    this.action = builder.action;
-    this.children = builder.children;
-  }
 
   @Override
   public Element render() {
@@ -130,10 +121,6 @@ public class Button extends Component /* implements ButtonPropGen */ {
     return ColorUtil.rgbFromHsl(hsl);
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   public enum Size {
     LG,
     MD,
@@ -141,62 +128,62 @@ public class Button extends Component /* implements ButtonPropGen */ {
     XS
   }
 
-  public static class Builder {
-    private Supplier<Integer> color = () -> EzColors.BLUE_400;
-    private Supplier<Size> size = () -> Size.MD;
-    private Supplier<Runnable> action = () -> () -> {};
-    private Supplier<Element> children = Nodes::empty;
-
-    public Supplier<Integer> getColor() {
-      return color;
-    }
-
-    public Builder setColor(int color) {
-      return setColor(() -> color);
-    }
-
-    public Builder setColor(Supplier<Integer> color) {
-      this.color = color;
-      return this;
-    }
-
-    public Supplier<Size> getSize() {
-      return size;
-    }
-
-    public Builder setSize(Size size) {
-      return setSize(() -> size);
-    }
-
-    public Builder setSize(Supplier<Size> size) {
-      this.size = size;
-      return this;
-    }
-
-    public Supplier<Runnable> getAction() {
-      return action;
-    }
-
-    public Builder setAction(Runnable action) {
-      return setAction(() -> action);
-    }
-
-    public Builder setAction(Supplier<Runnable> action) {
-      this.action = action;
-      return this;
-    }
-
-    public Supplier<Element> getChildren() {
-      return children;
-    }
-
-    public Builder setChildren(Supplier<Element> children) {
-      this.children = children;
-      return this;
-    }
-
-    public Button build() {
-      return new Button(this);
-    }
-  }
+//  public static class Builder {
+//    private Supplier<Integer> color = () -> EzColors.BLUE_400;
+//    private Supplier<Size> size = () -> Size.MD;
+//    private Supplier<Runnable> action = () -> () -> {};
+//    private Supplier<Element> children = Nodes::empty;
+//
+//    public Supplier<Integer> getColor() {
+//      return color;
+//    }
+//
+//    public Builder setColor(int color) {
+//      return setColor(() -> color);
+//    }
+//
+//    public Builder setColor(Supplier<Integer> color) {
+//      this.color = color;
+//      return this;
+//    }
+//
+//    public Supplier<Size> getSize() {
+//      return size;
+//    }
+//
+//    public Builder setSize(Size size) {
+//      return setSize(() -> size);
+//    }
+//
+//    public Builder setSize(Supplier<Size> size) {
+//      this.size = size;
+//      return this;
+//    }
+//
+//    public Supplier<Runnable> getAction() {
+//      return action;
+//    }
+//
+//    public Builder setAction(Runnable action) {
+//      return setAction(() -> action);
+//    }
+//
+//    public Builder setAction(Supplier<Runnable> action) {
+//      this.action = action;
+//      return this;
+//    }
+//
+//    public Supplier<Element> getChildren() {
+//      return children;
+//    }
+//
+//    public Builder setChildren(Supplier<Element> children) {
+//      this.children = children;
+//      return this;
+//    }
+//
+//    public Button build() {
+//      return new Button(this);
+//    }
+//  }
 }

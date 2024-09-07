@@ -33,11 +33,4 @@ dependencies {
     compileOnly(files("./hotswap-agent-1.4.2-SNAPSHOT.jar"))
 
     implementation("org.graalvm.espresso:hotswap:24.0.1")
-
-    implementation("org.jetbrains:annotations:24.0.0")
-
-    implementation("org.slf4j:slf4j-api:2.0.16")
-
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
 }

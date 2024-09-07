@@ -4,7 +4,19 @@ plugins {
     signing
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 subprojects {
+    if (project.name == "examples") {
+        apply(plugin = "java")
+    } else {
+        apply(plugin = "java-library")
+    }
+
     group = "org.jsignal"
     version = "0.0.3"
 
@@ -15,17 +27,33 @@ subprojects {
         }
     }
 
+    if (project.name != "rx") {
+        dependencies {
+            implementation("org.slf4j:slf4j-api:2.0.16")
+            implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
+            testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+            testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        }
+    }
+
+    tasks.named<Test>("test") {
+        useJUnitPlatform()
+    }
+
     if (project.name == "examples") {
         return@subprojects
     }
 
-    apply(plugin = "java-library")
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
 
     java {
         withSourcesJar()
         withJavadocJar()
+
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
     }
 
     publishing {

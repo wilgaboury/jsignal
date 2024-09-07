@@ -1,7 +1,7 @@
 rootProject.name = "jsignal"
 
 include("examples")
-include("props")
+include("prop")
 include("rx")
 include("std")
 include("ui")

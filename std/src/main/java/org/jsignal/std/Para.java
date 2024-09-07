@@ -5,6 +5,7 @@ import io.github.humbleui.skija.FontStyle;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.Typeface;
 import io.github.humbleui.skija.paragraph.*;
+import jakarta.annotation.Nullable;
 import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
@@ -15,7 +16,6 @@ import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;

@@ -3,6 +3,7 @@ package org.jsignal.prop;
 import com.squareup.javapoet.*;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.RxUtil;
+import org.jsignal.ui.Component;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class PropGenerator {
-  private final static String GEN_CLASS_SUFFIX = "PropGen";
+  private final static String GEN_CLASS_SUFFIX = "Component";
   private final static String BUILDER_CLASS_NAME = "Builder";
   private final static String BUILDER_FIELD_NAME = "component";
 
@@ -37,15 +38,16 @@ public class PropGenerator {
   }
 
   public static ClassName genClassInnerName(TypeElement element, String name) {
-    return ClassName.get(element.getQualifiedName().toString(), genClassName(element), name);
+    return ClassName.get(element.getQualifiedName().toString() + GEN_CLASS_SUFFIX, name);
   }
 
   public void generate(TypeElement element) {
     List<TypeSpec> builderAndInterfaces = generateBuilder(element);
     TypeSpec builder = builderAndInterfaces.getLast();
 
-    TypeSpec.Builder genClassBuilder = TypeSpec.interfaceBuilder(genClassName(element))
-      .addModifiers(Modifier.PUBLIC)
+    TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassName(element))
+      .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+      .superclass(ClassName.get(Component.class))
       .addTypes(builderAndInterfaces)
       .addMethod(MethodSpec.methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -170,6 +172,16 @@ public class PropGenerator {
 
       builderClassBuilder.addMethod(simpleSetterMethodBuilder.build());
     }
+
+    builderClassBuilder.addMethod(MethodSpec.methodBuilder("build")
+      .addModifiers(Modifier.PUBLIC)
+      .returns(TypeName.get(element.asType()))
+      .addCode("""
+          return $L;
+          """,
+        BUILDER_FIELD_NAME)
+      .build()
+    );
 
     result.add(builderClassBuilder.build());
 

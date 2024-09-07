@@ -8,12 +8,16 @@ tasks.named("jar") {
 
 dependencies {
     shadow("org.slf4j:slf4j-api:2.0.16")
-    shadow("org.jetbrains:annotations:24.0.0")
+    shadow("jakarta.annotation:jakarta.annotation-api:3.0.0")
 
     implementation("io.usethesource:capsule:0.7.1")
 
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }
 
 publishing {

@@ -2,7 +2,7 @@ package org.jsignal.ui;
 
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
-import org.jetbrains.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
 

@@ -1,10 +1,10 @@
 package org.jsignal.std.ez;
 
+import jakarta.annotation.Nullable;
 import org.jsignal.ui.*;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.layout.Layouter;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
