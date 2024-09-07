@@ -2,6 +2,7 @@ package org.jsignal.prop;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class PropAnnotationProcessor extends AbstractProcessor {
   @Override
   public synchronized void init(ProcessingEnvironment procEnv) {
     super.init(procEnv);
-    
+
     generator = new PropGenerator(procEnv);
   }
 
@@ -23,7 +24,9 @@ public class PropAnnotationProcessor extends AbstractProcessor {
     var annotation = annotations.iterator().next();
     var elements = roundEnv.getElementsAnnotatedWith(annotation);
     for (var element : elements) {
-      generator.generate(element);
+      if (element.getKind() == ElementKind.CLASS) {
+        generator.generate((TypeElement) element);
+      }
     }
     return true;
   }

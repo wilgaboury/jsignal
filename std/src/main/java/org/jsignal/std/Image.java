@@ -7,6 +7,8 @@ import io.github.humbleui.skija.SamplingMode;
 import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
+import org.jsignal.prop.GeneratePropBuilder;
+import org.jsignal.prop.Prop;
 import org.jsignal.rx.Computed;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
@@ -25,7 +27,8 @@ import java.util.function.Supplier;
 
 import static org.jsignal.ui.layout.LayoutValue.percent;
 
-public class Image extends Component {
+@GeneratePropBuilder
+public class Image extends Component /* implements ImagePropGen */ {
   private final static Logger logger = LoggerFactory.getLogger(Image.class);
 
   private static final WeakHashMap<Blob, SVGDOM> svgDoms = new WeakHashMap<>();
@@ -40,10 +43,14 @@ public class Image extends Component {
       io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data()));
   }
 
-  private final Supplier<Blob> blob;
-  private final Supplier<Fit> fit;
-  private final Supplier<Optional<LayoutValue>> width;
-  private final Supplier<Optional<LayoutValue>> height;
+  @Prop(required = true)
+  Supplier<Blob> blob;
+  @Prop
+  Supplier<Fit> fit;
+  @Prop(oneofKey = "dim")
+  Supplier<Optional<LayoutValue>> width;
+  @Prop(oneofKey = "dim")
+  Supplier<Optional<LayoutValue>> height;
 
   private final Computed<Painter> painter;
 

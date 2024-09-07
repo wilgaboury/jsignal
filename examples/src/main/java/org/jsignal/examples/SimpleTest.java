@@ -91,7 +91,6 @@ public class SimpleTest extends Component {
               )
               .children(
                 Button.builder()
-                  .ref(meta -> meta.setId("increase-button"))
                   .setColor(EzColors.BLUE_300)
                   .setAction(() -> count.accept(c -> c + 1))
                   .setChildren(() -> Para.fromString("Increase"))
