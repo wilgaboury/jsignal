@@ -1,8 +1,13 @@
+plugins {
+    id("jsignal.publish-java")
+    id("jsignal.deps")
+}
+
 dependencies {
+    annotationProcessor(project(":prop"))
+    compileOnly(project(":prop"))
+
     api(project(":ui"))
-    api("com.google.guava:guava:33.3.0-jre")
-
-    implementation("org.jetbrains:annotations:24.0.0")
-
-    implementation("org.slf4j:slf4j-api:2.0.16")
+    api(project(":rx"))
+    api("com.google.guava:guava:33.3.0-jre") // needed for MediaType
 }

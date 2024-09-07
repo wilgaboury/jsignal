@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.function.Supplier;
 
 public class BasicSignalTest {
-
   @Test
   public void testReadmeExample() {
     Signal<Integer> value = Signal.create(5);

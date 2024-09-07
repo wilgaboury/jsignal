@@ -4,7 +4,7 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
-import org.jetbrains.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import org.jsignal.rx.*;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;

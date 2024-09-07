@@ -1,6 +1,5 @@
 package org.jsignal.rx;
 
-import org.jetbrains.annotations.Nullable;
 import org.jsignal.rx.interfaces.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -4,7 +4,7 @@ import io.github.humbleui.jwm.EventMouseButton;
 import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseButton;
 import io.github.humbleui.types.Point;
-import org.jetbrains.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 

@@ -91,25 +91,24 @@ public class SimpleTest extends Component {
               )
               .children(
                 Button.builder()
-                  .ref(meta -> meta.setId("increase-button"))
-                  .setColor(EzColors.BLUE_300)
-                  .setAction(() -> count.accept(c -> c + 1))
-                  .setChildren(() -> Para.fromString("Increase"))
+                  .color(EzColors.BLUE_300)
+                  .action(() -> count.accept(c -> c + 1))
+                  .children(() -> Para.fromString("Increase"))
                   .build(),
                 Button.builder()
-                  .setColor(EzColors.BLUE_700)
-                  .setAction(() -> count.accept(c -> c - 1))
-                  .setChildren(() -> Para.fromString("Decrease"))
+                  .color(EzColors.BLUE_700)
+                  .action(() -> count.accept(c -> c - 1))
+                  .children(() -> Para.fromString("Decrease"))
                   .build(),
                 Button.builder()
-                  .setColor(EzColors.RED_300)
-                  .setAction(() -> count.accept(c -> c * 2))
-                  .setChildren(() -> Para.fromString("Multiply"))
+                  .color(EzColors.RED_300)
+                  .action(() -> count.accept(c -> c * 2))
+                  .children(() -> Para.fromString("Multiply"))
                   .build(),
                 Button.builder()
-                  .setColor(EzColors.RED_700)
-                  .setAction(() -> count.accept(c -> c / 2))
-                  .setChildren(() -> Para.fromString("Divide"))
+                  .color(EzColors.RED_700)
+                  .action(() -> count.accept(c -> c / 2))
+                  .children(() -> Para.fromString("Divide"))
                   .build()
               )
               .build(),
@@ -143,12 +142,12 @@ public class SimpleTest extends Component {
                 .build()
             )),
             Button.builder()
-              .setColor(buttonColor)
-              .setAction(() -> {
+              .color(buttonColor)
+              .action(() -> {
                 buttonColor.accept(Color.withA(rand.nextInt(), 255));
                 showFire.accept(show -> !show);
               })
-              .setChildren(() -> Para.fromString(this::buttonText))
+              .children(() -> Para.fromString(this::buttonText))
               .build(),
             maybeFire(),
             Image.builder()
@@ -179,8 +178,8 @@ public class SimpleTest extends Component {
               .setHeight(pixel(200))
               .build(),
             Button.builder()
-              .setAction(() -> testState.accept(c -> c + 1))
-              .setChildren(() -> Para.fromString(() -> testState.get().toString()))
+              .action(() -> testState.accept(c -> c + 1))
+              .children(() -> Para.fromString(() -> testState.get().toString()))
               .build()
           );
         });

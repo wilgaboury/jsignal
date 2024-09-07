@@ -3,44 +3,38 @@ package org.jsignal.std;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
+import org.jsignal.prop.GeneratePropBuilder;
+import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Nodes;
 import org.jsignal.ui.Element;
-import org.jsignal.ui.Component;
+import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class Button extends Component {
-  private final Consumer<Node> ref;
-  private final Supplier<Integer> color;
-  private final Supplier<Size> size;
-  private final Supplier<Runnable> action;
-  private final Supplier<Element> children;
+@GeneratePropBuilder
+public class Button extends ButtonComponent {
+  @Prop
+  Supplier<Integer> color = () -> EzColors.BLUE_400;
+  @Prop
+  Supplier<Size> size = () -> Size.MD;
+  @Prop
+  Supplier<Runnable> action = () -> () -> {};
+  @Prop
+  Supplier<Element> children = Nodes::empty;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
   private final Signal<Boolean> mouseDown = Signal.create(false);
 
-  public Button(Builder builder) {
-    this.ref = builder.ref;
-    this.color = builder.color;
-    this.size = builder.size;
-    this.action = builder.action;
-    this.children = builder.children;
-  }
-
   @Override
   public Element render() {
     return EzNode.builder()
-      .ref(ref)
       .listen(
         onMouseOver(e -> mouseOver.accept(true)),
         onMouseDown(e -> mouseDown.accept(true)),
@@ -128,81 +122,10 @@ public class Button extends Component {
     return ColorUtil.rgbFromHsl(hsl);
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   public enum Size {
     LG,
     MD,
     SM,
     XS
-  }
-
-  public static class Builder {
-    private Consumer<Node> ref = ignored -> {
-    };
-    private Supplier<Integer> color = () -> EzColors.BLUE_400;
-    private Supplier<Size> size = () -> Size.MD;
-    private Supplier<Runnable> action = () -> () -> {
-    };
-    private Supplier<Element> children = Nodes::empty;
-
-    public Builder ref(Consumer<Node> ref) {
-      this.ref = ref;
-      return this;
-    }
-
-    public Supplier<Integer> getColor() {
-      return color;
-    }
-
-    public Builder setColor(int color) {
-      return setColor(() -> color);
-    }
-
-    public Builder setColor(Supplier<Integer> color) {
-      this.color = color;
-      return this;
-    }
-
-    public Supplier<Size> getSize() {
-      return size;
-    }
-
-    public Builder setSize(Size size) {
-      return setSize(() -> size);
-    }
-
-    public Builder setSize(Supplier<Size> size) {
-      this.size = size;
-      return this;
-    }
-
-    public Supplier<Runnable> getAction() {
-      return action;
-    }
-
-    public Builder setAction(Runnable action) {
-      return setAction(() -> action);
-    }
-
-    public Builder setAction(Supplier<Runnable> action) {
-      this.action = action;
-      return this;
-    }
-
-    public Supplier<Element> getChildren() {
-      return children;
-    }
-
-    public Builder setChildren(Supplier<Element> children) {
-      this.children = children;
-      return this;
-    }
-
-    public Button build() {
-      return new Button(this);
-    }
   }
 }

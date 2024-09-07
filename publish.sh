@@ -9,7 +9,7 @@ source .env
 
 TOKEN=$(echo "${MAVEN_CENTRAL_USERNAME}:${MAVEN_CENTRAL_PASSWORD}" | base64)
 
-MODULES=("rx" "ui" "std")
+MODULES=("prop" "rx" "std" "ui")
 for MODULE in "${MODULES[@]}"
 do
   cd ${SCRIPT_DIR}/${MODULE}/build/repo

@@ -39,9 +39,9 @@ public class Counter extends Component {
           ))
           .build(),
         Button.builder()
-          .setColor(EzColors.BLUE_300)
-          .setAction(() -> count.accept(c -> c + 1))
-          .setChildren(() -> Para.fromString("Increment"))
+          .color(EzColors.BLUE_300)
+          .action(() -> count.accept(c -> c + 1))
+          .children(() -> Para.fromString("Increment"))
           .build()
       )
       .build();

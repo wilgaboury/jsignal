@@ -62,10 +62,10 @@ public class AnimationTest extends Component {
           )
           .build(),
         Button.builder()
-          .setSize(Button.Size.LG)
-          .setColor(() -> animation.isRunning() ? EzColors.RED_800 : EzColors.GREEN_800)
-          .setChildren(() -> Para.fromString(() -> animation.isRunning() ? "Stop" : "Start"))
-          .setAction(() -> {
+          .size(Button.Size.LG)
+          .color(() -> animation.isRunning() ? EzColors.RED_800 : EzColors.GREEN_800)
+          .children(() -> Para.fromString(() -> animation.isRunning() ? "Stop" : "Start"))
+          .action(() -> {
             if (animation.isRunning()) {
               animation.stop();
             } else {

@@ -4,7 +4,7 @@ import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
-import org.jetbrains.annotations.Nullable;
+import jakarta.annotation.Nullable;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Provider;

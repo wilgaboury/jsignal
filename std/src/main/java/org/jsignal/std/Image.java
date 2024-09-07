@@ -7,6 +7,9 @@ import io.github.humbleui.skija.SamplingMode;
 import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
+import jakarta.annotation.Nullable;
+import org.jsignal.prop.GeneratePropBuilder;
+import org.jsignal.prop.Prop;
 import org.jsignal.rx.Computed;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
@@ -18,7 +21,6 @@ import org.jsignal.ui.layout.LayoutValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
@@ -40,10 +42,10 @@ public class Image extends Component {
       io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data()));
   }
 
-  private final Supplier<Blob> blob;
-  private final Supplier<Fit> fit;
-  private final Supplier<Optional<LayoutValue>> width;
-  private final Supplier<Optional<LayoutValue>> height;
+  Supplier<Blob> blob;
+  Supplier<Fit> fit;
+  Supplier<Optional<LayoutValue>> width;
+  Supplier<Optional<LayoutValue>> height;
 
   private final Computed<Painter> painter;
 
