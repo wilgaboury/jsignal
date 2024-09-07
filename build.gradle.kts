@@ -2,7 +2,7 @@ plugins {
     id("jsignal.common")
 }
 
-val projectNames = subprojects.map { it.name }
+val projectNames = listOf("prop", "rx", "std", "ui")
 
 tasks.register<Javadoc>("allJavadoc") {
     group = "documentation"

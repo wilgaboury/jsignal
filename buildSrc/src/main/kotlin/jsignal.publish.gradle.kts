@@ -11,10 +11,6 @@ publishing {
 
     publications {
         create<MavenPublication>("mavenCentral") {
-            if (project.name != "rx") {
-                from(components["java"])
-            }
-
             pom {
                 name = "JSignal"
                 description = "Declarative desktop GUI library"

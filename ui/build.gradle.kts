@@ -1,5 +1,5 @@
 plugins {
-    id("jsignal.publish")
+    id("jsignal.publish-java")
     id("jsignal.deps")
 }
 
