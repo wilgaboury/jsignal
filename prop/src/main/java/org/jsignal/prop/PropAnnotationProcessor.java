@@ -31,7 +31,6 @@ public class PropAnnotationProcessor extends AbstractProcessor {
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    System.out.println("SIZE: " + annotations.size());
     if (annotations.size() == 1) {
       var annotation = annotations.iterator().next();
       var elements = roundEnv.getElementsAnnotatedWith(annotation);

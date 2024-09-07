@@ -1,0 +1,30 @@
+---
+import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
+
+const { name, version } = Astro.props;
+---
+
+<Tabs syncKey="buildSystem">
+    <TabItem label="Maven">
+        <Code
+        code={`<dependency>
+    <groupId>org.jsignal</groupId>
+    <artifactId>${name}</artifactId>
+    <version>${version}</version>
+</dependency>"`}
+        lang="xml"
+        />
+    </TabItem>
+    <TabItem label="Gradle (Kotlin)">
+        <Code
+        code={`implementation("org.jsignal:${name}:${version}")`}
+        lang="kotlin"
+        />
+    </TabItem>
+    <TabItem label="Gradle (Groovy)">
+        <Code
+        code={`implementation 'org.jsignal:${name}:${version}'`}
+        lang="groovy"
+        />
+    </TabItem>
+</Tabs>

@@ -3,9 +3,10 @@ title: Install
 description: Get started with JSignal
 ---
 
+import InstallTabs from "../../../components/InstallTabs.astro";
 import { Code, Tabs, TabItem } from "@astrojs/starlight/components";
 
-export const version = "0.0.3";
+export const version = "0.0.4";
 export const modules = [
   {
     name: "std",
@@ -38,37 +39,51 @@ export const modules = [
   },
 ];
 
-JSignal offers three public packages with different levels of capabilities, each successive package is lower level than the previous:
+JSignal offers three main public packages with different levels of capabilities, each successive package is lower level than the previous:
 
 <Tabs>
   {modules.map((module) => (
     <TabItem label={module.name}>
       {module.description}
       <br />
-      <Tabs syncKey="buildSystem">
-        <TabItem label="Maven">
-          <Code
-            code={`<dependency>
-  <groupId>org.jsignal</groupId>
-  <artifactId>${module.name}</artifactId>
-  <version>${version}</version>
-</dependency>"`}
-            lang="xml"
-          />
-        </TabItem>
-        <TabItem label="Gradle (Kotlin)">
-          <Code
-            code={`implementation("org.jsignal:${module.name}:${version}")`}
-            lang="kotlin"
-          />
-        </TabItem>
-        <TabItem label="Gradle (Groovy)">
-          <Code
-            code={`implementation 'org.jsignal:${module.name}:${version}'`}
-            lang="groovy"
-          />
-        </TabItem>
-      </Tabs>
+      <InstallTabs name={module.name} version={version} />
     </TabItem>
   ))}
+</Tabs>
+
+### Annotation Processor
+
+There is also a helpful annotation processor for generating component builders, as writing correct JSignal builders by hand is fairly tedious.
+
+<Tabs syncKey="buildSystem">
+  <TabItem label="Maven">
+    For maven usage with
+    [`org.apache.maven.plugins.maven-compiler-plugin`](https://maven.apache.org/plugins/maven-compiler-plugin/).
+    <Code
+      code={`<configuration>
+    <annotationProcessorPaths>
+        <annotationProcessorPath>
+            <groupId>org.jsignal</groupId>
+            <artifactId>prop</artifactId>
+            <version>${version}</version>
+        </annotationProcessorPath>
+    </annotationProcessorPaths>
+</configuration>`}
+      lang="xml"
+    />
+  </TabItem>
+  <TabItem label="Gradle (Kotlin)">
+    <Code
+      code={`annotationProcessor("org.jsignal:prop:${version}")
+compileOnly("org.jsignal:prop:${version}")`}
+      lang="kotlin"
+    />
+  </TabItem>
+  <TabItem label="Gradle (Groovy)">
+    <Code
+      code={`annotationProcessor 'org.jsignal:prop:${version}'
+compileOnly 'org.jsignal:prop:${version}'`}
+      lang="groovy"
+    />
+  </TabItem>
 </Tabs>
