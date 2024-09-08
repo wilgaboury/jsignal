@@ -10,16 +10,10 @@ import static com.google.testing.compile.Compiler.javac;
 public class TestCompile {
   @Test
   public void testSuccessfulCodeGenerator() {
-    // TODO: only works when using intellij testing
+    Compilation compilation = javac()
+      .withProcessors(new PropAnnotationProcessor())
+      .compile(JavaFileObjects.forResource("TestComponent.java"));
 
-//    Compilation compilation = javac()
-//      .withProcessors(new PropAnnotationProcessor())
-//      .compile(JavaFileObjects.forResource("test/TestComponent.java"));
-//
-//    assertThat(compilation).succeeded();
-//
-//    assertThat(compilation)
-//      .generatedSourceFile("test.TestComponentComponent")
-//      .hasSourceEquivalentTo(JavaFileObjects.forResource("generated/test/TestComponentComponent.java"));
+    assertThat(compilation).succeeded();
   }
 }

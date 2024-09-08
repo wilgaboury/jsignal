@@ -41,6 +41,10 @@ export default defineConfig({
               slug: "guides/reactive",
             },
             {
+              label: "Annotation Processor",
+              slug: "guides/annotation",
+            },
+            {
               label: "Hotswap Details",
               slug: "guides/hotswap",
             },
