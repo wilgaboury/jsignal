@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 public class PropGenerator {
   private final static String GEN_CLASS_SUFFIX = "PropComponent";
   private final static String BUILDER_CLASS_NAME = "Builder";
+  private final static String BUILDER_REQUIRED_NAME_SUFFIX = "RequiredStep";
+  private final static String BUILDER_ONEOF_NAME_SUFFIX = "OneofStep";
   private final static String BUILDER_FIELD_NAME = "component";
 
   private final ProcessingEnvironment procEnv;
@@ -31,6 +33,17 @@ public class PropGenerator {
 
   public static String genClassName(TypeElement element) {
     return element.getSimpleName() + GEN_CLASS_SUFFIX;
+  }
+
+  public static String requiredStepInterfaceName(Element field) {
+    String fieldName = field.getSimpleName().toString();
+    String cap = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+    return BUILDER_CLASS_NAME + cap + BUILDER_REQUIRED_NAME_SUFFIX;
+  }
+
+  public static String oneofStepInterfaceName(String oneofKey) {
+    String cap = oneofKey.substring(0, 1).toUpperCase() + oneofKey.substring(1);
+    return BUILDER_CLASS_NAME + cap + BUILDER_ONEOF_NAME_SUFFIX;
   }
 
   public static ClassName genClassInnerName(TypeElement element, String name) {
@@ -106,66 +119,34 @@ public class PropGenerator {
 
     ClassName previousBuilderType = builderClassName(element);
 
-    // TODO: implement
-//    for (var oneofPropEntry : oneofPropFieldsMap.sequencedEntrySet().reversed()) {}
+    for (var oneofPropEntry : oneofPropFieldsMap.sequencedEntrySet().reversed()) {
+      String interfaceName = oneofStepInterfaceName(oneofPropEntry.getKey());
+      TypeSpec.Builder oneofStep = TypeSpec.interfaceBuilder(interfaceName)
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+
+      for (var oneofPropField : oneofPropEntry.getValue()) {
+        addSetterMethods(false, oneofStep, oneofPropField, previousBuilderType);
+        addSetterMethods(true, builderClassBuilder, oneofPropField, builderClassName(element));
+      }
+
+      result.add(oneofStep.build());
+      previousBuilderType = genClassInnerName(element, interfaceName);
+    }
 
     for (var requiredPropField : requiredPropFields.reversed()) {
+      String interfaceName = requiredStepInterfaceName(requiredPropField);
+      TypeSpec.Builder requiredStep = TypeSpec.interfaceBuilder(interfaceName)
+        .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
+      addSetterMethods(false, requiredStep, requiredPropField, previousBuilderType);
+      addSetterMethods(true, builderClassBuilder, requiredPropField, builderClassName(element));
+
+      result.add(requiredStep.build());
+      previousBuilderType = genClassInnerName(element, interfaceName);
     }
 
     for (var optionalPropField : optionalPropFields) {
-      var fieldName = optionalPropField.getSimpleName().toString();
-
-      TypeMirror supplierTypeArgument = getSupplierTypeArgument(optionalPropField.asType()).orElse(null);
-
-      var simpleSetterMethodBuilder = MethodSpec.methodBuilder(optionalPropField.getSimpleName().toString())
-        .addModifiers(Modifier.PUBLIC)
-        .addParameter(ParameterSpec.builder(TypeName.get(optionalPropField.asType()), fieldName).build())
-        .returns(builderClassName(element));
-
-      if (supplierTypeArgument != null) {
-        simpleSetterMethodBuilder.addCode("""
-            this.$L.$L = $T.createMemo($L);
-            return this;
-            """,
-          BUILDER_FIELD_NAME,
-          fieldName,
-          RxUtil.class,
-          fieldName
-        );
-
-
-        String methodName = fieldName;
-        if (procEnv.getTypeUtils().isAssignable(supplierTypeArgument, optionalPropField.asType())) {
-          methodName = methodName + optionalPropField.getAnnotation(Prop.class).suffix();
-        }
-
-        builderClassBuilder.addMethod(MethodSpec.methodBuilder(methodName)
-          .addModifiers(Modifier.PUBLIC)
-          .addParameter(ParameterSpec.builder(TypeName.get(supplierTypeArgument), fieldName).build())
-          .returns(builderClassName(element))
-          .addCode("""
-              this.$L.$L = $T.of($L);
-              return this;
-              """,
-            BUILDER_FIELD_NAME,
-            fieldName,
-            Constant.class,
-            fieldName
-          )
-          .build());
-      } else {
-        simpleSetterMethodBuilder.addCode("""
-            this.$L.$L = $L;
-            return this;
-            """,
-          BUILDER_FIELD_NAME,
-          fieldName,
-          fieldName
-        );
-      }
-
-      builderClassBuilder.addMethod(simpleSetterMethodBuilder.build());
+      addSetterMethods(true, builderClassBuilder, optionalPropField, builderClassName(element));
     }
 
     builderClassBuilder.addMethod(MethodSpec.methodBuilder("build")
@@ -178,9 +159,69 @@ public class PropGenerator {
       .build()
     );
 
-    result.add(builderClassBuilder.build());
+    result.add(0, builderClassBuilder.build());
 
-    return result;
+    return result.reversed();
+  }
+
+  public void addSetterMethods(boolean isBuilder, TypeSpec.Builder typeBuilder, Element field, TypeName returnType) {
+    var fieldName = field.getSimpleName().toString();
+
+    TypeMirror supplierTypeArgument = getSupplierTypeArgument(field.asType()).orElse(null);
+
+    var directSetterMethodBuilder = MethodSpec.methodBuilder(field.getSimpleName().toString())
+      .addModifiers(Modifier.PUBLIC)
+      .addParameter(ParameterSpec.builder(TypeName.get(field.asType()), fieldName).build())
+      .returns(returnType);
+
+    if (supplierTypeArgument != null) {
+      if (isBuilder) {
+        directSetterMethodBuilder.addCode("""
+            this.$L.$L = $T.createMemo($L);
+            return this;
+            """,
+          BUILDER_FIELD_NAME,
+          fieldName,
+          RxUtil.class,
+          fieldName
+        );
+      }
+
+      String methodName = fieldName;
+      if (procEnv.getTypeUtils().isAssignable(supplierTypeArgument, field.asType())) {
+        methodName = methodName + field.getAnnotation(Prop.class).suffix();
+      }
+
+      MethodSpec.Builder constSetterMethodBuilder = MethodSpec.methodBuilder(methodName)
+        .addModifiers(Modifier.PUBLIC)
+        .addParameter(ParameterSpec.builder(TypeName.get(supplierTypeArgument), fieldName).build())
+        .returns(returnType);
+
+      if (isBuilder) {
+        constSetterMethodBuilder.addCode("""
+            this.$L.$L = $T.of($L);
+            return this;
+            """,
+          BUILDER_FIELD_NAME,
+          fieldName,
+          Constant.class,
+          fieldName
+        );
+      }
+
+      typeBuilder.addMethod(constSetterMethodBuilder.build());
+    } else if (isBuilder) {
+      directSetterMethodBuilder.addCode("""
+          this.$L.$L = $L;
+          return this;
+          """,
+        BUILDER_FIELD_NAME,
+        fieldName,
+        fieldName
+      );
+    }
+
+    typeBuilder.addMethod(directSetterMethodBuilder.build());
   }
 
   public Optional<TypeMirror> getSupplierTypeArgument(TypeMirror type) {
