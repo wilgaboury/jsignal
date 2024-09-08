@@ -5,6 +5,9 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
+import org.jsignal.prop.GeneratePropComponent;
+import org.jsignal.prop.Prop;
+import org.jsignal.rx.Constant;
 import org.jsignal.rx.Effect;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
@@ -25,14 +28,22 @@ import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class Scroll extends Component {
+@GeneratePropComponent
+public class Scroll extends ScrollPropComponent {
   private static final float DEFAULT_WIDTH = 15f;
 
-  private final Supplier<Boolean> overlay;
-  private final Supplier<Float> xBarWidth;
-  private final Supplier<Float> yBarWidth;
-  private final Supplier<Float> yBarOverlayWidth;
-  private final Supplier<Nodes> children;
+  @Prop
+  Supplier<Boolean> overlay = Constant.of(false);
+  @Prop
+  Supplier<Float> barWidth = Constant.of(DEFAULT_WIDTH);
+  @Prop
+  Supplier<Float> xBarWidth = () -> barWidth.get();
+  @Prop
+  Supplier<Float> yBarWidth = () -> barWidth.get();
+  @Prop
+  Supplier<Float> yBarOverlayWidth = () -> yBarWidth.get() / 2f;
+  @Prop
+  Supplier<Nodes> children = Nodes::empty;
 
   private final Signal<Float> xOffset = Signal.create(0f);
   private final Signal<Float> yOffset = Signal.create(0f);
@@ -54,13 +65,7 @@ public class Scroll extends Component {
   private final Signal<Float> yScale = Signal.create(0f);
   private final Supplier<Boolean> shouldShowSidebar;
 
-  public Scroll(Builder builder) {
-    this.overlay = builder.overlay;
-    this.xBarWidth = builder.xBarWidth;
-    this.yBarWidth = builder.yBarWidth;
-    this.yBarOverlayWidth = builder.yBarOverlayWidth;
-    this.children = builder.children;
-
+  public Scroll() {
     shouldShowSidebar = RxUtil.createMemo(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
   }
 
@@ -261,102 +266,6 @@ public class Scroll extends Component {
         }
       }
     });
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private Supplier<Boolean> overlay = () -> false;
-    private Supplier<Float> barWidth = () -> DEFAULT_WIDTH;
-    private Supplier<Float> xBarWidth = barWidth;
-    private Supplier<Float> yBarWidth = barWidth;
-    private Supplier<Float> yBarOverlayWidth = () -> yBarWidth.get() / 2f;
-    private Supplier<Nodes> children = Nodes::empty;
-
-    public Supplier<Boolean> getOverlay() {
-      return overlay;
-    }
-
-    public Builder setOverlay(boolean overlay) {
-      return setOverlay(() -> overlay);
-    }
-
-
-    public Builder setOverlay(Supplier<Boolean> overlay) {
-      this.overlay = overlay;
-      return this;
-    }
-
-    public Supplier<Float> getBarWidth() {
-      return barWidth;
-    }
-
-    public Builder setBarWidth(float barWidth) {
-      return setBarWidth(() -> barWidth);
-    }
-
-    public Builder setBarWidth(Supplier<Float> barWidth) {
-      this.barWidth = barWidth;
-      return this;
-    }
-
-    public Supplier<Float> getXBarWidth() {
-      return xBarWidth;
-    }
-
-    public Builder setXBarWidth(float xBarWidth) {
-      return setXBarWidth(() -> xBarWidth);
-    }
-
-    public Builder setXBarWidth(Supplier<Float> xBarWidth) {
-      this.xBarWidth = xBarWidth;
-      return this;
-    }
-
-    public Supplier<Float> getYBarWidth() {
-      return yBarWidth;
-    }
-
-    public Builder setYBarWidth(float yBarWidth) {
-      return setYBarWidth(() -> yBarWidth);
-    }
-
-    public Builder setYBarWidth(Supplier<Float> yBarWidth) {
-      this.yBarWidth = yBarWidth;
-      return this;
-    }
-
-    public Supplier<Float> getYBarOverlayWidth() {
-      return yBarOverlayWidth;
-    }
-
-    public Builder setYBarOverlayWidth(float yBarOverlayWidth) {
-      return setYBarOverlayWidth(() -> yBarOverlayWidth);
-    }
-
-    public Builder setYBarOverlayWidth(Supplier<Float> yBarOverlayWidth) {
-      this.yBarOverlayWidth = yBarOverlayWidth;
-      return this;
-    }
-
-    public Supplier<Nodes> getChildren() {
-      return children;
-    }
-
-    public Builder setChildren(Nodes children) {
-      return setChildren(() -> children);
-    }
-
-    public Builder setChildren(Supplier<Nodes> children) {
-      this.children = children;
-      return this;
-    }
-
-    public Scroll build() {
-      return new Scroll(this);
-    }
   }
 
   private static class ScrollButton extends Component {

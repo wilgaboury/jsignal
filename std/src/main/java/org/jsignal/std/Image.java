@@ -8,7 +8,10 @@ import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
+import org.jsignal.prop.GeneratePropComponent;
+import org.jsignal.prop.Prop;
 import org.jsignal.rx.Computed;
+import org.jsignal.rx.Constant;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.Painter;
@@ -25,7 +28,8 @@ import java.util.function.Supplier;
 
 import static org.jsignal.ui.layout.LayoutValue.percent;
 
-public class Image extends Component {
+@GeneratePropComponent
+public class Image extends ImagePropComponent {
   private final static Logger logger = LoggerFactory.getLogger(Image.class);
 
   private static final WeakHashMap<Blob, SVGDOM> svgDoms = new WeakHashMap<>();
@@ -40,19 +44,18 @@ public class Image extends Component {
       io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data()));
   }
 
+  @Prop(required = true)
   Supplier<Blob> blob;
-  Supplier<Fit> fit;
-  Supplier<Optional<LayoutValue>> width;
-  Supplier<Optional<LayoutValue>> height;
+  @Prop(oneofKey = "dim")
+  Supplier<LayoutValue> width;
+  @Prop(oneofKey = "dim")
+  Supplier<LayoutValue> height;
+  @Prop
+  Supplier<Fit> fit = Constant.of(Fit.CONTAIN);
 
   private final Computed<Painter> painter;
 
-  public Image(Builder builder) {
-    this.blob = builder.blob;
-    this.fit = builder.fit;
-    this.width = builder.width;
-    this.height = builder.height;
-
+  public Image() {
     this.painter = Computed.create(() -> createPainter(blob.get(), fit.get()));
   }
 
@@ -80,7 +83,7 @@ public class Image extends Component {
     var imgWidth = dim.getX();
     var imgHeight = dim.getY();
     layoutImage(config, imgWidth, imgHeight,
-      width.get().orElse(null), height.get().orElse(null)
+      width.get(), height.get()
     );
   }
 
@@ -89,7 +92,7 @@ public class Image extends Component {
     var imgWidth = img.getWidth();
     var imgHeight = img.getHeight();
     layoutImage(config, imgWidth, imgHeight,
-      width.get().orElse(null), height.get().orElse(null)
+      width.get(), height.get()
     );
   }
 
@@ -262,90 +265,5 @@ public class Image extends Component {
     CONTAIN,
     FILL,
     COVER
-  }
-
-  public static BuilderSetBlob builder() {
-    return new Builder();
-  }
-
-  public interface BuilderSetBlob {
-    BuilderSetWidthOrHeight setBlob(Blob blob);
-
-    BuilderSetWidthOrHeight setBlob(Supplier<Blob> blob);
-  }
-
-  public interface BuilderSetWidthOrHeight {
-    Builder setHeight(LayoutValue height);
-
-    Builder setHeight(Supplier<LayoutValue> height);
-
-    Builder setWidth(LayoutValue width);
-
-    Builder setWidth(Supplier<LayoutValue> width);
-  }
-
-  public static class Builder implements BuilderSetBlob, BuilderSetWidthOrHeight {
-    private Supplier<Blob> blob;
-    private Supplier<Optional<LayoutValue>> height = Optional::empty;
-    private Supplier<Optional<LayoutValue>> width = Optional::empty;
-    private Supplier<Fit> fit = () -> Fit.CONTAIN;
-
-    public Supplier<Blob> getBlob() {
-      return blob;
-    }
-
-    @Override
-    public BuilderSetWidthOrHeight setBlob(Blob blob) {
-      return setBlob(() -> blob);
-    }
-
-    @Override
-    public BuilderSetWidthOrHeight setBlob(Supplier<Blob> blob) {
-      this.blob = blob;
-      return this;
-    }
-
-    public Supplier<Optional<LayoutValue>> getHeight() {
-      return height;
-    }
-
-    public Builder setHeight(LayoutValue height) {
-      return setHeight(() -> height);
-    }
-
-    public Builder setHeight(Supplier<LayoutValue> height) {
-      this.height = () -> Optional.ofNullable(height.get());
-      return this;
-    }
-
-    public Supplier<Optional<LayoutValue>> getWidth() {
-      return width;
-    }
-
-    public Builder setWidth(LayoutValue width) {
-      return setWidth(() -> width);
-    }
-
-    public Builder setWidth(Supplier<LayoutValue> width) {
-      this.width = () -> Optional.ofNullable(width.get());
-      return this;
-    }
-
-    public Supplier<Fit> getFit() {
-      return fit;
-    }
-
-    public Builder setFit(Fit fit) {
-      return setFit(() -> fit);
-    }
-
-    public Builder setFit(Supplier<Fit> fit) {
-      this.fit = fit;
-      return this;
-    }
-
-    public Image build() {
-      return new Image(this);
-    }
   }
 }

@@ -56,8 +56,8 @@ public class AnimationTest extends Component {
           })
           .children(
             Image.builder()
-              .setBlob(fireSvg)
-              .setWidth(LayoutValue.pixel(100))
+              .blob(fireSvg)
+              .width(LayoutValue.pixel(100))
               .build()
           )
           .build(),

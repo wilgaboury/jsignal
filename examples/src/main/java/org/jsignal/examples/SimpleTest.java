@@ -56,8 +56,8 @@ public class SimpleTest extends Component {
     logger.info("rendering");
 
     return Scroll.builder()
-      .setBarWidth(15f)
-      .setChildren(
+      .barWidth(15f)
+      .children(
         EzNode.builder()
           .layout(EzLayout.builder()
             .fill()
@@ -151,10 +151,10 @@ public class SimpleTest extends Component {
               .build(),
             maybeFire(),
             Image.builder()
-              .setBlob(penguin)
-              .setHeight(pixel(300))
-              .setWidth(pixel(200))
-              .setFit(Image.Fit.COVER)
+              .blob(penguin)
+              .height(pixel(300))
+              .width(pixel(200))
+              .fit(Image.Fit.COVER)
               .build()
           )
           .build()
@@ -174,8 +174,8 @@ public class SimpleTest extends Component {
 
           return Nodes.compose(
             Image.builder()
-              .setBlob(fire)
-              .setHeight(pixel(200))
+              .blob(fire)
+              .height(pixel(200))
               .build(),
             Button.builder()
               .action(() -> testState.accept(c -> c + 1))
