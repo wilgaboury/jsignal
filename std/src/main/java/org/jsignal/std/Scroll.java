@@ -43,7 +43,7 @@ public class Scroll extends ScrollPropComponent {
   @Prop
   Supplier<Float> yBarOverlayWidth = () -> yBarWidth.get() / 2f;
   @Prop
-  Supplier<Nodes> children = Nodes::empty;
+  Supplier<Element> children = Nodes::empty;
 
   private final Signal<Float> xOffset = Signal.create(0f);
   private final Signal<Float> yOffset = Signal.create(0f);

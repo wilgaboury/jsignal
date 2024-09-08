@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 
+import static org.jsignal.rx.RxUtil.createMemo;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 
 @GeneratePropComponent
@@ -47,20 +48,16 @@ public class Image extends ImagePropComponent {
   @Prop(required = true)
   Supplier<Blob> blob;
   @Prop(oneofKey = "dim")
-  Supplier<LayoutValue> width;
+  Supplier<LayoutValue> width = Constant.of(null);
   @Prop(oneofKey = "dim")
-  Supplier<LayoutValue> height;
+  Supplier<LayoutValue> height = Constant.of(null);
   @Prop
   Supplier<Fit> fit = Constant.of(Fit.CONTAIN);
 
-  private final Computed<Painter> painter;
-
-  public Image() {
-    this.painter = Computed.create(() -> createPainter(blob.get(), fit.get()));
-  }
-
   @Override
   public Element render() {
+    var painter = createMemo(() -> createPainter(blob.get(), fit.get()));
+
     return EzNode.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {

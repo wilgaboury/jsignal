@@ -3,6 +3,7 @@ package org.jsignal.examples;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
+import org.jsignal.rx.Effect;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
@@ -149,17 +150,13 @@ public class SimpleTest extends Component {
               })
               .children(() -> Para.fromString(this::buttonText))
               .build(),
-
-            // TODO: maybe fire isn't working
-            maybeFire()
-
-            // TODO: this image is the problem
-//            Image.builder()
-//              .blob(penguin)
-//              .height(pixel(300))
-//              .width(pixel(200))
-//              .fit(Image.Fit.COVER)
-//              .build()
+            maybeFire(),
+            Image.builder()
+              .blob(penguin)
+              .height(pixel(300))
+              .width(pixel(200))
+              .fit(Image.Fit.COVER)
+              .build()
           )
           .build()
       )
