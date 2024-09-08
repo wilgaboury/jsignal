@@ -38,7 +38,7 @@ public class InputLineTest extends Component {
         }
       })
       .children(
-        Para.style.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
+        Para.styleContext.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
           new InputLine(content, content)
         )
       )

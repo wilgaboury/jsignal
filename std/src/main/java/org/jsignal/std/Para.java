@@ -6,10 +6,11 @@ import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.Typeface;
 import io.github.humbleui.skija.paragraph.*;
 import jakarta.annotation.Nullable;
+import org.jsignal.prop.GeneratePropComponent;
+import org.jsignal.prop.Prop;
 import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
-import org.jsignal.ui.Component;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -26,11 +27,12 @@ import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.createMemo;
 
-public class Para extends Component {
+@GeneratePropComponent
+public class Para extends ParaPropComponent {
   private static final FontCollection defaultCollection = new FontCollection();
 
-  public static ParaStyleContext style = new ParaStyleContext();
-  public static Context<FontCollection> fonts = Context.create(defaultCollection);
+  public static ParaStyleContext styleContext = new ParaStyleContext();
+  public static Context<FontCollection> fontsContext = Context.create(defaultCollection);
 
   public static final TypefaceFontProvider fontManager = new TypefaceFontProvider();
 
@@ -47,28 +49,51 @@ public class Para extends Component {
     }
   }
 
-  private final Supplier<Paragraph> para;
-  private final Supplier<Boolean> line;
+  @Prop(oneofKey = "content")
+  Supplier<String> string;
+  @Prop(oneofKey = "content")
+  Supplier<Paragraph> para;
+  @Prop
+  Supplier<Style> style;
+  @Prop
+  Function<StyleBuilder, StyleBuilder> customize;
+  @Prop
+  Supplier<Boolean> line = Constant.of(false);
 
-  public Para(Builder builder) {
-    this.para = builder.paragraph;
-    this.line = builder.line;
-  }
+  public Para() {}
 
   public static Para from(Paragraph paragraph) {
-    return Para.builder().setParagraph(paragraph).build();
+    return Para.builder().para(paragraph).build();
   }
 
   public static Para from(Supplier<Paragraph> paragraph) {
-    return Para.builder().setParagraph(paragraph).build();
+    return Para.builder().para(paragraph).build();
   }
 
   public static Para fromString(String string) {
-    return Para.builder().setString(string).build();
+    return Para.builder().string(string).build();
   }
 
   public static Para fromString(Supplier<String> string) {
-    return Para.builder().setString(string).build();
+    return Para.builder().string(string).build();
+  }
+
+  @Override
+  protected void onBuild() {
+    if (string == null) {
+      if (style == null) {
+        if (customize == null) {
+          style = styleContext.use();
+        } else {
+          style = createMemo(() -> customize.apply(styleContext.use().get().toBuilder()).build());
+        }
+      }
+      para = createMemo(() -> {
+        var result = new ParagraphBuilder(style.get().toSkia(), fontsContext.use());
+        result.addText(string.get());
+        return result.build();
+      });
+    }
   }
 
   @Override
@@ -115,114 +140,6 @@ public class Para extends Component {
 
   public Paragraph getParagraph() {
     return para.get();
-  }
-
-  public static BuilderSetContent builder() {
-    return new Builder();
-  }
-
-  public interface BuilderSetContent {
-    BuilderContentString setString(String string);
-    BuilderContentString setString(Supplier<String> string);
-    BuilderContentParagraph setParagraph(Paragraph paragraph);
-    BuilderContentParagraph setParagraph(Supplier<Paragraph> paragraph);
-  }
-
-  public interface BuilderContentString {
-    BuilderContentString setStyle(Style style);
-    BuilderContentString setStyle(Supplier<Style> style);
-    BuilderContentString setStyle(Function<StyleBuilder, StyleBuilder> customize);
-    BuilderContentParagraph setLine(boolean line);
-    BuilderContentParagraph setLine(Supplier<Boolean> line);
-    Para build();
-  }
-
-  public interface BuilderContentParagraph {
-    BuilderContentParagraph setLine(boolean line);
-    BuilderContentParagraph setLine(Supplier<Boolean> line);
-    Para build();
-  }
-
-  public static class Builder implements BuilderSetContent, BuilderContentParagraph, BuilderContentString {
-    private @Nullable Supplier<String> string;
-    private Supplier<Style> style = Para.style.use();
-
-    private Supplier<Paragraph> paragraph;
-    private Supplier<Boolean> line = Constant.of(false);
-
-    @Override
-    public Builder setString(String string) {
-      this.string = Constant.of(string);
-      return this;
-    }
-
-    @Override
-    public Builder setString(Supplier<String> string) {
-      this.string = createMemo(string);
-      return this;
-    }
-
-    @Override
-    public Builder setStyle(Style style) {
-      return this.setStyle(Constant.of(style));
-    }
-
-    @Override
-    public Builder setStyle(Supplier<Style> style) {
-      this.style = createMemo(style);
-      return this;
-    }
-
-    @Override
-    public Builder setStyle(Function<StyleBuilder, StyleBuilder> customize) {
-      this.style = createMemo(() -> customize.apply(Para.style.use().get().toBuilder()).build());
-      return this;
-    }
-
-    @Override
-    public Builder setParagraph(Paragraph paragraph) {
-      return this.setParagraph(Constant.of(paragraph));
-    }
-
-    @Override
-    public Builder setParagraph(Supplier<Paragraph> paragraph) {
-      this.paragraph = paragraph;
-      return this;
-    }
-
-    @Override
-    public Builder setLine(boolean line) {
-      return this.setLine(Constant.of(line));
-    }
-
-    @Override
-    public Builder setLine(Supplier<Boolean> line) {
-      this.line = line;
-      return this;
-    }
-
-    private void setParagraphFromString() {
-      assert string != null;
-
-      Supplier<Paragraph> compute = () -> {
-        var result = new ParagraphBuilder(style.get().toSkia(), fonts.use());
-        result.addText(string.get());
-        return result.build();
-      };
-
-      if (string instanceof Constant<String> && style instanceof Constant<Style>) {
-        paragraph = Constant.of(compute.get());
-      } else {
-        paragraph = Computed.create(compute);
-      }
-    }
-
-    public Para build() {
-      if (string != null) {
-        setParagraphFromString();
-      }
-      return new Para(this);
-    }
   }
 
   public static class ParaStyleContext extends ComputedContext<Style> {

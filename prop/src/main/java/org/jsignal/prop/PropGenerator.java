@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+// TODO: have field in builder for each prop and add toBuilder method for converting back, this will then cover ~95% of builder use cases in JSignal
+
 public class PropGenerator {
   private final static String GEN_CLASS_SUFFIX = "PropComponent";
   private final static String BUILDER_CLASS_NAME = "Builder";
@@ -31,8 +33,12 @@ public class PropGenerator {
     this.procEnv = procEnv;
   }
 
-  public static String genClassName(TypeElement element) {
+  public String genClassSimpleName(TypeElement element) {
     return element.getSimpleName() + GEN_CLASS_SUFFIX;
+  }
+
+  public ClassName genClassName(TypeElement element) {
+    return ClassName.get(packageName(element), genClassSimpleName(element));
   }
 
   public static String requiredStepInterfaceName(Element field) {
@@ -46,21 +52,25 @@ public class PropGenerator {
     return BUILDER_CLASS_NAME + cap + BUILDER_ONEOF_NAME_SUFFIX;
   }
 
-  public static ClassName genClassInnerName(TypeElement element, String name) {
-    return ClassName.get(element.getQualifiedName().toString() + GEN_CLASS_SUFFIX, name);
+  public ClassName genClassInnerName(TypeElement element, String name) {
+    return ClassName.get(packageName(element), element.getSimpleName().toString() + GEN_CLASS_SUFFIX, name);
   }
 
-  public static ClassName builderClassName(TypeElement element) {
+  public ClassName builderClassName(TypeElement element) {
     return genClassInnerName(element, BUILDER_CLASS_NAME);
   }
 
   public void generate(TypeElement element) {
     List<TypeSpec> builders = generateBuilder(element);
 
-    TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassName(element))
+    TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassSimpleName(element))
       .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
       .superclass(ClassName.get(Component.class))
       .addTypes(builders)
+      .addMethod(MethodSpec.methodBuilder("onBuild")
+        .addModifiers(Modifier.PROTECTED)
+        .build()
+      )
       .addMethod(MethodSpec.methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
         .returns(genClassInnerName(element, builders.getFirst().name))
@@ -153,9 +163,13 @@ public class PropGenerator {
       .addModifiers(Modifier.PUBLIC)
       .returns(TypeName.get(element.asType()))
       .addCode("""
+          (($T)$L).onBuild();
           return $L;
           """,
-        BUILDER_FIELD_NAME)
+        genClassName(element),
+        BUILDER_FIELD_NAME,
+        BUILDER_FIELD_NAME
+      )
       .build()
     );
 
@@ -249,6 +263,11 @@ public class PropGenerator {
     }
 
     return Optional.empty();
+  }
+
+  public String packageName(Element element) {
+    PackageElement packageElement = procEnv.getElementUtils().getPackageOf(element);
+    return packageElement.getQualifiedName().toString();
   }
 
   private void saveGeneratedClass(TypeSpec spec, Element element) {

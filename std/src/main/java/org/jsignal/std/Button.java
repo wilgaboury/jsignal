@@ -34,6 +34,8 @@ public class Button extends ButtonPropComponent {
 
   @Override
   public Element render() {
+    Boolean test = true;
+
     return EzNode.builder()
       .listen(
         onMouseOver(e -> mouseOver.accept(true)),
@@ -52,7 +54,7 @@ public class Button extends ButtonPropComponent {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(Para.style.withComputed(style -> style.toBuilder()
+      .children(Para.styleContext.withComputed(style -> style.toBuilder()
             .setTextStyle(text -> text
               .setFontSize(textSize())
               .setColor(ColorUtil.contrastText(color.get()))

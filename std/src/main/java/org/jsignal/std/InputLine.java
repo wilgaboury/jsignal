@@ -44,9 +44,9 @@ public class InputLine extends Component {
     var ref = new Ref<Node>();
 
     para = Para.builder()
-      .setString(supplier)
-      .setStyle(style -> style.setMaxLinesCount(1L))
-      .setLine(true)
+      .string(supplier)
+      .customize(style -> style.setMaxLinesCount(1L))
+      .line(true)
       .build();
 
     var maybeWindow = UiWindow.context.use().getWindow();

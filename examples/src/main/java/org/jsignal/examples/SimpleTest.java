@@ -3,7 +3,6 @@ package org.jsignal.examples;
 import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
-import org.jsignal.rx.Effect;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
@@ -79,9 +78,9 @@ public class SimpleTest extends Component {
           )
           .children(
             Para.builder()
-              .setString(() -> String.format("Count: %s", count.get()))
-              .setStyle(style -> style.setTextStyle(text -> text.setFontSize(20f)))
-              .setLine(true)
+              .string(() -> String.format("Count: %s", count.get()))
+              .customize(style -> style.setTextStyle(text -> text.setFontSize(20f)))
+              .line(true)
               .build(),
             EzNode.builder()
               .layout(EzLayout.builder()
@@ -113,16 +112,16 @@ public class SimpleTest extends Component {
                   .build()
               )
               .build(),
-            Para.style.customize(style -> style.setTextStyle(text ->
+            Para.styleContext.customize(style -> style.setTextStyle(text ->
               text.setColor(EzColors.BLACK)
             )).provide(() -> Nodes.compose(
-              Para.style.customize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
+              Para.styleContext.customize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.customize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
+              Para.styleContext.customize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.style.customize(style -> style
+              Para.styleContext.customize(style -> style
                   .setTextStyle(text -> text
                     .setFontSize(16f)
                   )
@@ -133,8 +132,8 @@ public class SimpleTest extends Component {
                   Para.fromString(LOREM)
                 ),
               Para.builder()
-                .setString("Hello")
-                .setStyle(style -> style
+                .string("Hello")
+                .customize(style -> style
                   .setTextStyle(text -> text
                     .setFontSize(26f)
                     .setFontStyle(FontStyle.ITALIC)
