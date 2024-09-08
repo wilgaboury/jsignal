@@ -14,7 +14,7 @@ public class PropAnnotationProcessor extends AbstractProcessor {
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
-    return Set.of(GeneratePropBuilder.class.getCanonicalName());
+    return Set.of(GeneratePropComponent.class.getCanonicalName());
   }
 
   @Override

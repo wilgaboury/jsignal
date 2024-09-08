@@ -5,7 +5,7 @@ import org.jsignal.rx.interfaces.SignalLike;
 
 import java.util.function.Supplier;
 
-public class Computed<T> extends SignalDecorator<T> {
+public class Computed<T> extends SignalDecorator<T> implements SkipMemo {
   private final EffectLike effect;
 
   public Computed(SignalLike<T> signal, EffectLike effect) {

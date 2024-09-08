@@ -48,6 +48,7 @@ public class OrderedPortal {
       this.child = child.resolve();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Element render() {
       var suppliers = getNodesMap(id);

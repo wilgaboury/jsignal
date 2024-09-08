@@ -36,6 +36,7 @@ public class Provider {
     return new Provider(contexts.__putAll(entries));
   }
 
+  @SuppressWarnings("unchecked")
   public <T> T use(Context<T> context) {
     return Optional.ofNullable((T) contexts.get(context)).orElseGet(context::getDefaultValue);
   }

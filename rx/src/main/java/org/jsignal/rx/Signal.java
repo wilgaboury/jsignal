@@ -12,7 +12,7 @@ import java.util.function.Function;
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
-public class Signal<T> implements SignalLike<T> {
+public class Signal<T> implements SignalLike<T>, SkipMemo {
   private final static Logger logger = LoggerFactory.getLogger(Signal.class);
 
   protected T value;

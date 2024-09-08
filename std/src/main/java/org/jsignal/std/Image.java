@@ -8,8 +8,6 @@ import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
-import org.jsignal.prop.GeneratePropBuilder;
-import org.jsignal.prop.Prop;
 import org.jsignal.rx.Computed;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;

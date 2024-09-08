@@ -5,7 +5,7 @@ import org.jsignal.rx.interfaces.SignalLike;
 
 import java.util.function.Supplier;
 
-public class LazyComputed<T> extends SignalDecorator<T> {
+public class LazyComputed<T> extends SignalDecorator<T> implements SkipMemo {
   private boolean hasRun;
   private final EffectLike effect;
 

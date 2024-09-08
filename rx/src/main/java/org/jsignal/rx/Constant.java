@@ -2,7 +2,7 @@ package org.jsignal.rx;
 
 import java.util.function.Supplier;
 
-public record Constant<T>(T value) implements Supplier<T> {
+public record Constant<T>(T value) implements Supplier<T>, SkipMemo {
   @Override
   public T get() {
     return value;

@@ -17,7 +17,7 @@ public class RxUtil {
   }
 
   public static <T> Supplier<T> createMemo(Supplier<SignalLike<T>> signal, Supplier<T> supplier) {
-    if (supplier instanceof Constant<T> || supplier instanceof Computed<T> || supplier instanceof LazyComputed<T>) {
+    if (SkipMemo.shouldSkip(supplier)) {
       return supplier;
     }
 

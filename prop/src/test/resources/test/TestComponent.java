@@ -1,11 +1,11 @@
 package test;
 
-import org.jsignal.prop.GeneratePropBuilder;
+import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 
 import java.util.function.Supplier;
 
-@GeneratePropBuilder
+@GeneratePropComponent
 public class TestComponent {
   @Prop
   Supplier<Integer> property;

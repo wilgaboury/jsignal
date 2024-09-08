@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class PropGenerator {
-  private final static String GEN_CLASS_SUFFIX = "Component";
+  private final static String GEN_CLASS_SUFFIX = "PropComponent";
   private final static String BUILDER_CLASS_NAME = "Builder";
   private final static String BUILDER_FIELD_NAME = "component";
 
@@ -33,28 +33,24 @@ public class PropGenerator {
     return element.getSimpleName() + GEN_CLASS_SUFFIX;
   }
 
-  public static ClassName builderClassName(TypeElement element) {
-    return genClassInnerName(element, BUILDER_CLASS_NAME);
-  }
-
   public static ClassName genClassInnerName(TypeElement element, String name) {
     return ClassName.get(element.getQualifiedName().toString() + GEN_CLASS_SUFFIX, name);
   }
 
+  public static ClassName builderClassName(TypeElement element) {
+    return genClassInnerName(element, BUILDER_CLASS_NAME);
+  }
+
   public void generate(TypeElement element) {
-    List<TypeSpec> builderAndInterfaces = generateBuilder(element);
-    TypeSpec builder = builderAndInterfaces.getLast();
+    List<TypeSpec> builders = generateBuilder(element);
 
     TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassName(element))
       .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
       .superclass(ClassName.get(Component.class))
-      .addTypes(builderAndInterfaces)
+      .addTypes(builders)
       .addMethod(MethodSpec.methodBuilder("builder")
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .returns(builder.superinterfaces.isEmpty()
-          ? builderClassName(element)
-          : builder.superinterfaces.getFirst()
-        )
+        .returns(genClassInnerName(element, builders.getFirst().name))
         .addCode("""
             return new $T();
             """,
@@ -108,14 +104,13 @@ public class PropGenerator {
         .build()
       );
 
-    int requiredCount = 1;
+    ClassName previousBuilderType = builderClassName(element);
 
-    for (var requiredPropField : requiredPropFields) {
-      // TODO: implement
-    }
+    // TODO: implement
+//    for (var oneofPropEntry : oneofPropFieldsMap.sequencedEntrySet().reversed()) {}
 
-    for (var oneofPropEntry : oneofPropFieldsMap.entrySet()) {
-      // TODO: implement
+    for (var requiredPropField : requiredPropFields.reversed()) {
+
     }
 
     for (var optionalPropField : optionalPropFields) {

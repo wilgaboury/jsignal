@@ -3,7 +3,7 @@ package org.jsignal.std;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.types.Rect;
-import org.jsignal.prop.GeneratePropBuilder;
+import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
@@ -18,8 +18,8 @@ import java.util.function.Supplier;
 import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-@GeneratePropBuilder
-public class Button extends ButtonComponent {
+@GeneratePropComponent
+public class Button extends ButtonPropComponent {
   @Prop
   Supplier<Integer> color = () -> EzColors.BLUE_400;
   @Prop
