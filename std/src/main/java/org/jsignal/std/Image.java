@@ -10,19 +10,16 @@ import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.rx.Computed;
 import org.jsignal.rx.Constant;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.Painter;
-import org.jsignal.ui.Component;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.LayoutValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 

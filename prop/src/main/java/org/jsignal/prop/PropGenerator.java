@@ -159,7 +159,7 @@ public class PropGenerator {
       .build()
     );
 
-    builderClassBuilder.addSuperinterfaces(result.stream()
+    builderClassBuilder.addSuperinterfaces(result.reversed().stream()
       .map(type -> genClassInnerName(element, type.name))
       .toList()
     );
@@ -169,6 +169,8 @@ public class PropGenerator {
   }
 
   public void addSetterMethods(boolean isBuilder, TypeSpec.Builder typeBuilder, Element field, TypeName returnType) {
+    Prop annotation = field.getAnnotation(Prop.class);
+
     var fieldName = field.getSimpleName().toString();
 
     TypeMirror supplierTypeArgument = getSupplierTypeArgument(field.asType()).orElse(null);
@@ -198,24 +200,26 @@ public class PropGenerator {
         methodName = methodName + field.getAnnotation(Prop.class).suffix();
       }
 
-      MethodSpec.Builder constSetterMethodBuilder = MethodSpec.methodBuilder(methodName)
-        .addModifiers(modifiers)
-        .addParameter(ParameterSpec.builder(TypeName.get(supplierTypeArgument), fieldName).build())
-        .returns(returnType);
+      if (!annotation.noConst()) {
+        MethodSpec.Builder constSetterMethodBuilder = MethodSpec.methodBuilder(methodName)
+          .addModifiers(modifiers)
+          .addParameter(ParameterSpec.builder(TypeName.get(supplierTypeArgument), fieldName).build())
+          .returns(returnType);
 
-      if (isBuilder) {
-        constSetterMethodBuilder.addCode("""
-            this.$L.$L = $T.of($L);
-            return this;
-            """,
-          BUILDER_FIELD_NAME,
-          fieldName,
-          Constant.class,
-          fieldName
-        );
+        if (isBuilder) {
+          constSetterMethodBuilder.addCode("""
+              this.$L.$L = $T.of($L);
+              return this;
+              """,
+            BUILDER_FIELD_NAME,
+            fieldName,
+            Constant.class,
+            fieldName
+          );
+        }
+
+        typeBuilder.addMethod(constSetterMethodBuilder.build());
       }
-
-      typeBuilder.addMethod(constSetterMethodBuilder.build());
     } else if (isBuilder) {
       directSetterMethodBuilder.addCode("""
           this.$L.$L = $L;

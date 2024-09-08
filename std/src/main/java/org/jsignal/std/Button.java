@@ -26,7 +26,7 @@ public class Button extends ButtonPropComponent {
   Supplier<Size> size = () -> Size.MD;
   @Prop
   Supplier<Runnable> action = () -> () -> {};
-  @Prop
+  @Prop(noConst = true)
   Supplier<Element> children = Nodes::empty;
 
   private final Signal<Boolean> mouseOver = Signal.create(false);
