@@ -149,13 +149,17 @@ public class SimpleTest extends Component {
               })
               .children(() -> Para.fromString(this::buttonText))
               .build(),
-            maybeFire(),
-            Image.builder()
-              .blob(penguin)
-              .height(pixel(300))
-              .width(pixel(200))
-              .fit(Image.Fit.COVER)
-              .build()
+
+            // TODO: maybe fire isn't working
+            maybeFire()
+
+            // TODO: this image is the problem
+//            Image.builder()
+//              .blob(penguin)
+//              .height(pixel(300))
+//              .width(pixel(200))
+//              .fit(Image.Fit.COVER)
+//              .build()
           )
           .build()
       )
