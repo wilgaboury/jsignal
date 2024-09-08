@@ -80,7 +80,7 @@ public class Para extends ParaPropComponent {
 
   @Override
   protected void onBuild() {
-    if (string == null) {
+    if (para == null) {
       if (style == null) {
         if (customize == null) {
           style = styleContext.use();
