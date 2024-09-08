@@ -159,6 +159,10 @@ public class PropGenerator {
       .build()
     );
 
+    builderClassBuilder.addSuperinterfaces(result.stream()
+      .map(type -> genClassInnerName(element, type.name))
+      .toList()
+    );
     result.add(0, builderClassBuilder.build());
 
     return result.reversed();
@@ -169,8 +173,10 @@ public class PropGenerator {
 
     TypeMirror supplierTypeArgument = getSupplierTypeArgument(field.asType()).orElse(null);
 
+    List<Modifier> modifiers = isBuilder ? List.of(Modifier.PUBLIC) : List.of(Modifier.PUBLIC, Modifier.ABSTRACT);
+
     var directSetterMethodBuilder = MethodSpec.methodBuilder(field.getSimpleName().toString())
-      .addModifiers(Modifier.PUBLIC)
+      .addModifiers(modifiers)
       .addParameter(ParameterSpec.builder(TypeName.get(field.asType()), fieldName).build())
       .returns(returnType);
 
@@ -193,7 +199,7 @@ public class PropGenerator {
       }
 
       MethodSpec.Builder constSetterMethodBuilder = MethodSpec.methodBuilder(methodName)
-        .addModifiers(Modifier.PUBLIC)
+        .addModifiers(modifiers)
         .addParameter(ParameterSpec.builder(TypeName.get(supplierTypeArgument), fieldName).build())
         .returns(returnType);
 

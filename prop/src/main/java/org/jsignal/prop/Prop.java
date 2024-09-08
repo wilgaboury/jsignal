@@ -10,6 +10,8 @@ public @interface Prop {
 
   String suffix() default "Const";
 
+  boolean noConst() default false;
+
   // TODO: implement
   Converter[] converter() default {};
   @interface Converter {}
