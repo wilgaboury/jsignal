@@ -5,7 +5,7 @@ description: how to generate fluent builders for components
 
 A notable piece of trivia about this library is that, at first, JSignal's standard component library was written in Kotlin. The reasons for switching to Java are outside the scope of this article, but one of the most attractive features of Kotlin, from the standpoint of component design, is it's support for named arguments because it largley replaces the boilerplate builder pattern.
 
-While JSignal is designed to be entierly usable without any compile time processing, writing builders for components can be quite tedious and also error prone for those unfamiliar with the workings of it's reactive system. For those reasons, the library provides an fairly simple annotation processor for generating component builders.
+While JSignal is designed to be entierly usable without any compile time processing, writing builders for components can be quite tedious and also error prone for those unfamiliar with the workings of it's reactive system. For those reasons, the library provides a fairly simple annotation processor for generating component builders.
 
 ## Usage
 
@@ -36,7 +36,7 @@ public class Button extends ButtonPropComponent {
     @Prop
     Supplier<Integer> color = Constant.of(0xFFFFFF); // default color
     @Prop
-    Supplier<Image> icon; // null indicates no icon, so no default value needed
+    Supplier<Icon> icon; // null indicates no icon, so no default value needed
 
     ...
 }
