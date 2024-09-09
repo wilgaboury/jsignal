@@ -9,18 +9,18 @@ from [SolidJS](https://www.solidjs.com/).
 
 ## Module Disambiguation
 
-| Module       | Description                                                                                                                                                                          |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [rx](./rx)   | reactive primitives                                                                                                                                                                  |
-| [ui](./ui)   | UI system built on JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
-| [std](./std) | standard component library                                                                                                                                                           |
+| Module         | Description                                                                                                                                                                          |
+|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [rx](./rx)     | reactive primitives                                                                                                                                                                  |
+| [ui](./ui)     | UI system built on JSignal, [Skia](https://skia.org/) ([Skija](https://github.com/HumbleUI/Skija/)), [JWM](https://github.com/HumbleUI/JWM), and [Yoga](https://www.yogalayout.dev/) |
+| [std](./std)   | standard component library                                                                                                                                                           |
+| [prop](./prop) | annotation processor for component properties                                                                                                                                        |
 
 ## Key Features
 
-* Fine-grained reactivity: layout and painting is incremental and efficient
+* Fine-grained reactivity: node tree creation, layout and painting is incremental and efficient
 * Automatic dependency tracking: simply accessing state subscribes to it
-* Hotswap: Code changes intelligently trigger parts of the component tree to be
-  rerendered without stopping the application
+* Hotswap: Code changes intelligently trigger parts of the component tree to rerender without stopping the application
 * Skia graphics: powerful canvas API with support for software and hardware rendering
 * Yoga layout: familiar, web-standard Flexbox layout
 
@@ -51,16 +51,16 @@ public class Counter extends Component {
       )
       .children(
         Para.builder()
-          .setString(() -> "Count: " + count.get())
-          .setStyle(style -> style.setTextStyle(text -> text
+          .string(() -> "Count: " + count.get())
+          .customize(style -> style.setTextStyle(text -> text
             .setFontSize(20f)
             .setColor(EzColors.BLUE_500)
           ))
           .build(),
         Button.builder()
-          .setColor(EzColors.BLUE_300)
-          .setAction(() -> count.accept(c -> c + 1))
-          .setChildren(() -> Para.fromString("Increment"))
+          .color(EzColors.BLUE_300)
+          .action(() -> count.accept(c -> c + 1))
+          .children(() -> Para.fromString("Increment"))
           .build()
       )
       .build();
