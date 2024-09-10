@@ -14,7 +14,7 @@ public class PropAnnotationProcessor extends AbstractProcessor {
 
   @Override
   public Set<String> getSupportedAnnotationTypes() {
-    return Set.of(GeneratePropComponent.class.getCanonicalName());
+    return Set.of(GeneratePropComponent.class.getCanonicalName(), GeneratePropHelper.class.getCanonicalName());
   }
 
   @Override
@@ -31,8 +31,7 @@ public class PropAnnotationProcessor extends AbstractProcessor {
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    if (annotations.size() == 1) {
-      var annotation = annotations.iterator().next();
+    for (var annotation : annotations) {
       var elements = roundEnv.getElementsAnnotatedWith(annotation);
       for (var element : elements) {
         if (element.getKind() == ElementKind.CLASS) {

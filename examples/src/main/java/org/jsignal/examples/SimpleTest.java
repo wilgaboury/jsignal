@@ -50,6 +50,7 @@ public class SimpleTest extends Component {
   private final Signal<Integer> buttonColor = Signal.create(EzColors.BLACK);
   private final Signal<Boolean> showFire = Signal.create(false);
   private final Signal<Integer> count = Signal.create(0);
+  private final Signal<Float> fontSize = Signal.create(12f);
 
   @Override
   public Element render() {
@@ -79,7 +80,7 @@ public class SimpleTest extends Component {
           .children(
             Para.builder()
               .string(() -> String.format("Count: %s", count.get()))
-              .customize(style -> style.setTextStyle(text -> text.setFontSize(20f)))
+              .customize(style -> style.customizeTextStyle(text -> text.fontSize(20f)))
               .line(true)
               .build(),
             EzNode.builder()
@@ -110,23 +111,32 @@ public class SimpleTest extends Component {
                   .action(() -> count.accept(c -> c / 2))
                   .children(() -> Para.fromString("Divide"))
                   .build()
+
               )
               .build(),
-            Para.styleContext.customize(style -> style.setTextStyle(text ->
-              text.setColor(EzColors.BLACK)
+            Button.builder()
+              .color(EzColors.RED_900)
+              .action(() -> fontSize.accept(v -> v + 2))
+              .children(() -> Para.fromString("Increase Font Size"))
+              .build(),
+            ParaStyle.context.customize(style -> style.customizeTextStyle(text ->
+              text.fontSize(fontSize.get())
+            )).provide(() -> Para.fromString("FONT SIZE TEST")),
+            ParaStyle.context.customize(style -> style.customizeTextStyle(text ->
+              text.color(EzColors.BLACK)
             )).provide(() -> Nodes.compose(
-              Para.styleContext.customize(style -> style.setTextStyle(text -> text.setFontSize(12f))).provide(() ->
+              ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.fontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.styleContext.customize(style -> style.setTextStyle(text -> text.setFontSize(14f))).provide(() ->
+              ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.fontSize(14f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              Para.styleContext.customize(style -> style
-                  .setTextStyle(text -> text
-                    .setFontSize(16f)
+              ParaStyle.context.customize(style -> style
+                  .customizeTextStyle(text -> text
+                    .fontSize(16f)
                   )
-                  .setMaxLinesCount(2L)
-                  .setEllipsis("...")
+                  .maxLinesCount(2L)
+                  .ellipsis("...")
                 )
                 .provide(() ->
                   Para.fromString(LOREM)
@@ -134,10 +144,10 @@ public class SimpleTest extends Component {
               Para.builder()
                 .string("Hello")
                 .customize(style -> style
-                  .setTextStyle(text -> text
-                    .setFontSize(26f)
-                    .setFontStyle(FontStyle.ITALIC)
-                    .setColor(EzColors.RED_600)
+                  .customizeTextStyle(text -> text
+                    .fontSize(26f)
+                    .fontStyle(FontStyle.ITALIC)
+                    .color(EzColors.RED_600)
                   ))
                 .build()
             )),

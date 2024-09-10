@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":ui"))
     implementation(project(":rx"))
 
-    implementation("com.squareup:javapoet:1.13.0")
+    implementation("com.palantir.javapoet:javapoet:0.2.0")
 
     testImplementation(project(":ui"))
     testImplementation(project(":rx"))

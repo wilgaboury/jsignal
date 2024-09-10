@@ -19,7 +19,7 @@ import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 @GeneratePropComponent
-public class Button extends ButtonPropComponent {
+public final class Button extends ButtonPropComponent {
   @Prop
   Supplier<Integer> color = () -> EzColors.BLUE_400;
   @Prop
@@ -54,12 +54,12 @@ public class Button extends ButtonPropComponent {
       )
       .layout(this::layout)
       .paint(this::paint)
-      .children(Para.styleContext.withComputed(style -> style.toBuilder()
-            .setTextStyle(text -> text
-              .setFontSize(textSize())
-              .setColor(ColorUtil.contrastText(color.get()))
+      .children(ParaStyle.context.withComputed(style -> style.toBuilder()
+            .customizeTextStyle(text -> text
+              .fontSize(textSize())
+              .color(ColorUtil.contrastText(color.get()))
             )
-            .setMaxLinesCount(1L)
+            .maxLinesCount(1L)
             .build()
           )
           .provide(() -> children.get().resolve())

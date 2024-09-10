@@ -1,6 +1,6 @@
 package org.jsignal.prop;
 
-import com.squareup.javapoet.*;
+import com.palantir.javapoet.*;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.ui.Component;
@@ -18,14 +18,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-// TODO: have field in builder for each prop and add toBuilder method for converting back, this will then cover ~95% of builder use cases in JSignal
-
 public class PropGenerator {
-  private final static String GEN_CLASS_SUFFIX = "PropComponent";
+  private final static String GEN_COMPONENT_CLASS_SUFFIX = "PropComponent";
+  private final static String GEN_HELPER_CLASS_SUFFIX = "PropHelper";
   private final static String BUILDER_CLASS_NAME = "Builder";
   private final static String BUILDER_REQUIRED_NAME_SUFFIX = "RequiredStep";
   private final static String BUILDER_ONEOF_NAME_SUFFIX = "OneofStep";
-  private final static String BUILDER_FIELD_NAME = "component";
+  private final static String BUILDER_FIELD_NAME = "result";
+  private final static String TO_BUILDER_VAR_NAME = "result";
 
   private final ProcessingEnvironment procEnv;
 
@@ -33,8 +33,12 @@ public class PropGenerator {
     this.procEnv = procEnv;
   }
 
+  public boolean isComponentClass(TypeElement element) {
+    return element.getAnnotation(GeneratePropComponent.class) != null;
+  }
+
   public String genClassSimpleName(TypeElement element) {
-    return element.getSimpleName() + GEN_CLASS_SUFFIX;
+    return element.getSimpleName() + (isComponentClass(element) ? GEN_COMPONENT_CLASS_SUFFIX : GEN_HELPER_CLASS_SUFFIX);
   }
 
   public ClassName genClassName(TypeElement element) {
@@ -53,7 +57,7 @@ public class PropGenerator {
   }
 
   public ClassName genClassInnerName(TypeElement element, String name) {
-    return ClassName.get(packageName(element), element.getSimpleName().toString() + GEN_CLASS_SUFFIX, name);
+    return ClassName.get(packageName(element), genClassSimpleName(element), name);
   }
 
   public ClassName builderClassName(TypeElement element) {
@@ -61,32 +65,36 @@ public class PropGenerator {
   }
 
   public void generate(TypeElement element) {
-    List<TypeSpec> builders = generateBuilder(element);
-
     TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassSimpleName(element))
-      .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-      .superclass(ClassName.get(Component.class))
-      .addTypes(builders)
+      .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.SEALED)
+      .addPermittedSubclass(TypeName.get(element.asType()))
       .addMethod(MethodSpec.methodBuilder("onBuild")
         .addModifiers(Modifier.PROTECTED)
         .build()
-      )
-      .addMethod(MethodSpec.methodBuilder("builder")
-        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-        .returns(genClassInnerName(element, builders.getFirst().name))
-        .addCode("""
-            return new $T();
-            """,
-          builderClassName(element)
-        )
-        .build()
       );
+
+    if (isComponentClass(element)) {
+      genClassBuilder.addModifiers().superclass(ClassName.get(Component.class));
+    }
+
+    TypeSpec builderReturnType = generateBuilders(element, genClassBuilder);
+
+    genClassBuilder.addMethod(MethodSpec.methodBuilder("builder")
+      .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+      .returns(genClassInnerName(element, builderReturnType.name()))
+      .addCode("""
+          return new $T();
+          """,
+        builderClassName(element)
+      )
+      .build()
+    );
 
     saveGeneratedClass(genClassBuilder.build(), element);
   }
 
-  public List<TypeSpec> generateBuilder(TypeElement element) {
-    var result = new ArrayList<TypeSpec>();
+  public TypeSpec generateBuilders(TypeElement element, TypeSpec.Builder genClassBuilder) {
+    List<TypeSpec> builderInterfaces = new ArrayList<>();
 
     var propFields = element.getEnclosedElements()
       .stream()
@@ -127,6 +135,20 @@ public class PropGenerator {
         .build()
       );
 
+    MethodSpec.Builder toBuilderMethod = MethodSpec.methodBuilder("toBuilder")
+      .addModifiers(Modifier.PUBLIC)
+      .returns(genClassInnerName(element, BUILDER_CLASS_NAME))
+      .addCode("""
+          $T $L = new $T();
+          $T that = ($T)this;
+          """,
+        builderClassName(element),
+        TO_BUILDER_VAR_NAME,
+        builderClassName(element),
+        TypeName.get(element.asType()),
+        TypeName.get(element.asType())
+      );
+
     ClassName previousBuilderType = builderClassName(element);
 
     for (var oneofPropEntry : oneofPropFieldsMap.sequencedEntrySet().reversed()) {
@@ -135,11 +157,11 @@ public class PropGenerator {
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
       for (var oneofPropField : oneofPropEntry.getValue()) {
-        addSetterMethods(false, oneofStep, oneofPropField, previousBuilderType);
-        addSetterMethods(true, builderClassBuilder, oneofPropField, builderClassName(element));
+        addSetterMethods(element, false, oneofStep, oneofPropField, previousBuilderType, null);
+        addSetterMethods(element, true, builderClassBuilder, oneofPropField, builderClassName(element), toBuilderMethod);
       }
 
-      result.add(oneofStep.build());
+      builderInterfaces.add(oneofStep.build());
       previousBuilderType = genClassInnerName(element, interfaceName);
     }
 
@@ -148,15 +170,15 @@ public class PropGenerator {
       TypeSpec.Builder requiredStep = TypeSpec.interfaceBuilder(interfaceName)
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
-      addSetterMethods(false, requiredStep, requiredPropField, previousBuilderType);
-      addSetterMethods(true, builderClassBuilder, requiredPropField, builderClassName(element));
+      addSetterMethods(element, false, requiredStep, requiredPropField, previousBuilderType, null);
+      addSetterMethods(element, true, builderClassBuilder, requiredPropField, builderClassName(element), toBuilderMethod);
 
-      result.add(requiredStep.build());
+      builderInterfaces.add(requiredStep.build());
       previousBuilderType = genClassInnerName(element, interfaceName);
     }
 
     for (var optionalPropField : optionalPropFields) {
-      addSetterMethods(true, builderClassBuilder, optionalPropField, builderClassName(element));
+      addSetterMethods(element, true, builderClassBuilder, optionalPropField, builderClassName(element), toBuilderMethod);
     }
 
     builderClassBuilder.addMethod(MethodSpec.methodBuilder("build")
@@ -173,16 +195,28 @@ public class PropGenerator {
       .build()
     );
 
-    builderClassBuilder.addSuperinterfaces(result.reversed().stream()
-      .map(type -> genClassInnerName(element, type.name))
-      .toList()
-    );
-    result.add(0, builderClassBuilder.build());
+    builderInterfaces = builderInterfaces.reversed();
 
-    return result.reversed();
+    TypeSpec builderClass = builderClassBuilder.addSuperinterfaces(builderInterfaces.stream()
+      .map(type -> genClassInnerName(element, type.name()))
+      .toList()
+    ).build();
+
+    toBuilderMethod.addCode("""
+        return $L;
+        """,
+      TO_BUILDER_VAR_NAME
+    );
+
+    genClassBuilder.addMethod(toBuilderMethod.build());
+
+    genClassBuilder.addTypes(builderInterfaces);
+    genClassBuilder.addType(builderClass);
+
+    return builderInterfaces.isEmpty() ? builderClass : builderInterfaces.getFirst();
   }
 
-  public void addSetterMethods(boolean isBuilder, TypeSpec.Builder typeBuilder, Element field, TypeName returnType) {
+  public void addSetterMethods(TypeElement element, boolean isBuilder, TypeSpec.Builder typeBuilder, Element field, TypeName returnType, MethodSpec.Builder toBuilderMethod) {
     Prop annotation = field.getAnnotation(Prop.class);
 
     var fieldName = field.getSimpleName().toString();
@@ -196,7 +230,7 @@ public class PropGenerator {
       .addParameter(ParameterSpec.builder(TypeName.get(field.asType()), fieldName).build())
       .returns(returnType);
 
-    if (supplierTypeArgument != null) {
+    if (!annotation.noRx() && supplierTypeArgument != null) {
       if (isBuilder) {
         directSetterMethodBuilder.addCode("""
             this.$L.$L = $T.createMemo($L);
@@ -245,6 +279,17 @@ public class PropGenerator {
       );
     }
 
+    if (toBuilderMethod != null) {
+      toBuilderMethod.addCode("""
+          $L.$L.$L = that.$L;
+          """,
+        TO_BUILDER_VAR_NAME,
+        BUILDER_FIELD_NAME,
+        fieldName,
+        fieldName
+      );
+    }
+
     typeBuilder.addMethod(directSetterMethodBuilder.build());
   }
 
@@ -278,7 +323,7 @@ public class PropGenerator {
     try {
       javaFile.writeTo(procEnv.getFiler());
     } catch (IOException e) {
-      procEnv.getMessager().printError("failed to write java file for generated class: " + spec.name);
+      procEnv.getMessager().printError("failed to write java file for generated class: " + spec.name());
       throw new RuntimeException();
     }
   }

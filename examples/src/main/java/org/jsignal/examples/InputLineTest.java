@@ -4,6 +4,7 @@ import io.github.humbleui.skija.Paint;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.InputLine;
 import org.jsignal.std.Para;
+import org.jsignal.std.ParaStyle;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
 import org.jsignal.std.ez.EzNode;
@@ -38,7 +39,7 @@ public class InputLineTest extends Component {
         }
       })
       .children(
-        Para.styleContext.customize(style -> style.setTextStyle(text -> text.setColor(EzColors.BLACK))).provide(() ->
+        ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.color(EzColors.BLACK))).provide(() ->
           new InputLine(content, content)
         )
       )

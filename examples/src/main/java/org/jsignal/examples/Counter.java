@@ -33,9 +33,9 @@ public class Counter extends Component {
       .children(
         Para.builder()
           .string(() -> "Count: " + count.get())
-          .customize(style -> style.setTextStyle(text -> text
-            .setFontSize(20f)
-            .setColor(EzColors.BLUE_500)
+          .customize(style -> style.customizeTextStyle(text -> text
+            .fontSize(20f)
+            .color(EzColors.BLUE_500)
           ))
           .build(),
         Button.builder()

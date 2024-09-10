@@ -45,7 +45,7 @@ public class InputLine extends Component {
 
     para = Para.builder()
       .string(supplier)
-      .customize(style -> style.setMaxLinesCount(1L))
+      .customize(style -> style.maxLinesCount(1L))
       .line(true)
       .build();
 
