@@ -1,14 +1,17 @@
 package org.jsignal.std;
 
 import io.github.humbleui.skija.Data;
-import io.github.humbleui.skija.FontStyle;
-import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.Typeface;
-import io.github.humbleui.skija.paragraph.*;
-import jakarta.annotation.Nullable;
+import io.github.humbleui.skija.paragraph.FontCollection;
+import io.github.humbleui.skija.paragraph.Paragraph;
+import io.github.humbleui.skija.paragraph.ParagraphBuilder;
+import io.github.humbleui.skija.paragraph.TypefaceFontProvider;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.rx.*;
+import org.jsignal.rx.Constant;
+import org.jsignal.rx.Context;
+import org.jsignal.rx.Effect;
+import org.jsignal.rx.Provider;
 import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.UiThread;
@@ -19,16 +22,13 @@ import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.createMemo;
 
 @GeneratePropComponent
-public final class Para extends ParaPropComponent {
+public non-sealed class Para extends ParaPropComponent {
   private static final FontCollection defaultCollection = new FontCollection();
 
   public static Context<FontCollection> fontsContext = Context.create(defaultCollection);

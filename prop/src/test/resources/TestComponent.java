@@ -8,7 +8,7 @@ import org.jsignal.ui.Nodes;
 import java.util.function.Supplier;
 
 @GeneratePropComponent
-public class TestComponent extends TestComponentPropComponent {
+public final class TestComponent extends TestComponentPropComponent {
   @Prop
   Supplier<Integer> property;
 

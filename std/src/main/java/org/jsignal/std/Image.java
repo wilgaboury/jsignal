@@ -27,7 +27,7 @@ import static org.jsignal.rx.RxUtil.createMemo;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 
 @GeneratePropComponent
-public final class Image extends ImagePropComponent {
+public non-sealed class Image extends ImagePropComponent {
   private final static Logger logger = LoggerFactory.getLogger(Image.class);
 
   private static final WeakHashMap<Blob, SVGDOM> svgDoms = new WeakHashMap<>();

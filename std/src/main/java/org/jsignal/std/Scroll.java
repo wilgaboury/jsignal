@@ -29,7 +29,7 @@ import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 @GeneratePropComponent
-public final class Scroll extends ScrollPropComponent {
+public non-sealed class Scroll extends ScrollPropComponent {
   private static final float DEFAULT_WIDTH = 15f;
 
   @Prop

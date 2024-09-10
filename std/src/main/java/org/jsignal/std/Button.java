@@ -19,7 +19,7 @@ import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 @GeneratePropComponent
-public final class Button extends ButtonPropComponent {
+public non-sealed class Button extends ButtonPropComponent {
   @Prop
   Supplier<Integer> color = () -> EzColors.BLUE_400;
   @Prop
