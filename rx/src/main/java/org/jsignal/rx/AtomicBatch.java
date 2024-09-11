@@ -1,14 +1,14 @@
 package org.jsignal.rx;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.concurrent.Executor;
 
 public class AtomicBatch {
   static final ThreadLocal<AtomicBatch> batch = ThreadLocal.withInitial(AtomicBatch::new);
 
   private boolean inBatch = false;
-  private final HashMap<Executor, ArrayList<Runnable>> batches = new HashMap<>();
+  private final HashMap<Executor, LinkedHashSet<AtomicSignal<?>>> executors = new HashMap<>();
 
   public void run(Runnable inner) {
     if (inBatch) {
@@ -17,16 +17,16 @@ public class AtomicBatch {
       inBatch = true;
       try {
         inner.run();
-        for (var entry : batches.entrySet()) {
+        for (var entry : executors.entrySet()) {
           var executor = entry.getKey();
-          var runnables = entry.getValue();
+          var signals = entry.getValue();
           executor.execute(() -> RxUtil.batch(() -> {
-            for (var runnable : runnables) {
-              runnable.run();
+            for (var signal : signals) {
+              signal.applyMutations();
             }
           }));
         }
-        batches.clear();
+        executors.clear();
       } finally {
         inBatch = false;
       }
@@ -37,11 +37,11 @@ public class AtomicBatch {
     return inBatch;
   }
 
-  void add(Executor executor, Runnable runnable) {
+  void add(AtomicSignal<?> signal) {
     if (inBatch) {
-      batches.computeIfAbsent(executor, k -> new ArrayList<>()).add(runnable);
+      executors.computeIfAbsent(signal.getExecutor(), k -> new LinkedHashSet<>()).add(signal);
     } else {
-      executor.execute(runnable);
+      signal.getExecutor().execute(signal::applyMutations);
     }
   }
 }

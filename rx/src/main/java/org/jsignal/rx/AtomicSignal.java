@@ -26,6 +26,10 @@ public class AtomicSignal<T> extends Signal<T> {
     this.executor = executor;
   }
 
+  public Executor getExecutor() {
+    return executor;
+  }
+
   @Override
   public T get() {
     lock.readLock().lock();
@@ -54,11 +58,11 @@ public class AtomicSignal<T> extends Signal<T> {
     if (thread.threadId() == Thread.currentThread().threadId()) {
       applyMutations();
     } else {
-      AtomicBatch.batch.get().add(executor, this::applyMutations);
+      AtomicBatch.batch.get().add(this);
     }
   }
 
-  protected void applyMutations() {
+  void applyMutations() {
     boolean changed = false;
     lock.writeLock().lock();
     try {

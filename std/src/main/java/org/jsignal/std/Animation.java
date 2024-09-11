@@ -50,7 +50,7 @@ public class Animation {
       firstFrame = false;
     } else {
       try {
-        callback.run(window.getDeltaFrameNano());
+        callback.run(window.getDeltaFrameNano(), this::stop);
       } catch (Exception e) {
         logger.error("uncaught exception in animation", e);
       }
@@ -70,6 +70,6 @@ public class Animation {
     /**
      * @param deltaTimeNano change in time between now and the beginning of the last animation run
      */
-    void run(long deltaTimeNano);
+    void run(long deltaTimeNano, Runnable stop);
   }
 }
