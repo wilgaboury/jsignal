@@ -299,4 +299,8 @@ public class ColorUtil {
       return p;
     }
   }
+
+  public static int withAlpha(int color, float alpha) {
+    return Color.withA(color, Math.round(alpha * 255));
+  }
 }

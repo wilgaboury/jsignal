@@ -1,8 +1,10 @@
 package org.jsignal.std.ez;
 
+import io.github.humbleui.types.Point;
 import jakarta.annotation.Nullable;
 import org.jsignal.ui.*;
 import org.jsignal.ui.event.EventListener;
+import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
 
 import java.util.Arrays;
@@ -14,16 +16,18 @@ import java.util.function.Consumer;
 public class EzNode implements NodeImpl {
   private final Nodes children;
   private final Layouter layout;
-  private final Transformer transformer;
   private final Painter paint;
   private final Painter paintAfter;
+  private final HitTester hitTest;
+  private final Transformer transform;
 
   public EzNode(Builder builder) {
     this.children = builder.children;
     this.layout = builder.layout;
-    this.transformer = builder.transformer;
+    this.transform = builder.transform;
     this.paint = builder.paint;
     this.paintAfter = builder.paintAfter;
+    this.hitTest = builder.hitTester;
   }
 
   @Override
@@ -38,7 +42,7 @@ public class EzNode implements NodeImpl {
 
   @Override
   public Transformer getTransformer() {
-    return transformer;
+    return transform;
   }
 
   @Override
@@ -49,6 +53,15 @@ public class EzNode implements NodeImpl {
   @Override
   public Painter getAfterPainter() {
     return paintAfter;
+  }
+
+  @Override
+  public HitTestResult hitTest(Point p, Layout layout) {
+    if (hitTest != null) {
+      return hitTest.hitTest(p, layout);
+    } else {
+      return NodeImpl.defaultHitTest(p, layout);
+    }
   }
 
   public static Builder builder() {
@@ -62,9 +75,10 @@ public class EzNode implements NodeImpl {
     private Consumer<Node> reference = n -> {};
     private Nodes children = Nodes.empty();
     private Layouter layout = null;
-    private Transformer transformer = null;
+    private Transformer transform = null;
     private Painter paint = null;
     private Painter paintAfter = null;
+    private HitTester hitTester = null;
 
     public Builder ref(Consumer<Node> reference) {
       this.reference = reference;
@@ -107,7 +121,7 @@ public class EzNode implements NodeImpl {
     }
 
     public Builder transform(Transformer transformer) {
-      this.transformer = transformer;
+      this.transform = transformer;
       return this;
     }
 
@@ -121,6 +135,11 @@ public class EzNode implements NodeImpl {
       return this;
     }
 
+    public Builder hitTester(HitTester hitTester) {
+      this.hitTester = hitTester;
+      return this;
+    }
+
     public Node build() {
       var node = new Node(new EzNode(this));
       node.setId(id);
@@ -129,5 +148,9 @@ public class EzNode implements NodeImpl {
       reference.accept(node);
       return node;
     }
+  }
+
+  public interface HitTester {
+    HitTestResult hitTest(Point p, Layout layout);
   }
 }

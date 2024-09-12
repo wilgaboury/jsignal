@@ -34,8 +34,12 @@ public interface NodeImpl {
   }
 
   // coordinates are in "paint space" for ease of calculation
-  default HitTestResult hitTest(Point p, Layout layout) {
-    return MathUtil.contains(Rect.makeWH(layout.getSize()), p)
+  default HitTestResult hitTest(Point point, Layout layout) {
+    return defaultHitTest(point, layout);
+  }
+
+  static HitTestResult defaultHitTest(Point point, Layout layout) {
+    return MathUtil.contains(Rect.makeWH(layout.getSize()), point)
       ? HitTestResult.HIT : HitTestResult.MISS;
   }
 

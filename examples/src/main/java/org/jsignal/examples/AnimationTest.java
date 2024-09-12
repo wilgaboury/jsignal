@@ -36,7 +36,7 @@ public class AnimationTest extends Component {
 
   @Override
   public Element render() {
-    var animation = new Animation(deltaTimeNano ->
+    var animation = new Animation((deltaTimeNano, stop) ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
     return EzNode.builder()
