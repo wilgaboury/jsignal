@@ -15,6 +15,26 @@ public interface EasingFunction {
     return 1f - (float) Math.cos((x * Math.PI) / 2f);
   }
 
+  static float easeOutSine(float x) {
+    return (float) Math.sin((x * Math.PI) / 2);
+  }
+
+  static float easeInOutSine(float x) {
+    return (float) -(Math.cos(Math.PI * x) - 1) / 2f;
+  }
+
+  static float easeInQuad(float x) {
+    return x * x;
+  }
+
+  static float easeOutQuad(float x) {
+    return 1f - (1f - x) * (1f - x);
+  }
+
+  static float easeInOutQuad(float x) {
+    return x < 0.5 ? 2 * x * x : 1 - (float) Math.pow(-2 * x + 2, 2) / 2f;
+  }
+
   static float easeOutBounce(float x) {
     float n1 = 7.5625f;
     float d1 = 2.75f;

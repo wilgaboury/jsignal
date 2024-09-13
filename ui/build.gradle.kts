@@ -14,6 +14,8 @@ val lwjglNatives = listOf(
 )
 
 dependencies {
+    annotationProcessor(project(":prop"))
+
     api(project(":rx"))
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))

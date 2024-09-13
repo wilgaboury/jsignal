@@ -83,13 +83,8 @@ public non-sealed class Drawer extends DrawerPropComponent {
   private Supplier<Supplier<Float>> createTranslation(Supplier<Float> width) {
     Ref<AnimationHelper> prevAnimation = new Ref<>();
     Ref<Boolean> first = new Ref<>(true);
-    return Computed.<Supplier<Float>>create(() -> {
+    return Computed.create(() -> {
       var o = open.get();
-
-      if (first.get()) {
-        first.accept(false);
-        return o ? Constant.of(0f) : () -> -width.get();
-      }
 
       var prev = prevAnimation.get();
 
@@ -100,6 +95,11 @@ public non-sealed class Drawer extends DrawerPropComponent {
         var tmp = start;
         start = end;
         end = tmp;
+      }
+
+      if (first.get()) {
+        first.accept(false);
+        return end;
       }
 
       if (prev != null) {
