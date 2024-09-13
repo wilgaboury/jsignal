@@ -10,12 +10,17 @@ public class Animation {
   private final Logger logger = LoggerFactory.getLogger(Animation.class);
 
   private final UiWindow window;
-  private final Callback callback;
+  private final CallbackWithStop callback;
+  private final Signal<Boolean> running;
+
   private boolean firstFrame;
   private boolean queued;
-  private Signal<Boolean> running;
 
   public Animation(Callback callback) {
+    this(CallbackWithStop.from(callback));
+  }
+
+  public Animation(CallbackWithStop callback) {
     this.window = UiWindow.context.use();
     this.callback = callback;
     firstFrame = true;
@@ -70,6 +75,18 @@ public class Animation {
     /**
      * @param deltaTimeNano change in time between now and the beginning of the last animation run
      */
+    void run(long deltaTimeNano);
+  }
+
+  @FunctionalInterface
+  public interface CallbackWithStop {
+    /**
+     * @param deltaTimeNano change in time between now and the beginning of the last animation run
+     */
     void run(long deltaTimeNano, Runnable stop);
+
+    static CallbackWithStop from(Callback callback) {
+      return (deltaTimeNano, stop) -> callback.run(deltaTimeNano);
+    }
   }
 }

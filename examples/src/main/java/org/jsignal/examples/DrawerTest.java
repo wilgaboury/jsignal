@@ -47,6 +47,8 @@ public class DrawerTest extends Component {
           .build(),
         Drawer.builder()
           .open(open)
+          .openAnimFunc(EasingFunction::easeOutBounce)
+          .animDurationSeconds(0.5f)
           .content(EzNode.builder()
             .layout(EzLayout.builder()
               .width(pixel(250f))

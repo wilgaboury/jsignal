@@ -30,7 +30,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
   @Prop
   Supplier<Float> animDurationSeconds = Constant.of(0.2f);
   @Prop
-  Supplier<InterpolationFunction> openAnimFunc = Constant.of(InterpolationFunction::lerp);
+  Supplier<EasingFunction> openAnimFunc = Constant.of(EasingFunction::linear);
   @Prop
   Runnable backgroundClick;
 
@@ -72,7 +72,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
             config.setPosition(LayoutConfig.Edge.LEFT, pixel(0f));
             config.setHeight(percent(100f));
           })
-          .transform((layout) -> Matrix33.makeTranslate(translation.get(), 0))
+          .transform((layout) -> Matrix33.makeTranslate(translation.get().get(), 0))
           .ref(node -> Effect.create(() -> width.accept(node.getLayout().getWidth())))
           .children(content.get())
           .build()
@@ -80,18 +80,18 @@ public non-sealed class Drawer extends DrawerPropComponent {
       .build();
   }
 
-  private Supplier<Float> createTranslation(Supplier<Float> width) {
-    Ref<AnimationHelper> prevRef = new Ref<>();
+  private Supplier<Supplier<Float>> createTranslation(Supplier<Float> width) {
+    Ref<AnimationHelper> prevAnimation = new Ref<>();
     Ref<Boolean> first = new Ref<>(true);
-    var computedHelper = Computed.create(() -> {
+    return Computed.<Supplier<Float>>create(() -> {
       var o = open.get();
 
       if (first.get()) {
         first.accept(false);
-        return null;
+        return o ? Constant.of(0f) : () -> -width.get();
       }
 
-      var prev = prevRef.get();
+      var prev = prevAnimation.get();
 
       Supplier<Float> start = SkipMemo.from(() -> -width.get());
       Supplier<Float> end = Constant.of(0f);
@@ -113,22 +113,12 @@ public non-sealed class Drawer extends DrawerPropComponent {
         .function(openAnimFunc)
         .build();
 
-      prevRef.accept(helper);
+      prevAnimation.accept(helper);
 
-      var animation = helper.getAnimation();
-      animation.start();
-      onCleanup(animation::stop);
+      helper.start();
+      onCleanup(helper::stop);
 
       return helper;
     });
-
-    return () -> {
-      var helper = computedHelper.get();
-      if (helper == null) {
-        return open.get() ? 0 : -width.get();
-      } else {
-        return helper.get();
-      }
-    };
   }
 }
