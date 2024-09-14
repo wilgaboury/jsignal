@@ -43,6 +43,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.onDefer;
+import static org.jsignal.ui.layout.LayoutValue.percent;
 
 @GeneratePropHelper
 public non-sealed class Node extends NodePropHelper implements Nodes {
@@ -51,8 +52,8 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
   @TransitiveProps
   static class Transitive {
-    @Prop Collection<Object> tags;
-    @Prop Collection<EventListener<?>> listen;
+    @Prop Collection<Object> tags = Collections.emptyList();
+    @Prop Collection<EventListener<?>> listen = Collections.emptyList();
     @Prop Element children = Nodes.empty();
     @Prop Consumer<Node> ref;
   }
@@ -81,7 +82,6 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   private SideEffect paintEffect;
   private SideEffect paintCacheEffect;
   private SideEffect paintAfterEffect;
-
 
   private PaintCacheStrategy paintCacheStrategy;
   private boolean offScreen = false;
@@ -115,7 +115,9 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
     listen(transitive.listen);
 
-    transitive.ref.accept(this);
+    if (transitive.ref != null) {
+      transitive.ref.accept(this);
+    }
   }
 
   private void cleanup() {
@@ -435,21 +437,12 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     var rendered = rootComponent.resolve();
 
     return Node.builder()
+      .layout(config -> {
+        config.setWidth(percent(100f));
+        config.setHeight(percent(100f));
+      })
+      .children(rendered)
       .build();
-//    (new NodeImpl() {
-//      @Override
-//      public Layouter getLayouter() {
-//        return config -> {
-//          config.setWidth(percent(100f));
-//          config.setHeight(percent(100f));
-//        };
-//      }
-//
-//      @Override
-//      public List<Node> getChildren() {
-//        return rendered.generate();
-//      }
-//    });
   }
 
   /**

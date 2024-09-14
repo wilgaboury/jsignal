@@ -22,7 +22,7 @@ public sealed interface Nodes extends Element permits Node, NodesImpl {
   Supplier<List<Node>> getNodeListSupplier();
 
   default List<Node> getNodeList() {
-    return getNodeList();
+    return getNodeListSupplier().get();
   }
 
   static Nodes fromList(List<Node> list) {
