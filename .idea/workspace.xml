@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="badb8293-e8e9-4431-8ebb-fb93a1dd2692" name="Changes" comment="Remove EzNode">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="badb8293-e8e9-4431-8ebb-fb93a1dd2692" name="Changes" comment="Fix root node">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Nodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Nodes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/EasingFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/EasingFunction.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -221,13 +219,22 @@
       <option name="project" value="LOCAL" />
       <updated>1726285441701</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Fix root node">
+      <option name="closed" value="true" />
+      <created>1726336769141</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1726336769141</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Import project" />
     <MESSAGE value="Revamping Node class using annotation processor" />
     <MESSAGE value="Remove EzNode" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove EzNode" />
+    <MESSAGE value="Fix root node" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix root node" />
   </component>
 </project>
