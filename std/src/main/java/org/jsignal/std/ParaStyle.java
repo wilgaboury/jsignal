@@ -4,6 +4,7 @@ import io.github.humbleui.skija.paragraph.*;
 import jakarta.annotation.Nullable;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
+import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.ComputedContext;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Provider;
@@ -24,11 +25,14 @@ public final class ParaStyle extends ParaStylePropHelper {
 
   public static final Context context = new Context();
 
-  @Prop
-  ParaTextStyle textStyle = ParaTextStyle.builder().build();
+  @TransitiveProps
+  public static class Transitive {
+    @Prop
+    Function<ParaTextStyle.Builder, ParaTextStyle.Builder> textStyleBuilder;
+  }
 
   @Prop
-  Function<ParaTextStyle.Builder, ParaTextStyle.Builder> customizeTextStyle;
+  ParaTextStyle textStyle = ParaTextStyle.builder().build();
 
   @Prop
   @Nullable
@@ -59,9 +63,9 @@ public final class ParaStyle extends ParaStylePropHelper {
   Long maxLinesCount;
 
   @Override
-  public void onBuild() {
-    if (customizeTextStyle != null) {
-      textStyle = customizeTextStyle.apply(textStyle.toBuilder()).build();
+  public void onBuild(Transitive props) {
+    if (props.textStyleBuilder != null) {
+      textStyle = props.textStyleBuilder.apply(textStyle.toBuilder()).build();
     }
   }
 

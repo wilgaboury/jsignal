@@ -8,6 +8,7 @@ import io.github.humbleui.skija.paragraph.ParagraphBuilder;
 import io.github.humbleui.skija.paragraph.TypefaceFontProvider;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
+import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Effect;
@@ -48,14 +49,19 @@ public non-sealed class Para extends ParaPropComponent {
     }
   }
 
-  @Prop(oneofKey = "content")
-  Supplier<String> string;
+  @TransitiveProps
+  public static class Transitive {
+    @Prop(oneofKey = "content")
+    Supplier<String> string;
+
+    @Prop
+    Function<ParaStyle.Builder, ParaStyle.Builder> styleBuilder;
+  }
+
   @Prop(oneofKey = "content")
   Supplier<Paragraph> para;
   @Prop
-  Supplier<ParaStyle> style;
-  @Prop
-  Function<ParaStyle.Builder, ParaStyle.Builder> customize;
+  Supplier<ParaStyle> style = ParaStyle.context.use();
   @Prop
   Supplier<Boolean> line = Constant.of(false);
 
@@ -78,18 +84,15 @@ public non-sealed class Para extends ParaPropComponent {
   }
 
   @Override
-  protected void onBuild() {
+  protected void onBuild(Transitive transitive) {
+    if (transitive.styleBuilder != null) {
+      this.style = createMemo(() -> transitive.styleBuilder.apply(style.get().toBuilder()).build());
+    }
+
     if (para == null) {
-      if (style == null) {
-        if (customize == null) {
-          style = ParaStyle.context.use();
-        } else {
-          style = createMemo(() -> customize.apply(ParaStyle.context.use().get().toBuilder()).build());
-        }
-      }
       para = createMemo(() -> {
         var result = new ParagraphBuilder(style.get().toSkia(), fontsContext.use());
-        result.addText(string.get());
+        result.addText(transitive.string.get());
         return result.build();
       });
     }

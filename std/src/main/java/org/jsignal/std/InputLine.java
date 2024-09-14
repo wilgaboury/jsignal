@@ -45,7 +45,7 @@ public class InputLine extends Component {
 
     para = Para.builder()
       .string(supplier)
-      .customize(style -> style.maxLinesCount(1L))
+      .styleBuilder(sb -> sb.maxLinesCount(1L))
       .line(true)
       .build();
 
@@ -53,7 +53,6 @@ public class InputLine extends Component {
 
     return Node.builder()
       .ref(ref)
-      .id("input-line")
       .listen(List.of(
         onMouseIn(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.IBEAM))),
         onMouseOut(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.ARROW))),

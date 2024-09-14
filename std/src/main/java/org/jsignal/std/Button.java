@@ -56,7 +56,7 @@ public non-sealed class Button extends ButtonPropComponent {
       .layout(this::layout)
       .paint(this::paint)
       .children(ParaStyle.context.withComputed(style -> style.toBuilder()
-            .customizeTextStyle(text -> text
+            .textStyleBuilder(tsb -> tsb
               .fontSize(textSize())
               .color(ColorUtil.contrastText(color.get()))
             )
