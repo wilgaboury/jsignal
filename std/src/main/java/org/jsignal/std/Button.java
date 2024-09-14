@@ -7,12 +7,13 @@ import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
-import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.jsignal.ui.event.EventListener.*;
@@ -36,8 +37,8 @@ public non-sealed class Button extends ButtonPropComponent {
   public Element render() {
     Boolean test = true;
 
-    return EzNode.builder()
-      .listen(
+    return Node.builder()
+      .listen(List.of(
         onMouseOver(e -> mouseOver.accept(true)),
         onMouseDown(e -> mouseDown.accept(true)),
         onMouseOut(e -> {
@@ -51,7 +52,7 @@ public non-sealed class Button extends ButtonPropComponent {
             action.get().run();
           }
         })
-      )
+      ))
       .layout(this::layout)
       .paint(this::paint)
       .children(ParaStyle.context.withComputed(style -> style.toBuilder()

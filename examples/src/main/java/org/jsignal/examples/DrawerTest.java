@@ -1,12 +1,22 @@
 package org.jsignal.examples;
 
 import org.jsignal.rx.Signal;
-import org.jsignal.std.*;
+import org.jsignal.std.BasicPainter;
+import org.jsignal.std.Button;
+import org.jsignal.std.Drawer;
+import org.jsignal.std.EasingFunction;
+import org.jsignal.std.Para;
+import org.jsignal.std.Scroll;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.UiThread;
+import org.jsignal.ui.UiUtil;
+import org.jsignal.ui.UiWindow;
 
+import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
@@ -25,23 +35,23 @@ public class DrawerTest extends Component {
 
   @Override
   protected Element render() {
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder().fill().build())
-      .children(
+      .children(compose(
         Scroll.builder()
-          .children(EzNode.builder()
+          .children(Node.builder()
             .layout(EzLayout.builder()
               .padding(insets(pixel(20f)))
               .center()
               .build()
             )
-            .children(
+            .children(compose(
               Button.builder()
                 .children(() -> Para.fromString("Open Drawer"))
                 .action(() -> open.accept(true))
                 .build(),
               Para.fromString("test content")
-            )
+            ))
             .build()
           )
           .build(),
@@ -49,7 +59,7 @@ public class DrawerTest extends Component {
           .open(open)
           .openAnimFunc(EasingFunction::easeOutBounce)
           .animDurationSeconds(0.5f)
-          .content(EzNode.builder()
+          .content(Node.builder()
             .layout(EzLayout.builder()
               .width(pixel(250f))
               .height(percent(100f))
@@ -64,7 +74,7 @@ public class DrawerTest extends Component {
           )
           .backgroundClick(() -> open.accept(false))
           .build()
-      )
+      ))
       .build();
   }
 }

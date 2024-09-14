@@ -13,16 +13,22 @@ import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.MathUtil;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.Nodes;
+import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.ignore;
+import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.event.EventListener.*;
 import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
@@ -101,9 +107,9 @@ public non-sealed class Scroll extends ScrollPropComponent {
       }
     });
 
-    return EzNode.builder()
+    return Node.builder()
       .ref(view)
-      .listen(
+      .listen(List.of(
         onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
         onKeyDown(e -> {
           if (e.getEvent().getKey() == Key.DOWN) {
@@ -112,15 +118,15 @@ public non-sealed class Scroll extends ScrollPropComponent {
             yOffset.accept(y -> y + 100);
           }
         })
-      )
+      ))
       .layout(EzLayout.builder()
         .width(percent(100f))
         .height(percent(100f))
         .overflow()
         .build()
       )
-      .children(
-        EzNode.builder()
+      .children(Nodes.fromList(List.of(
+        Node.builder()
           .ref(meta -> {
             content.accept(meta);
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
@@ -150,13 +156,13 @@ public non-sealed class Scroll extends ScrollPropComponent {
           })
           .children(children.get())
           .build(),
-        EzNode.builder()
-          .ref(meta -> meta.listen(
+        Node.builder()
+          .ref(ref -> ref.listen(
             onMouseOver(e -> xBarMouseOver.accept(true)),
             onMouseOut(e -> xBarMouseOver.accept(false)),
             onMouseDown(e -> {
-              var pos = MathUtil.apply(MathUtil.inverse(meta.getFullTransform()), window.getMousePosition());
-              vertBarRect(meta).ifPresent(rect -> {
+              var pos = MathUtil.apply(MathUtil.inverse(ref.getFullTransform()), window.getMousePosition());
+              vertBarRect(ref).ifPresent(rect -> {
                 if (MathUtil.contains(rect, pos)) {
                   xMouseDownOffset = pos.getX() - rect.getLeft();
                   xBarMouseDown.accept(true);
@@ -175,11 +181,11 @@ public non-sealed class Scroll extends ScrollPropComponent {
           )
           .paint(this::paintVertScrollBar)
           .build(),
-        EzNode.builder()
-          .listen(
+        Node.builder()
+          .listen(List.of(
             onMouseOver(e -> yBarMouseOver.accept(true)),
             onMouseOut(e -> yBarMouseOver.accept(false))
-          )
+          ))
           .layout(EzLayout.builder()
             .width(() -> pixel(yBarWidth.get()))
             .height(percent(100f))
@@ -188,15 +194,15 @@ public non-sealed class Scroll extends ScrollPropComponent {
             .right(pixel(0f))
             .build()
           )
-          .children(
+          .children(compose(
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
-            EzNode.builder()
-              .ref(meta -> {
-                yBar.accept(meta);
-                meta.listen(
+            Node.builder()
+              .ref(ref -> {
+                yBar.accept(ref);
+                ref.listen(
                   onMouseDown(e -> {
                     var pos = MathUtil.apply(
-                      MathUtil.inverse(meta.getFullTransform()),
+                      MathUtil.inverse(ref.getFullTransform()),
                       window.getMousePosition()
                     );
                     horizBarRect().ifPresent(rect -> {
@@ -218,12 +224,12 @@ public non-sealed class Scroll extends ScrollPropComponent {
               .build(),
             new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
             // spacer
-            EzNode.builder()
+            Node.builder()
               .layout(EzLayout.builder().height(() -> pixel(xBarWidth.get())).build())
               .build()
-          )
+          ))
           .build()
-      )
+      )))
       .build();
   }
 
@@ -287,12 +293,12 @@ public non-sealed class Scroll extends ScrollPropComponent {
 
     @Override
     public Element render() {
-      return EzNode.builder()
-        .listen(
+      return Node.builder()
+        .listen(List.of(
           onMouseClick(e -> action.run()),
           onMouseDown(e -> mouseDown.accept(true)),
           onMouseUp(e -> mouseDown.accept(false))
-        )
+        ))
         .layout(EzLayout.builder()
           .height(() -> pixel(size.get()))
           .width(() -> pixel(size.get()))

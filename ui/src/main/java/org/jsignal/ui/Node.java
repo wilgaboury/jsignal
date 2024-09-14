@@ -54,6 +54,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     @Prop Collection<Object> tags;
     @Prop Collection<EventListener<?>> listen;
     @Prop Element children = Nodes.empty();
+    @Prop Consumer<Node> ref;
   }
 
   @Prop Object id;
@@ -113,6 +114,8 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     this.children = createChildren(transitive.children.resolve());
 
     listen(transitive.listen);
+
+    transitive.ref.accept(this);
   }
 
   private void cleanup() {

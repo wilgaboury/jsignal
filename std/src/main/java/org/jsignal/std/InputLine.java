@@ -11,12 +11,12 @@ import org.jsignal.rx.Ref;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.UiWindow;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -51,10 +51,10 @@ public class InputLine extends Component {
 
     var maybeWindow = UiWindow.context.use().getWindow();
 
-    return EzNode.builder()
+    return Node.builder()
       .ref(ref)
       .id("input-line")
-      .listen(
+      .listen(List.of(
         onMouseIn(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.IBEAM))),
         onMouseOut(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.ARROW))),
         onFocus(event -> isFocused.accept(true)),
@@ -71,7 +71,7 @@ public class InputLine extends Component {
             insert = insert.toLowerCase();
           consumer.accept(str.substring(0, split) + insert + str.substring(split));
         })
-      )
+      ))
       // TODO fix index check calculation in paint after
 //      .layout(EzLayout.builder()
 //        .border(insets(2f))

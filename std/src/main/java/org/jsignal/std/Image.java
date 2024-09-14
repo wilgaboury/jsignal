@@ -11,8 +11,8 @@ import jakarta.annotation.Nullable;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Constant;
-import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -55,7 +55,7 @@ public non-sealed class Image extends ImagePropComponent {
   public Element render() {
     var painter = createMemo(() -> createPainter(blob.get(), fit.get()));
 
-    return EzNode.builder()
+    return Node.builder()
       .layout(config -> {
         if (blob.get().mime().is(MediaType.SVG_UTF_8)) {
           layoutVector(config);

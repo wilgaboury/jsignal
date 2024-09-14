@@ -3,12 +3,15 @@ package org.jsignal.examples;
 import io.github.humbleui.skija.Paint;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.InputLine;
-import org.jsignal.std.Para;
 import org.jsignal.std.ParaStyle;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.UiThread;
+import org.jsignal.ui.UiUtil;
+import org.jsignal.ui.UiWindow;
 
 public class InputLineTest extends Component {
   public static void main(String[] args) {
@@ -24,7 +27,7 @@ public class InputLineTest extends Component {
 
   @Override
   public Element render() {
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()

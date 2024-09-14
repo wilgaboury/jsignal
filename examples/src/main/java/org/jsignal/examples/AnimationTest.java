@@ -6,9 +6,10 @@ import org.jsignal.rx.Signal;
 import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.*;
 import org.jsignal.ui.layout.LayoutValue;
+
+import static org.jsignal.ui.Nodes.compose;
 
 public class AnimationTest extends Component {
   public static void main(String[] args) {
@@ -39,15 +40,15 @@ public class AnimationTest extends Component {
     var animation = new Animation((deltaTimeNano, stop) ->
       angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()
         .gap(20f)
         .build()
       )
-      .children(
-        EzNode.builder()
+      .children(compose(
+        Node.builder()
           .transform(layout -> {
             var size = layout.getSize();
             return Matrix33.makeTranslate(size.getX() / 2f, size.getY() / 2f)
@@ -73,7 +74,7 @@ public class AnimationTest extends Component {
             }
           })
           .build()
-      )
+      ))
       .build();
   }
 }

@@ -12,8 +12,8 @@ import org.jsignal.rx.Constant;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Effect;
 import org.jsignal.rx.Provider;
-import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -98,7 +98,7 @@ public non-sealed class Para extends ParaPropComponent {
   @Override
   public Element render() {
     var provider = Provider.get();
-    return EzNode.builder()
+    return Node.builder()
       .ref(meta -> meta.setPaintCacheStrategy(
         new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new)))
       .id("para")

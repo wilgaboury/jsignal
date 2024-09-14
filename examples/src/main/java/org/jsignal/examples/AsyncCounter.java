@@ -5,8 +5,12 @@ import org.jsignal.rx.Cleanups;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.UiThread;
+import org.jsignal.ui.UiUtil;
+import org.jsignal.ui.UiWindow;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +33,7 @@ public class AsyncCounter extends Component {
     executorService.scheduleAtFixedRate(() -> count.accept(c -> c + 1), 0, 100, TimeUnit.MILLISECONDS);
     Cleanups.onCleanup(executorService::shutdown);
 
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()

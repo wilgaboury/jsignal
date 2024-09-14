@@ -4,16 +4,29 @@ import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
 import org.jsignal.rx.Signal;
-import org.jsignal.std.*;
+import org.jsignal.std.BasicPainter;
+import org.jsignal.std.Blob;
+import org.jsignal.std.BlobException;
+import org.jsignal.std.Button;
+import org.jsignal.std.Image;
+import org.jsignal.std.Para;
+import org.jsignal.std.ParaStyle;
+import org.jsignal.std.Scroll;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.Nodes;
+import org.jsignal.ui.UiThread;
+import org.jsignal.ui.UiUtil;
+import org.jsignal.ui.UiWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 
+import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
@@ -59,7 +72,7 @@ public class SimpleTest extends Component {
     return Scroll.builder()
       .barWidth(15f)
       .children(
-        EzNode.builder()
+        Node.builder()
           .layout(EzLayout.builder()
             .fill()
             .center()
@@ -77,20 +90,20 @@ public class SimpleTest extends Component {
             .setBorderColor(EzColors.EMERALD_700)
             .build()
           )
-          .children(
+          .children(compose(
             Para.builder()
               .string(() -> String.format("Count: %s", count.get()))
               .customize(style -> style.customizeTextStyle(text -> text.fontSize(20f)))
               .line(true)
               .build(),
-            EzNode.builder()
+            Node.builder()
               .layout(EzLayout.builder()
                 .row()
                 .wrap()
                 .gap(10f)
                 .build()
               )
-              .children(
+              .children(compose(
                 Button.builder()
                   .color(EzColors.BLUE_300)
                   .action(() -> count.accept(c -> c + 1))
@@ -112,7 +125,7 @@ public class SimpleTest extends Component {
                   .children(() -> Para.fromString("Divide"))
                   .build()
 
-              )
+              ))
               .build(),
             Button.builder()
               .color(EzColors.RED_900)
@@ -124,7 +137,7 @@ public class SimpleTest extends Component {
             )).provide(() -> Para.fromString("FONT SIZE TEST")),
             ParaStyle.context.customize(style -> style.customizeTextStyle(text ->
               text.color(EzColors.BLACK)
-            )).provide(() -> Nodes.compose(
+            )).provide(() -> compose(
               ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.fontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
@@ -166,7 +179,7 @@ public class SimpleTest extends Component {
               .width(pixel(200))
               .fit(Image.Fit.COVER)
               .build()
-          )
+          ))
           .build()
       )
       .build();
@@ -182,7 +195,7 @@ public class SimpleTest extends Component {
         return cache.get(() -> {
           var testState = Signal.create(0);
 
-          return Nodes.compose(
+          return compose(
             Image.builder()
               .blob(fire)
               .height(pixel(200))

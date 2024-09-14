@@ -4,15 +4,21 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.rx.*;
+import org.jsignal.rx.Computed;
+import org.jsignal.rx.Constant;
+import org.jsignal.rx.Effect;
+import org.jsignal.rx.Ref;
+import org.jsignal.rx.Signal;
+import org.jsignal.rx.SkipMemo;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
 import org.jsignal.ui.Element;
-import org.jsignal.ui.NodeImpl;
+import org.jsignal.ui.HitTester;
+import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.LayoutConfig;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.Cleanups.onCleanup;
@@ -39,22 +45,22 @@ public non-sealed class Drawer extends DrawerPropComponent {
     Signal<Float> width = Signal.create(0f);
     var translation = createTranslation(width);
 
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder().absolute().left(pixel(0f)).top(pixel(0f)).fill().build())
-      .hitTester((p, l) -> NodeImpl.HitTestResult.PASSTHROUGH)
-      .children(
-        EzNode.builder()
+      .hitTest((p, l) -> HitTester.Result.PASSTHROUGH)
+      .children(Nodes.fromList(List.of(
+        Node.builder()
           .layout(EzLayout.builder().fill().build())
-          .listen(onMouseClick(e -> {
+          .listen(List.of(onMouseClick(e -> {
             if (backgroundClick != null) {
               backgroundClick.run();
             }
-          }))
-          .hitTester((point, layout) -> {
+          })))
+          .hitTest((point, layout) -> {
             if (open.get()) {
-              return NodeImpl.defaultHitTest(point, layout);
+              return HitTester.boundsTest(point, layout);
             } else {
-              return NodeImpl.HitTestResult.PASSTHROUGH;
+              return HitTester.Result.PASSTHROUGH;
             }
           })
           .paint((canvas, layout) -> {
@@ -66,7 +72,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
             }
           })
           .build(),
-        EzNode.builder()
+        Node.builder()
           .layout(config -> {
             config.setPositionType(LayoutConfig.PositionType.ABSOLUTE);
             config.setPosition(LayoutConfig.Edge.LEFT, pixel(0f));
@@ -76,7 +82,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
           .ref(node -> Effect.create(() -> width.accept(node.getLayout().getWidth())))
           .children(content.get())
           .build()
-      )
+      )))
       .build();
   }
 

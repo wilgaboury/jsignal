@@ -5,8 +5,14 @@ import org.jsignal.std.Button;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.std.ez.EzNode;
-import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Node;
+import org.jsignal.ui.UiThread;
+import org.jsignal.ui.UiUtil;
+import org.jsignal.ui.UiWindow;
+
+import static org.jsignal.ui.Nodes.compose;
 
 public class Counter extends Component {
   public static void main(String[] args) {
@@ -22,7 +28,7 @@ public class Counter extends Component {
 
   @Override
   public Element render() {
-    return EzNode.builder()
+    return Node.builder()
       .layout(EzLayout.builder()
         .fill()
         .center()
@@ -30,7 +36,7 @@ public class Counter extends Component {
         .gap(10f)
         .build()
       )
-      .children(
+      .children(compose(
         Para.builder()
           .string(() -> "Count: " + count.get())
           .customize(style -> style.customizeTextStyle(text -> text
@@ -43,7 +49,7 @@ public class Counter extends Component {
           .action(() -> count.accept(c -> c + 1))
           .children(() -> Para.fromString("Increment"))
           .build()
-      )
+      ))
       .build();
   }
 }
