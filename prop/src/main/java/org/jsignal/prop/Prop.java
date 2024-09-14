@@ -31,8 +31,4 @@ public @interface Prop {
    * do not generate a constant setter for this property
    */
   boolean noConst() default false;
-
-  // TODO: implement
-  Converter[] converter() default {};
-  @interface Converter {}
 }

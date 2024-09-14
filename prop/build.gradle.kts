@@ -7,9 +7,6 @@ dependencies {
     annotationProcessor("com.google.auto.service:auto-service:1.1.1")
     compileOnly("com.google.auto.service:auto-service:1.1.1")
 
-    implementation(project(":ui"))
-    implementation(project(":rx"))
-
     implementation("com.palantir.javapoet:javapoet:0.2.0")
 
     testImplementation(project(":ui"))

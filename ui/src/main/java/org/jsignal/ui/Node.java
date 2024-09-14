@@ -5,7 +5,16 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
-import org.jsignal.rx.*;
+import org.jsignal.prop.GeneratePropHelper;
+import org.jsignal.prop.Prop;
+import org.jsignal.prop.TransitiveProps;
+import org.jsignal.rx.Cleanups;
+import org.jsignal.rx.Constant;
+import org.jsignal.rx.Context;
+import org.jsignal.rx.Effect;
+import org.jsignal.rx.Ref;
+import org.jsignal.rx.RxUtil;
+import org.jsignal.rx.SideEffect;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
@@ -17,76 +26,93 @@ import org.jsignal.ui.paint.PicturePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.jsignal.rx.RxUtil.createMemo;
 import static org.jsignal.rx.RxUtil.onDefer;
-import static org.jsignal.ui.layout.LayoutValue.percent;
 
-public non-sealed class Node implements Nodes {
+@GeneratePropHelper
+public non-sealed class Node extends NodePropHelper implements Nodes {
   public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
     () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
-  private final UiWindow window;
-  private @Nullable Node parent;
+  @TransitiveProps
+  static class Transitive {
+    @Prop Collection<Object> tags;
+    @Prop Collection<EventListener<?>> listen;
+    @Prop Element children = Nodes.empty();
+  }
 
-  private final NodeImpl nodeImpl;
-  private final @Nullable Painter painter;
-  private final @Nullable Painter afterPainter;
-  private final Transformer transformer;
-  private final @Nullable Layouter layouter;
+  @Prop Object id;
+
+  @Prop UiWindow window = UiWindow.context.use();
+
+  @Prop @Nullable Layouter layout;
+  @Prop Transformer transform =  n -> Matrix33.IDENTITY;
+  @Prop @Nullable Painter paint;
+  @Prop @Nullable Painter paintAfter;
+  @Prop HitTester hitTest = HitTester::boundsTest;
+
+  private @Nullable Node parent;
+  
+  private Set<Object> tags;
 
   private final long yoga;
-  private final Layout layout;
+  private final Layout layoutResult;
 
   private final Map<EventType, Collection<Consumer<?>>> listeners;
 
-  private Object id;
-  private final Set<Object> tags;
+  private Effect layoutEffect; // unused, strong ref
+  private SideEffect transformEffect;
+  private SideEffect paintEffect;
+  private SideEffect paintCacheEffect;
+  private SideEffect paintAfterEffect;
 
-  private final SideEffect paintEffect;
-  private final SideEffect paintCacheEffect;
-  private final SideEffect paintAfterEffect;
-  private final SideEffect transformEffect;
-  private final Effect layoutEffect; // unused, strong ref
 
   private PaintCacheStrategy paintCacheStrategy;
   private boolean offScreen = false;
 
   private WeakHashMap<NodeImpl, Node> metaNodeCache;
 
-  private final Supplier<List<Node>> children;
+  private Supplier<List<Node>> children;
 
-  public Node(NodeImpl nodeImpl) {
-    this.window = UiWindow.context.use();
-
-    this.nodeImpl = nodeImpl;
-    this.painter = nodeImpl.getPainter();
-    this.afterPainter = nodeImpl.getAfterPainter();
-    this.transformer = nodeImpl.getTransformer() != null ? nodeImpl.getTransformer() : n -> Matrix33.IDENTITY;
-    this.layouter = nodeImpl.getLayouter();
-
+  public Node() {
     this.yoga = Yoga.YGNodeNew();
-    this.layout = new Layout(yoga);
+    this.layoutResult = new Layout(yoga);
     this.listeners = new HashMap<>();
 
-    this.id = null;
     this.tags = new HashSet<>();
 
     this.paintCacheStrategy = defaultPaintCacheStrategy.use().get();
 
-    this.paintEffect = painter != null ? SideEffect.create(this::paintEffectInner) : null;
-    this.paintCacheEffect = SideEffect.create(this::paintEffectInner);
-    this.paintAfterEffect = afterPainter != null ? SideEffect.create(this::paintEffectInner) : null;
-    this.transformEffect = SideEffect.create(this::transformEffectInner);
-    this.layoutEffect = layouter != null ? Effect.create(this::runLayouter) : null;
-
-    this.children = createChildren();
-
     Cleanups.onCleanup(this::cleanup);
+  }
+
+  @Override
+  protected void onBuild(Transitive transitive) {
+    this.layoutEffect = layout != null ? Effect.create(this::runLayouter) : null;
+    this.transformEffect = SideEffect.create(this::transformEffectInner);
+    this.paintEffect = paint != null ? SideEffect.create(this::paintEffectInner) : null;
+    this.paintCacheEffect = SideEffect.create(this::paintEffectInner);
+    this.paintAfterEffect = paintAfter != null ? SideEffect.create(this::paintEffectInner) : null;
+
+    this.tags.addAll(transitive.tags);
+    this.children = createChildren(transitive.children.resolve());
+
+    listen(transitive.listen);
   }
 
   private void cleanup() {
@@ -120,8 +146,8 @@ public non-sealed class Node implements Nodes {
   }
 
   @Override
-  public List<Node> generate() {
-    return Collections.singletonList(this);
+  public Supplier<List<Node>> getNodeListSupplier() {
+    return Constant.of(Collections.singletonList(this));
   }
 
   public PaintCacheStrategy getPaintCacheStrategy() {
@@ -151,7 +177,7 @@ public non-sealed class Node implements Nodes {
     var count = canvas.save();
     try {
       canvas.concat(getTransform());
-      offScreen = canvas.quickReject(Rect.makeWH(layout.getWidth(), layout.getHeight()));
+      offScreen = canvas.quickReject(Rect.makeWH(layoutResult.getWidth(), layoutResult.getHeight()));
       if (offScreen) {
         setOffScreen();
       } else {
@@ -177,16 +203,16 @@ public non-sealed class Node implements Nodes {
       transformEffect.run(() -> canvas.concat(getTransform()));
 
       paintCacheStrategy.paint(canvas, this::paintCacheUseMetaNode, cacheCanvas -> {
-        if (painter != null) {
-          paintEffect.run(() -> painter.paint(cacheCanvas, layout));
+        if (paint != null) {
+          paintEffect.run(() -> paint.paint(cacheCanvas, layoutResult));
         }
 
         for (Node child : getChildren()) {
           child.paint(cacheCanvas);
         }
 
-        if (afterPainter != null) {
-          paintAfterEffect.run(() -> afterPainter.paint(cacheCanvas, layout));
+        if (paintAfter != null) {
+          paintAfterEffect.run(() -> paintAfter.paint(cacheCanvas, layoutResult));
         }
       });
     } finally {
@@ -199,16 +225,15 @@ public non-sealed class Node implements Nodes {
   }
 
   public void runLayouter() {
-    if (layouter != null) {
+    if (layout != null) {
       UiUtil.clearNodeStyle(yoga);
-      layouter.layout(new YogaLayoutConfig(yoga));
+      layout.layout(new YogaLayoutConfig(yoga));
       window.requestLayout();
     }
   }
 
-  private Supplier<List<Node>> createChildren() {
-    var memo = createMemo(nodeImpl::getChildren);
-
+  private Supplier<List<Node>> createChildren(Nodes ns) {
+    var memo = ns.getNodeListSupplier();
     if (memo instanceof Constant<List<Node>>) {
       List<Node> nodes = memo.get();
       for (int i = 0; i < nodes.size(); i++) {
@@ -216,7 +241,7 @@ public non-sealed class Node implements Nodes {
         node.setParent(this);
         Yoga.YGNodeInsertChild(yoga, node.yoga, i);
       }
-      return memo;
+      return Constant.of(nodes);
     } else {
       return RxUtil.createMapped(memo, (node, idx) -> {
         node.setParent(this);
@@ -251,8 +276,8 @@ public non-sealed class Node implements Nodes {
       return null;
     }
 
-    var currentTest = nodeImpl.hitTest(point, layout);
-    if (currentTest == NodeImpl.HitTestResult.MISS) {
+    var currentTest = hitTest.test(point, layoutResult);
+    if (currentTest == HitTester.Result.MISS) {
       return null;
     }
 
@@ -263,26 +288,22 @@ public non-sealed class Node implements Nodes {
       }
     }
 
-    return currentTest == NodeImpl.HitTestResult.HIT ? this : null;
+    return currentTest == HitTester.Result.HIT ? this : null;
   }
 
   public Layout getLayout() {
-    return layout;
+    return layoutResult;
   }
 
   public Matrix33 getTransform() {
-    var offset = layout.getParentOffset();
-    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transformer.transform(layout));
+    var offset = layoutResult.getParentOffset();
+    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transform.transform(layoutResult));
   }
 
   public Matrix33 getFullTransform() {
     Ref<Matrix33> mat = new Ref<>(Matrix33.IDENTITY);
     visitParents(n -> mat.accept(n.getTransform().makeConcat(mat.get())));
     return mat.get();
-  }
-
-  public NodeImpl getNode() {
-    return nodeImpl;
   }
 
   public @Nullable Node getParent() {
@@ -314,7 +335,7 @@ public non-sealed class Node implements Nodes {
 
     Yoga.YGNodeSetHasNewLayout(yoga, false);
 
-    layout.update();
+    layoutResult.update();
 
     for (var child : children.get()) {
       child.updateLayout();
@@ -410,20 +431,22 @@ public non-sealed class Node implements Nodes {
     var rootComponent = new RootComponent(constructComponent);
     var rendered = rootComponent.resolve();
 
-    return new Node(new NodeImpl() {
-      @Override
-      public Layouter getLayouter() {
-        return config -> {
-          config.setWidth(percent(100f));
-          config.setHeight(percent(100f));
-        };
-      }
-
-      @Override
-      public List<Node> getChildren() {
-        return rendered.generate();
-      }
-    });
+    return Node.builder()
+      .build();
+//    (new NodeImpl() {
+//      @Override
+//      public Layouter getLayouter() {
+//        return config -> {
+//          config.setWidth(percent(100f));
+//          config.setHeight(percent(100f));
+//        };
+//      }
+//
+//      @Override
+//      public List<Node> getChildren() {
+//        return rendered.generate();
+//      }
+//    });
   }
 
   /**

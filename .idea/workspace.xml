@@ -4,19 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="badb8293-e8e9-4431-8ebb-fb93a1dd2692" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/kotlinc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/markdown.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/Drawer.java" beforeDir="false" afterPath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/Drawer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/EasingFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/EasingFunction.java" afterDir="false" />
+    <list default="true" id="badb8293-e8e9-4431-8ebb-fb93a1dd2692" name="Changes" comment="Import project">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prop/src/main/java/org/jsignal/prop/TransitiveProps.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/HitTester.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/NodesImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prop/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/prop/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prop/src/main/java/org/jsignal/prop/Prop.java" beforeDir="false" afterPath="$PROJECT_DIR$/prop/src/main/java/org/jsignal/prop/Prop.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prop/src/main/java/org/jsignal/prop/PropGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/prop/src/main/java/org/jsignal/prop/PropGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/OrderedPortal.java" beforeDir="false" afterPath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/OrderedPortal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/ez/EzNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/std/src/main/java/org/jsignal/std/ez/EzNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Nodes.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/Nodes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/NodesImplDynamic.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/NodesImplStatic.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/hotswap/HotswapInstrumentation.java" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/main/java/org/jsignal/ui/hotswap/HotswapInstrumentation.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,6 +52,15 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="AnnotationType" />
+        <option value="Class" />
+        <option value="Interface" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -62,11 +75,16 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Gradle.TestCompile.executor": "Run",
+    "Gradle.TestCompile.testSuccessfulCodeGenerator.executor": "Run",
     "Gradle.jsignal [build].executor": "Run",
+    "Gradle.jsignal [clean build].executor": "Run",
     "Gradle.jsignal:examples [:examples:DrawerTest.main()].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true"
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   },
   "keyToStringList": {
     "kotlin-gradle-user-dirs": [
@@ -77,9 +95,10 @@
   <component name="RunAnythingCache">
     <option name="myCommands">
       <command value="gradle build" />
+      <command value="gradle clean build" />
     </option>
   </component>
-  <component name="RunManager" selected="Application.DrawerTest">
+  <component name="RunManager" selected="Gradle.jsignal [clean build]">
     <configuration name="DrawerTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.jsignal.examples.DrawerTest" />
       <module name="jsignal.examples.main" />
@@ -92,6 +111,54 @@
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration name="TestCompile" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":prop:test" />
+            <option value="--tests" />
+            <option value="&quot;org.jsignal.prop.TestCompile&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="TestCompile.testSuccessfulCodeGenerator" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":prop:test" />
+            <option value="--tests" />
+            <option value="&quot;org.jsignal.prop.TestCompile.testSuccessfulCodeGenerator&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
     </configuration>
     <configuration name="jsignal [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -115,8 +182,34 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="jsignal [clean build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.TestCompile.testSuccessfulCodeGenerator" />
+        <item itemvalue="Gradle.TestCompile" />
+        <item itemvalue="Gradle.jsignal [clean build]" />
         <item itemvalue="Application.DrawerTest" />
         <item itemvalue="Gradle.jsignal [build]" />
       </list>
@@ -131,6 +224,19 @@
       <option name="presentableId" value="Default" />
       <updated>1726230499320</updated>
     </task>
+    <task id="LOCAL-00001" summary="Import project">
+      <option name="closed" value="true" />
+      <created>1726234517381</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1726234517381</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Import project" />
+    <option name="LAST_COMMIT_MESSAGE" value="Import project" />
   </component>
 </project>

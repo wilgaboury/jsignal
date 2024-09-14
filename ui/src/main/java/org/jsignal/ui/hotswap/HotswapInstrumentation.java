@@ -21,6 +21,6 @@ public class HotswapInstrumentation implements ComponentConstructorInstrumentati
       hotswapComponent.getRenderTrigger().track();
       return context.with(hotswapComponent).provide(render);
     });
-    return Nodes.fromList(() -> rendered.get().generate());
+    return Nodes.fromNodes(rendered);
   }
 }

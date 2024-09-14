@@ -1,22 +1,34 @@
 package org.jsignal.prop;
 
-import com.palantir.javapoet.*;
-import org.jsignal.rx.Constant;
-import org.jsignal.rx.RxUtil;
-import org.jsignal.ui.Component;
+import com.palantir.javapoet.ClassName;
+import com.palantir.javapoet.FieldSpec;
+import com.palantir.javapoet.JavaFile;
+import com.palantir.javapoet.MethodSpec;
+import com.palantir.javapoet.ParameterSpec;
+import com.palantir.javapoet.TypeName;
+import com.palantir.javapoet.TypeSpec;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class PropGenerator {
   private final static String GEN_COMPONENT_CLASS_SUFFIX = "PropComponent";
@@ -25,6 +37,7 @@ public class PropGenerator {
   private final static String BUILDER_REQUIRED_NAME_SUFFIX = "RequiredStep";
   private final static String BUILDER_ONEOF_NAME_SUFFIX = "OneofStep";
   private final static String BUILDER_FIELD_NAME = "result";
+  private final static String BUILDER_TRANSITIVE_FIELD_NAME = "transitive";
   private final static String TO_BUILDER_VAR_NAME = "result";
 
   private final ProcessingEnvironment procEnv;
@@ -60,24 +73,39 @@ public class PropGenerator {
     return ClassName.get(packageName(element), genClassSimpleName(element), name);
   }
 
+  public ClassName classInnerName(TypeElement element, String name) {
+    return ClassName.get(packageName(element), element.getSimpleName().toString(), name);
+  }
+
   public ClassName builderClassName(TypeElement element) {
     return genClassInnerName(element, BUILDER_CLASS_NAME);
   }
 
   public void generate(TypeElement element) {
+    TypeElement transitiveElement = transitivePropsElement(element);
+
     TypeSpec.Builder genClassBuilder = TypeSpec.classBuilder(genClassSimpleName(element))
       .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.SEALED)
-      .addPermittedSubclass(TypeName.get(element.asType()))
-      .addMethod(MethodSpec.methodBuilder("onBuild")
-        .addModifiers(Modifier.PROTECTED)
-        .build()
-      );
+      .addPermittedSubclass(TypeName.get(element.asType()));
+
+    MethodSpec.Builder onBuildMethod = MethodSpec.methodBuilder("onBuild")
+      .addModifiers(Modifier.PROTECTED);
+
+    if (transitiveElement != null) {
+        onBuildMethod.addParameter(ParameterSpec.builder(
+            TypeName.get(transitiveElement.asType()),
+            "transitive"
+          )
+          .build()
+        );
+      }
+    genClassBuilder.addMethod(onBuildMethod.build());
 
     if (isComponentClass(element)) {
-      genClassBuilder.addModifiers().superclass(ClassName.get(Component.class));
+      genClassBuilder.addModifiers().superclass(ClassName.get("org.jsignal.ui", "Component"));
     }
 
-    TypeSpec builderReturnType = generateBuilders(element, genClassBuilder);
+    TypeSpec builderReturnType = generateBuilders(element, transitiveElement, genClassBuilder);
 
     genClassBuilder.addMethod(MethodSpec.methodBuilder("builder")
       .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -93,14 +121,31 @@ public class PropGenerator {
     saveGeneratedClass(genClassBuilder.build(), element);
   }
 
-  public TypeSpec generateBuilders(TypeElement element, TypeSpec.Builder genClassBuilder) {
-    List<TypeSpec> builderInterfaces = new ArrayList<>();
+  public static TypeElement transitivePropsElement(TypeElement element) {
+    return (TypeElement) element.getEnclosedElements()
+      .stream()
+      .filter(enclosed -> enclosed.getKind() == ElementKind.CLASS)
+      .filter(enclosed -> findAnnotation(enclosed, TransitiveProps.class).isPresent())
+      .findFirst()
+      .orElse(null);
+  }
 
-    var propFields = element.getEnclosedElements()
+  public static List<? extends Element> propFields(TypeElement element) {
+    return element.getEnclosedElements()
       .stream()
       .filter(enclosed -> enclosed.getKind() == ElementKind.FIELD)
       .filter(enclosed -> findAnnotation(enclosed, Prop.class).isPresent())
       .toList();
+  }
+
+  public TypeSpec generateBuilders(TypeElement element, TypeElement transitiveElement, TypeSpec.Builder genClassBuilder) {
+    List<TypeSpec> builderInterfaces = new ArrayList<>();
+
+    Set<? extends Element> transitivePropFields = transitiveElement != null
+      ? new LinkedHashSet<>(propFields(transitiveElement))
+      : Collections.emptySet();
+
+    var propFields = Stream.concat(propFields(element).stream(), transitivePropFields.stream()).toList();
 
     var requiredPropFields = new ArrayList<Element>();
     var oneofPropFieldsMap = new LinkedHashMap<String, ArrayList<Element>>();
@@ -123,17 +168,34 @@ public class PropGenerator {
       .addField(FieldSpec.builder(TypeName.get(element.asType()), BUILDER_FIELD_NAME)
         .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
         .build()
-      )
-      .addMethod(MethodSpec.constructorBuilder()
-        .addModifiers(Modifier.PUBLIC)
-        .addCode("""
+      );
+
+    MethodSpec.Builder builderClassConstructor = MethodSpec.constructorBuilder()
+      .addModifiers(Modifier.PUBLIC)
+      .addCode("""
             this.$L = new $T();
             """,
-          BUILDER_FIELD_NAME,
-          ClassName.get(element)
+        BUILDER_FIELD_NAME,
+        ClassName.get(element)
+      );
+
+    if (transitiveElement != null) {
+      builderClassBuilder.addField(FieldSpec.builder(
+          TypeName.get(transitiveElement.asType()),
+          BUILDER_TRANSITIVE_FIELD_NAME
         )
+        .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
         .build()
       );
+      builderClassConstructor.addCode("""
+        this.$L = new $T();
+        """,
+        BUILDER_TRANSITIVE_FIELD_NAME,
+        ClassName.get(transitiveElement)
+      );
+    }
+
+    builderClassBuilder.addMethod(builderClassConstructor.build());
 
     MethodSpec.Builder toBuilderMethod = MethodSpec.methodBuilder("toBuilder")
       .addModifiers(Modifier.PUBLIC)
@@ -157,8 +219,9 @@ public class PropGenerator {
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
       for (var oneofPropField : oneofPropEntry.getValue()) {
-        addSetterMethods(element, false, oneofStep, oneofPropField, previousBuilderType, null);
-        addSetterMethods(element, true, builderClassBuilder, oneofPropField, builderClassName(element), toBuilderMethod);
+        boolean isTransitive = transitivePropFields.contains(oneofPropField);
+        addSetterMethods(false, isTransitive, oneofStep, oneofPropField, previousBuilderType, null);
+        addSetterMethods( true, isTransitive, builderClassBuilder, oneofPropField, builderClassName(element), toBuilderMethod);
       }
 
       builderInterfaces.add(oneofStep.build());
@@ -170,30 +233,45 @@ public class PropGenerator {
       TypeSpec.Builder requiredStep = TypeSpec.interfaceBuilder(interfaceName)
         .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
-      addSetterMethods(element, false, requiredStep, requiredPropField, previousBuilderType, null);
-      addSetterMethods(element, true, builderClassBuilder, requiredPropField, builderClassName(element), toBuilderMethod);
+      boolean isTransitive = transitivePropFields.contains(requiredPropField);
+      addSetterMethods(false, isTransitive, requiredStep, requiredPropField, previousBuilderType, null);
+      addSetterMethods(true, isTransitive, builderClassBuilder, requiredPropField, builderClassName(element), toBuilderMethod);
 
       builderInterfaces.add(requiredStep.build());
       previousBuilderType = genClassInnerName(element, interfaceName);
     }
 
     for (var optionalPropField : optionalPropFields) {
-      addSetterMethods(element, true, builderClassBuilder, optionalPropField, builderClassName(element), toBuilderMethod);
+      boolean isTransitive = transitivePropFields.contains(optionalPropField);
+      addSetterMethods(true, isTransitive, builderClassBuilder, optionalPropField, builderClassName(element), toBuilderMethod);
     }
 
-    builderClassBuilder.addMethod(MethodSpec.methodBuilder("build")
+    MethodSpec.Builder buildMethod = MethodSpec.methodBuilder("build")
       .addModifiers(Modifier.PUBLIC)
-      .returns(TypeName.get(element.asType()))
-      .addCode("""
+      .returns(TypeName.get(element.asType()));
+
+    if (transitiveElement == null) {
+      buildMethod.addCode("""
           (($T)$L).onBuild();
           return $L;
           """,
         genClassName(element),
         BUILDER_FIELD_NAME,
         BUILDER_FIELD_NAME
-      )
-      .build()
-    );
+      );
+    } else {
+      buildMethod.addCode("""
+          (($T)$L).onBuild($L);
+          return $L;
+          """,
+        genClassName(element),
+        BUILDER_FIELD_NAME,
+        BUILDER_TRANSITIVE_FIELD_NAME,
+        BUILDER_FIELD_NAME
+      );
+    }
+
+    builderClassBuilder.addMethod(buildMethod.build());
 
     builderInterfaces = builderInterfaces.reversed();
 
@@ -216,10 +294,12 @@ public class PropGenerator {
     return builderInterfaces.isEmpty() ? builderClass : builderInterfaces.getFirst();
   }
 
-  public void addSetterMethods(TypeElement element, boolean isBuilder, TypeSpec.Builder typeBuilder, Element field, TypeName returnType, MethodSpec.Builder toBuilderMethod) {
+  public void addSetterMethods(boolean isBuilder, boolean isTransitive, TypeSpec.Builder typeBuilder, Element field, TypeName returnType, MethodSpec.Builder toBuilderMethod) {
     Prop annotation = field.getAnnotation(Prop.class);
 
     var fieldName = field.getSimpleName().toString();
+
+    var builderFieldName = isTransitive ? BUILDER_TRANSITIVE_FIELD_NAME : BUILDER_FIELD_NAME;
 
     TypeMirror supplierTypeArgument = getSupplierTypeArgument(field.asType()).orElse(null);
 
@@ -236,9 +316,9 @@ public class PropGenerator {
             this.$L.$L = $T.createMemo($L);
             return this;
             """,
-          BUILDER_FIELD_NAME,
+          builderFieldName,
           fieldName,
-          RxUtil.class,
+          ClassName.get("org.jsignal.rx", "RxUtil"),
           fieldName
         );
       }
@@ -259,9 +339,9 @@ public class PropGenerator {
               this.$L.$L = $T.of($L);
               return this;
               """,
-            BUILDER_FIELD_NAME,
+            builderFieldName,
             fieldName,
-            Constant.class,
+            ClassName.get("org.jsignal.rx", "Constant"),
             fieldName
           );
         }
@@ -273,18 +353,18 @@ public class PropGenerator {
           this.$L.$L = $L;
           return this;
           """,
-        BUILDER_FIELD_NAME,
+        builderFieldName,
         fieldName,
         fieldName
       );
     }
 
-    if (toBuilderMethod != null) {
+    if (!isTransitive && toBuilderMethod != null) {
       toBuilderMethod.addCode("""
           $L.$L.$L = that.$L;
           """,
         TO_BUILDER_VAR_NAME,
-        BUILDER_FIELD_NAME,
+        builderFieldName,
         fieldName,
         fieldName
       );

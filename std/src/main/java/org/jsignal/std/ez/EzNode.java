@@ -32,7 +32,7 @@ public class EzNode implements NodeImpl {
 
   @Override
   public List<Node> getChildren() {
-    return children.resolve().generate();
+    return children.resolve().getNodeList();
   }
 
   @Override
@@ -141,7 +141,8 @@ public class EzNode implements NodeImpl {
     }
 
     public Node build() {
-      var node = new Node(new EzNode(this));
+      Node node = null;
+//      var node = new Node(new EzNode(this));
       node.setId(id);
       node.getTags().addAll(tags);
       node.listen(listeners);

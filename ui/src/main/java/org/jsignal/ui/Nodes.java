@@ -12,34 +12,33 @@ import static org.jsignal.rx.RxUtil.*;
 /**
  * Function for incrementally generating the node tree.
  */
-public sealed interface Nodes extends Element permits Node, NodesImplStatic, NodesImplDynamic {
+public sealed interface Nodes extends Element permits Node, NodesImpl {
 
   @Override
   default Nodes resolve() {
     return this;
   }
 
-  List<Node> generate();
+  Supplier<List<Node>> getNodeListSupplier();
+
+  default List<Node> getNodeList() {
+    return getNodeList();
+  }
 
   static Nodes fromList(List<Node> list) {
-    return new NodesImplStatic(list);
+    return new NodesImpl(Constant.of(list));
   }
 
   static Nodes fromList(Supplier<List<Node>> supplier) {
-    return new NodesImplDynamic(createMemo(supplier));
+    return new NodesImpl(createMemo(supplier));
   }
 
   static Nodes fromNodes(Supplier<Nodes> supplier) {
-    var nodes = createMemo(supplier);
-    if (nodes instanceof Constant<Nodes>) {
-      return nodes.get();
-    } else {
-      return new NodesImplDynamic(() -> nodes.get().generate());
-    }
+    return new NodesImpl(createMemo(() -> supplier.get().getNodeList()));
   }
 
-  static Nodes fromElement(Supplier<Element> supplier) {
-    return Nodes.fromNodes(() -> supplier.get().resolve());
+  static Nodes dynamic(Supplier<Element> supplier) {
+    return new NodesImpl(createMemo(() -> supplier.get().resolve().getNodeList()));
   }
 
   static Nodes empty() {
@@ -52,17 +51,17 @@ public sealed interface Nodes extends Element permits Node, NodesImplStatic, Nod
 
   static Nodes compose(List<Element> compose) {
     var nodesList = compose.stream().map(Element::resolve).toList();
-    return Nodes.fromList(() -> nodesList.stream().flatMap(nodes -> nodes.generate().stream()).toList());
+    return Nodes.fromList(() -> nodesList.stream().flatMap(nodes -> nodes.getNodeList().stream()).toList());
   }
 
   static Nodes compose(Supplier<List<Element>> compose) {
     var nodesList = maybeRemoveComputed(createMapped(compose, (element, idx) -> element.resolve()));
-    return Nodes.fromList(() -> nodesList.get().stream().flatMap(nodes -> nodes.generate().stream()).toList());
+    return Nodes.fromList(() -> nodesList.get().stream().flatMap(nodes -> nodes.getNodeList().stream()).toList());
   }
 
   static <T> Nodes forEach(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, ? extends Element> map) {
     var nodesList = maybeRemoveComputed(RxUtil.createMapped(list, (value, idx) -> map.apply(value, idx).resolve()));
-    return Nodes.fromList(() -> nodesList.get().stream().flatMap(n -> n.generate().stream()).toList());
+    return Nodes.fromList(() -> nodesList.get().stream().flatMap(n -> n.getNodeList().stream()).toList());
   }
 
   static Nodes cacheOne(Function<CacheOne, Element> inner) {

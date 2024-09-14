@@ -33,7 +33,7 @@ public class OrderedPortal {
     public Element render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
-      return Nodes.fromList(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.generate().stream())).toList()));
+      return Nodes.fromList(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream())).toList()));
     }
   }
 

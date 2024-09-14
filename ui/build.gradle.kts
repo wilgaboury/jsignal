@@ -15,6 +15,7 @@ val lwjglNatives = listOf(
 
 dependencies {
     annotationProcessor(project(":prop"))
+    compileOnly(project(":prop"))
 
     api(project(":rx"))
 
