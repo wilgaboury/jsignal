@@ -49,7 +49,7 @@ public non-sealed class AnimationHelper extends AnimationHelperPropHelper implem
     return function.get().apply(Math.min(1f, progress.get()), start.get(), end.get());
   }
 
-  public static enum State {
+  public enum State {
     INITIAL,
     RUNNING,
     STOPPED,

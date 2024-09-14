@@ -1,7 +1,7 @@
 package org.jsignal.std;
 
 /**
- * Functions copied from <a href="https://easings.net/" />
+ * Functions copied from <a href="https://easings.net/" >https://easings.net/</a>
  */
 public interface EasingFunction {
   float calculate(float x);

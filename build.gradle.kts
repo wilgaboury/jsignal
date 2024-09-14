@@ -7,12 +7,12 @@ val projectNames = listOf("prop", "rx", "std", "ui")
 tasks.register<Javadoc>("allJavadoc") {
     group = "documentation"
 
-    dependsOn(":std:build")
-
+    dependsOn(":std:build", ":ui:build")
 
     source = files(
         *(projectNames.flatMap { project(it).java.sourceSets["main"].allJava }.toTypedArray()),
-        fileTree("std/build/generated/sources/annotationProcessor/java")
+        fileTree("std/build/generated/sources/annotationProcessor/java"),
+        fileTree("ui/build/generated/sources/annotationProcessor/java")
     ).asFileTree
 
     classpath = files(*(projectNames.flatMap { project(it).java.sourceSets["main"].compileClasspath }
