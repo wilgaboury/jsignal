@@ -28,7 +28,7 @@ export default defineConfig({
               slug: "start/why",
             },
             {
-              label: "Hotswap Setup",
+              label: "Hotswap",
               slug: "start/hotswap",
             },
           ],
@@ -43,10 +43,6 @@ export default defineConfig({
             {
               label: "Annotation Processor",
               slug: "guides/annotation",
-            },
-            {
-              label: "Hotswap Details",
-              slug: "guides/hotswap",
             },
             {
               label: "Context API",
