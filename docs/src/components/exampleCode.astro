@@ -14,20 +14,19 @@ public class Counter extends Component {
 
   @Override
   public Element render() {
-    return EzNode.builder()
-      .layout(EzLayout.builder()
+    return Node.builder()
+      .layoutBuilder(lb -> lb
         .fill()
         .center()
         .column()
         .gap(10f)
-        .build()
       )
-      .children(
+      .children(Nodes.compose(
         Para.builder()
           .string(() -> "Count: " + count.get())
-          .customize(style -> style.setTextStyle(text -> text
-            .setFontSize(20f)
-            .setColor(EzColors.BLUE_500)
+          .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
+            .fontSize(20f)
+            .color(EzColors.BLUE_500)
           ))
           .build(),
         Button.builder()
@@ -35,7 +34,7 @@ public class Counter extends Component {
           .action(() -> count.accept(c -> c + 1))
           .children(() -> Para.fromString("Increment"))
           .build()
-      )
+      ))
       .build();
   }
 }

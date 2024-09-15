@@ -4,15 +4,13 @@ import org.jsignal.rx.Signal;
 import org.jsignal.std.Button;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
-import org.jsignal.std.ez.EzLayout;
 import org.jsignal.ui.Component;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.Node;
+import org.jsignal.ui.Nodes;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiUtil;
 import org.jsignal.ui.UiWindow;
-
-import static org.jsignal.ui.Nodes.compose;
 
 public class Counter extends Component {
   public static void main(String[] args) {
@@ -29,14 +27,13 @@ public class Counter extends Component {
   @Override
   public Element render() {
     return Node.builder()
-      .layout(EzLayout.builder()
+      .layoutBuilder(lb -> lb
         .fill()
         .center()
         .column()
         .gap(10f)
-        .build()
       )
-      .children(compose(
+      .children(Nodes.compose(
         Para.builder()
           .string(() -> "Count: " + count.get())
           .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb

@@ -18,6 +18,7 @@ import org.jsignal.rx.SideEffect;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
+import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.layout.YogaLayoutConfig;
@@ -51,11 +52,12 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
   @TransitiveProps
-  static class Transitive {
+  public static class Transitive {
     @Prop Collection<Object> tags = Collections.emptyList();
     @Prop Collection<EventListener<?>> listen = Collections.emptyList();
     @Prop Element children = Nodes.empty();
     @Prop Consumer<Node> ref;
+    @Prop Function<CompositeLayouter.Builder, CompositeLayouter.Builder> layoutBuilder;
   }
 
   @Prop Object id;
@@ -104,6 +106,10 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
   @Override
   protected void onBuild(Transitive transitive) {
+    if (layout == null && transitive.layoutBuilder != null) {
+      layout = transitive.layoutBuilder.apply(CompositeLayouter.builder()).build();
+    }
+
     this.layoutEffect = layout != null ? Effect.create(this::runLayouter) : null;
     this.transformEffect = SideEffect.create(this::transformEffectInner);
     this.paintEffect = paint != null ? SideEffect.create(this::paintEffectInner) : null;
