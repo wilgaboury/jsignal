@@ -136,6 +136,23 @@ public class EzLayout implements Layouter {
       return this;
     }
 
+    public Builder minHeight(LayoutValue minHeight) {
+      return minHeight(Constant.of(minHeight));
+    }
+
+    public Builder minHeight(Supplier<LayoutValue> minHeight) {
+      operations.add(config -> config.setMinHeight(minHeight.get()));
+      return this;
+    }
+    public Builder maxHeight(LayoutValue maxHeight) {
+      return maxHeight(Constant.of(maxHeight));
+    }
+
+    public Builder maxHeight(Supplier<LayoutValue> maxHeight) {
+      operations.add(config -> config.setMaxHeight(maxHeight.get()));
+      return this;
+    }
+
     public Builder width(LayoutValue width) {
       return width(Constant.of(width));
     }
@@ -143,6 +160,24 @@ public class EzLayout implements Layouter {
     public Builder width(Supplier<LayoutValue> width) {
       operations.add(config -> config.setWidth(width.get()));
       return this;
+    }
+
+    public Builder minWidth(Supplier<LayoutValue> minWidth) {
+      operations.add(config -> config.setMinWidth(minWidth.get()));
+      return this;
+    }
+
+    public Builder minWidth(LayoutValue minWidth) {
+      return minWidth(Constant.of(minWidth));
+    }
+
+    public Builder maxWidth(Supplier<LayoutValue> maxWidth) {
+      operations.add(config -> config.setMaxWidth(maxWidth.get()));
+      return this;
+    }
+
+    public Builder maxWidth(LayoutValue maxWidth) {
+      return maxWidth(Constant.of(maxWidth));
     }
 
     public Builder absolute() {

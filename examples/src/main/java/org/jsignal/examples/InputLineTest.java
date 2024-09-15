@@ -30,9 +30,8 @@ public class InputLineTest extends Component {
   public Element render() {
     return Node.builder()
       .layout(EzLayout.builder()
-        .absolute()
-        .left(pixel(0f))
-        .top(pixel(0f))
+        .fill()
+        .center()
         .build()
       )
       .children(
