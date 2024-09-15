@@ -21,10 +21,10 @@ public class PicturePaintCacheStrategy implements PaintCacheStrategy {
   }
 
   @Override
-  public void paint(Canvas canvas, UseMetaNode useMeta, Consumer<Canvas> orElse) {
+  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
     if (picture == null) {
       try (var recorder = new PictureRecorder()) {
-        var recordingCanvas = useMeta.use(meta -> recorder.beginRecording(meta.getLayout().getBoundingRect()));
+        var recordingCanvas = useNode.use(meta -> recorder.beginRecording(meta.getLayout().getBoundingRect()));
         orElse.accept(recordingCanvas);
         picture = recorder.finishRecordingAsPicture();
       }

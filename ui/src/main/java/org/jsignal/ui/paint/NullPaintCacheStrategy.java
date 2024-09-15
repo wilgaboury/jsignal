@@ -18,7 +18,7 @@ public class NullPaintCacheStrategy implements PaintCacheStrategy {
   }
 
   @Override
-  public void paint(Canvas canvas, UseMetaNode useMeta, Consumer<Canvas> orElse) {
+  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
     dirty = false;
     orElse.accept(canvas);
   }

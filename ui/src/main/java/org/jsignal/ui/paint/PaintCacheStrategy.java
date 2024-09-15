@@ -7,5 +7,5 @@ import java.util.function.Consumer;
 public interface PaintCacheStrategy {
   boolean isDirty();
   void markDirty();
-  void paint(Canvas canvas, UseMetaNode useMeta, Consumer<Canvas> orElse);
+  void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse);
 }

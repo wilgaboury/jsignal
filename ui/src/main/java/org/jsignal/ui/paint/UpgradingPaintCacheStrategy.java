@@ -26,12 +26,12 @@ public class UpgradingPaintCacheStrategy implements PaintCacheStrategy {
   }
 
   @Override
-  public void paint(Canvas canvas, UseMetaNode useMeta, Consumer<Canvas> orElse) {
+  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
     if (!isDirty()) {
       nonDirtyPaintCount++;
     } else {
       if (nonDirtyPaintCount >= 2) {
-        UseMetaNode.clear(useMeta);
+        UseNode.clear(useNode);
         if (!strategy.isDirty()) {
           strategy.markDirty();
         }
@@ -44,6 +44,6 @@ public class UpgradingPaintCacheStrategy implements PaintCacheStrategy {
       strategy = upgrade.get();
     }
 
-    strategy.paint(canvas, useMeta, orElse);
+    strategy.paint(canvas, useNode, orElse);
   }
 }
