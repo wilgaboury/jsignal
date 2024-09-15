@@ -3,7 +3,7 @@ plugins {
     id("jsignal.deps")
 }
 
-val skijaVersion = "0.116.1"
+val skijaVersion = "0.116.2"
 
 val lwjglVersion = "3.3.3"
 val lwjglNatives = listOf(

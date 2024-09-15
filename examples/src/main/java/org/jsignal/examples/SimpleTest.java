@@ -93,7 +93,7 @@ public class SimpleTest extends Component {
           .children(compose(
             Para.builder()
               .string(() -> String.format("Count: %s", count.get()))
-              .customize(style -> style.customizeTextStyle(text -> text.fontSize(20f)))
+              .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb.fontSize(20f)))
               .line(true)
               .build(),
             Node.builder()
@@ -132,22 +132,20 @@ public class SimpleTest extends Component {
               .action(() -> fontSize.accept(v -> v + 2))
               .children(() -> Para.fromString("Increase Font Size"))
               .build(),
-            ParaStyle.context.customize(style -> style.customizeTextStyle(text ->
-              text.fontSize(fontSize.get())
+            ParaStyle.context.customize(style -> style.textStyleBuilder(tsb ->
+              tsb.fontSize(fontSize.get())
             )).provide(() -> Para.fromString("FONT SIZE TEST")),
-            ParaStyle.context.customize(style -> style.customizeTextStyle(text ->
-              text.color(EzColors.BLACK)
+            ParaStyle.context.customize(style -> style.textStyleBuilder(tsb ->
+              tsb.color(EzColors.BLACK)
             )).provide(() -> compose(
-              ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.fontSize(12f))).provide(() ->
+              ParaStyle.context.customize(style -> style.textStyleBuilder(tsb -> tsb.fontSize(12f))).provide(() ->
                 Para.fromString(LOREM)
               ),
-              ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.fontSize(14f))).provide(() ->
+              ParaStyle.context.customize(style -> style.textStyleBuilder(tsb -> tsb.fontSize(14f))).provide(() ->
                 Para.fromString(LOREM)
               ),
               ParaStyle.context.customize(style -> style
-                  .customizeTextStyle(text -> text
-                    .fontSize(16f)
-                  )
+                  .textStyleBuilder(tsb -> tsb.fontSize(16f))
                   .maxLinesCount(2L)
                   .ellipsis("...")
                 )
@@ -156,8 +154,8 @@ public class SimpleTest extends Component {
                 ),
               Para.builder()
                 .string("Hello")
-                .customize(style -> style
-                  .customizeTextStyle(text -> text
+                .styleBuilder(sb -> sb
+                  .textStyleBuilder(tsb -> tsb
                     .fontSize(26f)
                     .fontStyle(FontStyle.ITALIC)
                     .color(EzColors.RED_600)

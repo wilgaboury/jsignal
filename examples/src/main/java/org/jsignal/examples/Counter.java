@@ -39,7 +39,7 @@ public class Counter extends Component {
       .children(compose(
         Para.builder()
           .string(() -> "Count: " + count.get())
-          .customize(style -> style.customizeTextStyle(text -> text
+          .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
             .fontSize(20f)
             .color(EzColors.BLUE_500)
           ))

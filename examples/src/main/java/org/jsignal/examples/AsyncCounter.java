@@ -44,7 +44,7 @@ public class AsyncCounter extends Component {
       .children(
         Para.builder()
           .string(() -> "Count: " + count.get())
-          .customize(style -> style.customizeTextStyle(text -> text
+          .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
             .color(EzColors.BLUE_300)
             .fontSize(20f)
           ))

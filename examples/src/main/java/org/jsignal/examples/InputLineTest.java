@@ -1,6 +1,5 @@
 package org.jsignal.examples;
 
-import io.github.humbleui.skija.Paint;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.InputLine;
 import org.jsignal.std.ParaStyle;
@@ -13,38 +12,41 @@ import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiUtil;
 import org.jsignal.ui.UiWindow;
 
+import static org.jsignal.ui.layout.LayoutValue.pixel;
+
 public class InputLineTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
       var window = UiUtil.createWindow();
       window.setTitle("Counter");
-      window.setContentSize(250, 250);
+      window.setContentSize(1000, 250);
       new UiWindow(window, InputLineTest::new);
     }));
   }
 
-  private final Signal<String> content = Signal.create("HELLO");
+  private final Signal<String> content = Signal.create("01234567890123456789");
 
   @Override
   public Element render() {
     return Node.builder()
       .layout(EzLayout.builder()
-        .fill()
-        .center()
-        .column()
-        .gap(10f)
+        .absolute()
+        .left(pixel(0f))
+        .top(pixel(0f))
         .build()
       )
-      .paint((canvas, layout) -> {
-        try (var p = new Paint()) {
-          p.setColor(EzColors.BLACK);
-          canvas.drawRect(layout.getBoundingRect(), p);
-        }
-      })
       .children(
-        ParaStyle.context.customize(style -> style.customizeTextStyle(text -> text.color(EzColors.BLACK))).provide(() ->
-          new InputLine(content, content)
-        )
+        ParaStyle.context.customize(style -> style.textStyleBuilder(tsb -> tsb
+            .color(EzColors.BLACK)
+            .fontSize(50f)
+          ))
+          .provide(() ->
+            InputLine.builder()
+              .string(content)
+              .onInput(content)
+              .build()
+              .resolve()
+          )
       )
       .build();
   }
