@@ -119,19 +119,31 @@ public non-sealed class Image extends ImagePropComponent {
   private static Painter createPainter(Blob blob, Fit fit) {
     if (blob.mime().is(MediaType.SVG_UTF_8)) {
       var svg = getSvgDom(blob);
-      var viewBox = viewBox(svg);
-      return (canvas, node) -> paintVector(canvas, node, svg, fit, viewBox.getX(), viewBox.getY());
+      return (canvas, node) -> paintSvg(canvas, node, svg, fit);
     } else if (blob.mime().is(MediaType.ANY_IMAGE_TYPE)) {
       var img = getImageObject(blob);
       return (canvas, layout) -> paintRaster(canvas, layout, img, fit);
     } else {
       logger.warn("Unrecognized image type: {}", blob.mime());
-      return (canvas, yoga) -> {
-      };
+      return (canvas, yoga) -> {};
     }
   }
 
-  private static void paintVector(
+  public static void paintSvg(
+    Canvas canvas,
+    Layout layout,
+    SVGDOM svg,
+    Fit fit
+  ) {
+    var viewBox = viewBox(svg);
+    if (viewBox != null) {
+      paintSvg(canvas, layout, svg, fit, viewBox.getX(), viewBox.getY());
+    } else {
+      logger.warn("could not paint svg because of missing viewbox");
+    }
+  }
+
+  public static void paintSvg(
     Canvas canvas,
     Layout layout,
     SVGDOM svg,
@@ -179,7 +191,7 @@ public non-sealed class Image extends ImagePropComponent {
     svg.render(canvas);
   }
 
-  private static void paintRaster(
+  public static void paintRaster(
     Canvas canvas,
     Layout layout,
     io.github.humbleui.skija.Image img,
@@ -238,20 +250,12 @@ public non-sealed class Image extends ImagePropComponent {
   }
 
 
-  private static Point viewBox(SVGDOM svg) {
-    if (svg.getRoot() == null) {
-      logger.error("svg is missing root element");
+  private static @Nullable Point viewBox(SVGDOM svg) {
+    if (svg.getRoot() == null || svg.getRoot().getViewBox() == null) {
       return null;
-    }
-
-    if (svg.getRoot().getViewBox() != null) {
+    } else {
       var box = svg.getRoot().getViewBox();
       return new Point(box.getWidth(), box.getHeight());
-    } else {
-      // TODO: handle missing viewbox
-//            return new Point(svg.getRoot().getWidth().getValue(), svg.getRoot().getHeight().getValue());
-      logger.error("svg missing viewbox attribute");
-      return null;
     }
   }
 

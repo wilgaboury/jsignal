@@ -1,12 +1,18 @@
 package org.jsignal.std;
 
 import com.google.common.net.MediaType;
+import io.github.humbleui.skija.Data;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public record Blob(byte[] data, MediaType mime) {
+  public Data toData() {
+    return Data.makeFromBytes(data);
+  }
+
   public static Blob fromResource(String name, MediaType type) throws BlobException {
     try (var resource = Blob.class.getResourceAsStream(name)) {
       if (resource == null) {

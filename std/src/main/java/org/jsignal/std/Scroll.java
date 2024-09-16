@@ -4,6 +4,7 @@ import io.github.humbleui.jwm.Key;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
+import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.RRect;
 import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropComponent;
@@ -20,9 +21,7 @@ import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.UiWindow;
-import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
-import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
@@ -40,6 +39,9 @@ import static org.jsignal.ui.layout.LayoutValue.pixel;
 @GeneratePropComponent
 public non-sealed class Scroll extends ScrollPropComponent {
   private static final float DEFAULT_WIDTH = 15f;
+
+  private static final SVGDOM upIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-up-s-line.svg"));
+  private static final SVGDOM downIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-down-s-line.svg"));
 
   @Prop
   Supplier<Boolean> overlay = Constant.of(false);
@@ -72,10 +74,14 @@ public non-sealed class Scroll extends ScrollPropComponent {
 
   private final Signal<Float> xScale = Signal.create(0f);
   private final Signal<Float> yScale = Signal.create(0f);
-  private final Supplier<Boolean> shouldShowSidebar;
 
-  public Scroll() {
-    shouldShowSidebar = RxUtil.createMemo(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
+  private Supplier<Boolean> shouldShowYBar;
+  private Supplier<Boolean> shouldShowXBar;
+
+  @Override
+  protected void onBuild() {
+    shouldShowYBar = RxUtil.createMemo(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
+    shouldShowXBar = RxUtil.createMemo(() -> (xScale.get().isNaN() || xScale.get() < 1f) && !overlay.get());
   }
 
   @Override
@@ -135,7 +141,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
           .layoutBuilder(lb -> {
-            if (shouldShowSidebar.get()) {
+            if (shouldShowYBar.get()) {
               return lb
                 .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
             } else {
@@ -193,7 +199,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             .build()
           )
           .children(compose(
-            new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
+            new ScrollButton(upIcon, yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
             Node.builder()
               .ref(ref -> {
                 yBar.accept(ref);
@@ -220,11 +226,18 @@ public non-sealed class Scroll extends ScrollPropComponent {
               )
               .paint((canvas, node) -> paintHorizScrollBar(canvas))
               .build(),
-            new ScrollButton(yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
+            new ScrollButton(downIcon, yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
             // spacer
-            Node.builder()
-              .layout(EzLayout.builder().height(() -> pixel(xBarWidth.get())).build())
-              .build()
+            // TODO: put spacer only when x bar is showing
+            Nodes.dynamic(() -> {
+              if (shouldShowXBar.get()) {
+                return Node.builder()
+                  .layout(EzLayout.builder().height(() -> pixel(xBarWidth.get())).build())
+                  .build();
+              } else {
+                return Nodes.empty();
+              }
+            })
           ))
           .build()
       )))
@@ -286,21 +299,25 @@ public non-sealed class Scroll extends ScrollPropComponent {
   }
 
   private static class ScrollButton extends Component {
+    private final SVGDOM icon;
     private final Supplier<Float> size;
     private final Supplier<Boolean> show;
     private final Runnable action;
 
     public ScrollButton(
+      SVGDOM icon,
       Supplier<Float> size,
       Supplier<Boolean> show,
       Runnable action
     ) {
+      this.icon = icon;
       this.size = size;
       this.show = show;
       this.action = action;
     }
 
     private final Signal<Boolean> mouseDown = Signal.create(false);
+    private final Signal<Boolean> mouseOver = Signal.create(false);
 
     @Override
     public Element render() {
@@ -308,7 +325,9 @@ public non-sealed class Scroll extends ScrollPropComponent {
         .listen(List.of(
           onMouseClick(e -> action.run()),
           onMouseDown(e -> mouseDown.accept(true)),
-          onMouseUp(e -> mouseDown.accept(false))
+          onMouseUp(e -> mouseDown.accept(false)),
+          onMouseOver(e -> mouseOver.accept(true)),
+          onMouseOut(e -> mouseOver.accept(false))
         ))
         .layout(EzLayout.builder()
           .height(() -> pixel(size.get()))
@@ -316,6 +335,10 @@ public non-sealed class Scroll extends ScrollPropComponent {
           .build()
         )
         .paint((canvas, layout) -> {
+          if (!show.get()) {
+            return;
+          }
+
           if (mouseDown.get()) {
             canvas.concat(
               Matrix33.makeTranslate(size.get() / 2f, size.get() / 2f)
@@ -324,14 +347,15 @@ public non-sealed class Scroll extends ScrollPropComponent {
             );
           }
 
-          if (!show.get()) {
-            return;
+          if (mouseOver.get()) {
+            try (var paint = new Paint()) {
+              paint.setColor(EzColors.GRAY_200);
+              var r = layout.getWidth() / 2f;
+              canvas.drawCircle(r, r, r, paint);
+            }
           }
 
-          try (var paint = new Paint()) {
-            paint.setColor(EzColors.BLUE_300);
-            canvas.drawRect(layout.getBoundingRect(), paint);
-          }
+          Image.paintSvg(canvas, layout, icon, Image.Fit.COVER);
         })
         .build();
     }
