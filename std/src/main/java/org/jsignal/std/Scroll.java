@@ -4,6 +4,7 @@ import io.github.humbleui.jwm.Key;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
+import io.github.humbleui.types.RRect;
 import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
@@ -19,7 +20,9 @@ import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
@@ -131,25 +134,20 @@ public non-sealed class Scroll extends ScrollPropComponent {
             content.accept(meta);
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
-          .layout(yoga -> {
-            // TODO: this might be bad, requires multiple layout passes hack because this signal is reacting to layout signals
+          .layoutBuilder(lb -> {
             if (shouldShowSidebar.get()) {
-              EzLayout.builder()
-                .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).toLayout())
-                .build()
-                .layout(yoga);
+              return lb
+                .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
             } else {
-              EzLayout.builder()
+              return lb
                 .width(percent(100f))
-                .padding(insets(pixel(0f)))
-                .build()
-                .layout(yoga);
+                .padding(insets(0f).pixels());
             }
           })
           .transform(layout -> {
             var height = view.get().getLayout().getHeight();
             var max = layout.getHeight() - height;
-            // TODO: bypass
+            // TODO: enforce constraints on set
             var tmp = Math.min(0f, Math.max(-max, yOffset.get()));
             yOffset.accept(tmp);
             return Matrix33.makeTranslate(0f, yOffset.get());
@@ -263,15 +261,28 @@ public non-sealed class Scroll extends ScrollPropComponent {
   private void paintHorizScrollBar(Canvas canvas) {
     horizBarRect().ifPresent(rect -> {
       try (var paint = new Paint()) {
-        paint.setColor(EzColors.BLACK);
+        paint.setColor(EzColors.GRAY_800);
         if (yBarShow()) {
-          canvas.drawRect(rect, paint);
+          canvas.drawRRect(displayRect(rect), paint);
         } else {
           var smaller = rect.withLeft(yBarWidth.get() - yBarOverlayWidth.get());
-          canvas.drawRect(smaller, paint);
+          canvas.drawRRect(displayRect(smaller), paint);
         }
       }
     });
+  }
+
+  private static Rect shrinkRect(Rect rect, float amount) {
+    return Rect.makeLTRB(
+      rect.getLeft() + amount,
+      rect.getTop() + amount,
+      rect.getRight() - amount,
+      rect.getBottom() - amount
+    );
+  }
+
+  private static RRect displayRect(Rect rect) {
+    return shrinkRect(rect, 1).withRadii(2f);
   }
 
   private static class ScrollButton extends Component {
@@ -304,16 +315,15 @@ public non-sealed class Scroll extends ScrollPropComponent {
           .width(() -> pixel(size.get()))
           .build()
         )
-        .transform(node -> {
-          if (!mouseDown.get()) {
-            return Matrix33.IDENTITY;
-          } else {
-            return Matrix33.makeTranslate(size.get() / 2f, size.get() / 2f)
-              .makeConcat(Matrix33.makeScale(0.8f))
-              .makeConcat(Matrix33.makeTranslate(-size.get() / 2f, -size.get() / 2f));
-          }
-        })
         .paint((canvas, layout) -> {
+          if (mouseDown.get()) {
+            canvas.concat(
+              Matrix33.makeTranslate(size.get() / 2f, size.get() / 2f)
+                .makeConcat(Matrix33.makeScale(0.8f))
+                .makeConcat(Matrix33.makeTranslate(-size.get() / 2f, -size.get() / 2f))
+            );
+          }
+
           if (!show.get()) {
             return;
           }

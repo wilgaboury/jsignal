@@ -70,7 +70,7 @@ public class SimpleTest extends Component {
     logger.info("rendering");
 
     return Scroll.builder()
-      .barWidth(15f)
+      .barWidth(40f)
       .children(
         Node.builder()
           .layout(EzLayout.builder()
@@ -79,7 +79,7 @@ public class SimpleTest extends Component {
             .border(insets(10f))
             .column()
             .gap(16f)
-            .padding(insets(percent(10f)))
+            .padding(insets(10f).pixels())
             .width(percent(100f))
             .build()
           )

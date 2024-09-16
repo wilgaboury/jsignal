@@ -40,10 +40,9 @@ public class DrawerTest extends Component {
       .children(compose(
         Scroll.builder()
           .children(Node.builder()
-            .layout(EzLayout.builder()
-              .padding(insets(pixel(20f)))
+            .layoutBuilder(lb -> lb
+              .padding(insets(20f).pixels())
               .center()
-              .build()
             )
             .children(compose(
               Button.builder()

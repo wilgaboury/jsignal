@@ -98,6 +98,42 @@ public class CompositeLayouter implements Layouter {
       return this;
     }
 
+    public Builder paddingTop(LayoutValue padding) {
+      return paddingTop(Constant.of(padding));
+    }
+
+    public Builder paddingTop(Supplier<LayoutValue> padding) {
+      operations.add(config -> config.setPadding(LayoutConfig.Edge.TOP, padding.get()));
+      return this;
+    }
+
+    public Builder paddingRight(LayoutValue padding) {
+      return paddingRight(Constant.of(padding));
+    }
+
+    public Builder paddingRight(Supplier<LayoutValue> padding) {
+      operations.add(config -> config.setPadding(LayoutConfig.Edge.RIGHT, padding.get()));
+      return this;
+    }
+
+    public Builder paddingBottom(LayoutValue padding) {
+      return paddingBottom(Constant.of(padding));
+    }
+
+    public Builder paddingBottom(Supplier<LayoutValue> padding) {
+      operations.add(config -> config.setPadding(LayoutConfig.Edge.BOTTOM, padding.get()));
+      return this;
+    }
+
+    public Builder paddingLeft(LayoutValue padding) {
+      return paddingLeft(Constant.of(padding));
+    }
+
+    public Builder paddingLeft(Supplier<LayoutValue> padding) {
+      operations.add(config -> config.setPadding(LayoutConfig.Edge.LEFT, padding.get()));
+      return this;
+    }
+
     public Builder border(Insets.Basic border) {
       return border(Constant.of(border));
     }

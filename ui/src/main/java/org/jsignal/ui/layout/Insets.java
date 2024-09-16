@@ -2,15 +2,22 @@ package org.jsignal.ui.layout;
 
 import io.github.humbleui.types.Rect;
 
+import static org.jsignal.ui.layout.LayoutValue.percent;
+import static org.jsignal.ui.layout.LayoutValue.pixel;
+
 public class Insets {
-  public record Basic(
+  public record Basic (
     float top,
     float right,
     float bottom,
     float left
   ) {
-    public Layout toLayout() {
-      return new Layout(LayoutValue.pixel(top), LayoutValue.pixel(right), LayoutValue.pixel(bottom), LayoutValue.pixel(left));
+    public Layout pixels() {
+      return new Layout(pixel(top), pixel(right), pixel(bottom), pixel(left));
+    }
+
+    public Layout percents() {
+      return new Layout(percent(top), percent(right), percent(bottom), percent(left));
     }
 
     public boolean isZero() {
