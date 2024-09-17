@@ -9,6 +9,8 @@ import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
+import org.jsignal.prop.TransitiveProps;
+import org.jsignal.rx.Constant;
 import org.jsignal.rx.Ref;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
@@ -17,10 +19,12 @@ import org.jsignal.ui.Element;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.Layouter;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.batch;
@@ -30,11 +34,20 @@ import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 @GeneratePropComponent
-public non-sealed class InputLine extends InputLinePropComponent {
+public non-sealed class TextInput extends TextInputPropComponent {
   @Prop
-  Supplier<String> string;
+  Supplier<String> content = Constant.of("");
   @Prop
-  Consumer<String> onInput;
+  Consumer<String> onInput = (value) -> {};
+  @Prop
+  Layouter layout = Layouter.empty();
+  @Prop
+  Function<Para, Element> children = (para) -> para;
+
+  @TransitiveProps
+  public static class Transitive {
+    Function<Supplier<String>, Para> toPara = Para::fromString;
+  }
 
   private final Signal<Boolean> isFocused = Signal.create(false);
 
@@ -42,12 +55,8 @@ public non-sealed class InputLine extends InputLinePropComponent {
   private final Signal<Optional<Integer>> cursorPosition = Signal.create(Optional.empty());
 
   @Override
-  protected void onBuild() {
-    this.para = Para.builder()
-      .string(string)
-      .styleBuilder(sb -> sb.maxLinesCount(1L))
-      .line(true)
-      .build();
+  protected void onBuild(Transitive transitive) {
+    this.para = transitive.toPara.apply(content);
   }
 
   @Override
@@ -68,14 +77,14 @@ public non-sealed class InputLine extends InputLinePropComponent {
         }),
         onMouseClick(event -> {
           var pos = event.getPoint().getX();
-          if (string.get().isEmpty()) {
+          if (content.get().isEmpty()) {
             cursorPosition.accept(Optional.of(0));
           } else {
             cursorPosition.accept(Optional.of(para.getParagraph().getGlyphPositionAtCoordinate(pos, 0).getPosition()));
           }
         }),
         onKeyDown(event -> {
-          var str = string.get();
+          var str = content.get();
           var split = cursorPosition.get().get();
 
           var key = event.getEvent().getKey();
@@ -123,7 +132,7 @@ public non-sealed class InputLine extends InputLinePropComponent {
       .paintAfter((canvas, layout) -> {
         paintCursor(canvas, layout);
       })
-      .children(para)
+      .children(children.apply(para))
       .build();
   }
 
@@ -134,7 +143,7 @@ public non-sealed class InputLine extends InputLinePropComponent {
         paint.setAntiAlias(false);
         paint.setStrokeWidth(2f);
 
-        if (ignore(string).isEmpty()) {
+        if (ignore(content).isEmpty()) {
           var x = layout.getContentRect().getLeft();
           var y = layout.getContentRect().getTop();
           canvas.drawLine(x, y, x, y + layout.getContentRect().getHeight(), paint);

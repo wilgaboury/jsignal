@@ -21,7 +21,9 @@ import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
@@ -55,6 +57,12 @@ public non-sealed class Scroll extends ScrollPropComponent {
   Supplier<Float> yBarOverlayWidth = () -> yBarWidth.get() / 2f;
   @Prop
   Supplier<Element> children = Nodes::empty;
+  @Prop
+  Layouter layout = CompositeLayouter.builder()
+    .width(percent(100f))
+    .height(percent(100f))
+    .overflow()
+    .build();
 
   private final Signal<Float> xOffset = Signal.create(0f);
   private final Signal<Float> yOffset = Signal.create(0f);
@@ -72,16 +80,16 @@ public non-sealed class Scroll extends ScrollPropComponent {
   private final Signal<Node> xBar = Signal.empty();
   private final Signal<Node> yBar = Signal.empty();
 
-  private final Signal<Float> xScale = Signal.create(0f);
-  private final Signal<Float> yScale = Signal.create(0f);
+  private final Signal<Float> xScale = Signal.create(Float.NaN);
+  private final Signal<Float> yScale = Signal.create(Float.NaN);
 
-  private Supplier<Boolean> shouldShowYBar;
-  private Supplier<Boolean> shouldShowXBar;
+  private Supplier<Boolean> shouldAddYBarSpace;
+  private Supplier<Boolean> shouldAddXBarSpace;
 
   @Override
   protected void onBuild() {
-    shouldShowYBar = RxUtil.createMemo(() -> (yScale.get().isNaN() || yScale.get() < 1f) && !overlay.get());
-    shouldShowXBar = RxUtil.createMemo(() -> (xScale.get().isNaN() || xScale.get() < 1f) && !overlay.get());
+    shouldAddYBarSpace = RxUtil.createMemo(() -> !yScale.get().isNaN() && yScale.get() < 1f && !overlay.get());
+    shouldAddXBarSpace = RxUtil.createMemo(() -> !xScale.get().isNaN() && xScale.get() < 1f && !overlay.get());
   }
 
   @Override
@@ -128,12 +136,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
           }
         })
       ))
-      .layout(EzLayout.builder()
-        .width(percent(100f))
-        .height(percent(100f))
-        .overflow()
-        .build()
-      )
+      .layout(layout)
       .children(Nodes.fromList(List.of(
         Node.builder()
           .ref(meta -> {
@@ -141,7 +144,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
           .layoutBuilder(lb -> {
-            if (shouldShowYBar.get()) {
+            if (shouldAddYBarSpace.get()) {
               return lb
                 .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
             } else {
@@ -230,7 +233,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             // spacer
             // TODO: put spacer only when x bar is showing
             Nodes.dynamic(() -> {
-              if (shouldShowXBar.get()) {
+              if (shouldAddXBarSpace.get()) {
                 return Node.builder()
                   .layout(EzLayout.builder().height(() -> pixel(xBarWidth.get())).build())
                   .build();
@@ -245,7 +248,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
   }
 
   private boolean yBarShow() {
-    return yBarMouseOver.get() || yBarMouseDown.get() || !overlay.get();
+    return yBarMouseOver.get() || yBarMouseDown.get() || shouldAddYBarSpace.get();
   }
 
   private Optional<Rect> vertBarRect(Node meta) {

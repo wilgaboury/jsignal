@@ -1,5 +1,6 @@
 package org.jsignal.rx;
 
+import org.jsignal.rx.interfaces.Equals;
 import org.jsignal.rx.interfaces.OnFn;
 import org.jsignal.rx.interfaces.SignalLike;
 
@@ -173,7 +174,12 @@ public class RxUtil {
       }
     });
 
-    return Computed.create(() -> {
+    var output = Signal.builder()
+      .<List<U>>setValue(null)
+      .setEquals(Equals::never)
+      .build();
+
+    return Computed.create(output, () -> {
       Cleanups.onCleanup(() -> {
         result.clear();
         mapping.flip();
@@ -205,8 +211,7 @@ public class RxUtil {
     });
   }
 
-  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {
-  }
+  private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {}
 
   public static <T, U> Computed<List<U>> createIndexed(Supplier<? extends List<T>> list, BiFunction<Supplier<T>, Integer, U> map) {
     List<Indexed<T>> indexes = new ArrayList<>();
@@ -218,7 +223,12 @@ public class RxUtil {
       }
     });
 
-    return Computed.create(() -> {
+    var output = Signal.builder()
+      .<List<U>>setValue(null)
+      .setEquals(Equals::never)
+      .build();
+
+    return Computed.create(output, () -> {
       var keys = list.get();
 
       for (int i = 0; i < keys.size(); i++) {
@@ -243,8 +253,7 @@ public class RxUtil {
     });
   }
 
-  private record Indexed<T>(Signal<T> value, Cleanups cleanups) {
-  }
+  private record Indexed<T>(Signal<T> value, Cleanups cleanups) {}
 
   public static <T> void drain(Queue<T> from, Queue<T> to) {
     while (!from.isEmpty()) {

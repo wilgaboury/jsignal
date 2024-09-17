@@ -4,6 +4,10 @@ package org.jsignal.ui.layout;
 public interface Layouter {
   void layout(LayoutConfig config);
 
+  static Layouter empty() {
+    return config -> {};
+  }
+
   static Layouter none() {
     return config -> config.setDisplay(LayoutConfig.Display.NONE);
   }

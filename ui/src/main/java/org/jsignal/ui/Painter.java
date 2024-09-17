@@ -9,11 +9,7 @@ import java.util.function.Supplier;
 public interface Painter {
   void paint(Canvas canvas, Layout layout);
 
-  static Painter dynamic(Supplier<Painter> painter) {
-    return (canvas, layout) -> painter.get().paint(canvas, layout);
-  }
-
-  static Painter composite(Painter... painters) {
+  static Painter compose(Painter... painters) {
     return (canvas, node) -> {
       for (var painter : painters) {
         painter.paint(canvas, node);

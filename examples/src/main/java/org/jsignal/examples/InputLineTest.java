@@ -1,7 +1,7 @@
 package org.jsignal.examples;
 
 import org.jsignal.rx.Signal;
-import org.jsignal.std.InputLine;
+import org.jsignal.std.TextInput;
 import org.jsignal.std.ParaStyle;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
@@ -11,8 +11,6 @@ import org.jsignal.ui.Node;
 import org.jsignal.ui.UiThread;
 import org.jsignal.ui.UiUtil;
 import org.jsignal.ui.UiWindow;
-
-import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 public class InputLineTest extends Component {
   public static void main(String[] args) {
@@ -40,8 +38,8 @@ public class InputLineTest extends Component {
             .fontSize(50f)
           ))
           .provide(() ->
-            InputLine.builder()
-              .string(content)
+            TextInput.builder()
+              .content(content)
               .onInput(content)
               .build()
               .resolve()
