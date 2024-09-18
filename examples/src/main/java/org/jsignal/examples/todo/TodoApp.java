@@ -41,10 +41,10 @@ public class TodoApp extends Component {
 
   private final Signal<String> todo = Signal.create("");
   private final Signal<List<String>> todos = Signal.create(new ArrayList<>(List.of(
-//    "ONE",
-//    "TWO",
-//    "THREE",
-//    "1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234"
+    "ONE",
+    "TWO",
+    "THREE",
+    "1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234"
   )));
 
   @Override
@@ -83,16 +83,17 @@ public class TodoApp extends Component {
                 .alignItems(LayoutConfig.Align.CENTER)
               )
               .children(compose(
-//                Para.builder()
-//                  .string("Todo List")
-//                  .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
-//                    .fontSize(32f)
-//                  ))
-//                  .build(),
+                Para.builder()
+                  .string("Todo List")
+                  .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
+                    .fontSize(32f)
+                  ))
+                  .build(),
                 Node.builder()
                   .layoutBuilder(lb -> lb
                     .row()
                     .alignItems(LayoutConfig.Align.CENTER)
+                    .justify(LayoutConfig.JustifyContent.CENTER)
                     .wrap()
                     .gap(16f)
                   )

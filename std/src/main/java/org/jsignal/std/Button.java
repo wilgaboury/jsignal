@@ -35,23 +35,22 @@ public non-sealed class Button extends ButtonPropComponent {
 
   @Override
   public Element render() {
-    Boolean test = true;
-
     return Node.builder()
       .listen(List.of(
-        onMouseOver(e -> mouseOver.accept(true)),
         onMouseDown(e -> mouseDown.accept(true)),
-        onMouseOut(e -> {
+        onMouseEnter(e -> mouseOver.accept(true)),
+        onMouseLeave(e -> {
           mouseDown.accept(false);
           mouseOver.accept(false);
         }),
         onMouseUp(e -> {
-          var prev = mouseDown.get();
+//          var prev = mouseDown.get();
           mouseDown.accept(false);
-          if (prev) {
-            action.get().run();
-          }
-        })
+//          if (prev) {
+//            action.get().run();
+//          }
+        }),
+        onMouseClick(e -> action.get().run())
       ))
       .layout(this::layout)
       .paint(this::paint)

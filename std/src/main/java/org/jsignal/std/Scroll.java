@@ -170,8 +170,8 @@ public non-sealed class Scroll extends ScrollPropComponent {
           .build(),
         Node.builder()
           .ref(ref -> ref.listen(
-            onMouseOver(e -> xBarMouseOver.accept(true)),
-            onMouseOut(e -> xBarMouseOver.accept(false)),
+            onMouseEnter(e -> xBarMouseOver.accept(true)),
+            onMouseLeave(e -> xBarMouseOver.accept(false)),
             onMouseDown(e -> {
               var pos = MathUtil.apply(MathUtil.inverse(ref.getFullTransform()), window.getMousePosition());
               vertBarRect(ref).ifPresent(rect -> {
@@ -194,8 +194,8 @@ public non-sealed class Scroll extends ScrollPropComponent {
           .build(),
         Node.builder()
           .listen(List.of(
-            onMouseOver(e -> yBarMouseOver.accept(true)),
-            onMouseOut(e -> yBarMouseOver.accept(false))
+            onMouseEnter(e -> yBarMouseOver.accept(true)),
+            onMouseLeave(e -> yBarMouseOver.accept(false))
           ))
           .layout(EzLayout.builder()
             .width(() -> pixel(yBarWidth.get()))
@@ -333,8 +333,8 @@ public non-sealed class Scroll extends ScrollPropComponent {
           onMouseClick(e -> action.run()),
           onMouseDown(e -> mouseDown.accept(true)),
           onMouseUp(e -> mouseDown.accept(false)),
-          onMouseOver(e -> mouseOver.accept(true)),
-          onMouseOut(e -> mouseOver.accept(false))
+          onMouseEnter(e -> mouseOver.accept(true)),
+          onMouseLeave(e -> mouseOver.accept(false))
         ))
         .layout(EzLayout.builder()
           .height(() -> pixel(size.get()))

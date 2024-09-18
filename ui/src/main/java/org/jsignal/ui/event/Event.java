@@ -5,6 +5,7 @@ import org.jsignal.ui.Node;
 public class Event {
   private final EventType type;
   private final Node target;
+  private Node current;
   private boolean isPropagationStopped;
   private boolean isImmediatePropagationStopped;
 
@@ -13,6 +14,14 @@ public class Event {
     this.target = target;
     this.isPropagationStopped = false;
     this.isImmediatePropagationStopped = false;
+  }
+
+  public Node getCurrent() {
+    return current;
+  }
+
+  public void setCurrent(Node current) {
+    this.current = current;
   }
 
   public EventType getType() {

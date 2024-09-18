@@ -27,6 +27,10 @@ public class EventListener<T> {
     return new EventListener<>(EventType.MOUSE_OUT, listener);
   }
 
+  public static EventListener<MouseEvent> onMouseEnter(Consumer<MouseEvent> listener) {
+    return new EventListener<>(EventType.MOUSE_ENTER, listener);
+  }
+
   public static EventListener<MouseEvent> onMouseLeave(Consumer<MouseEvent> listener) {
     return new EventListener<>(EventType.MOUSE_LEAVE, listener);
   }

@@ -68,19 +68,22 @@ public non-sealed class TextInput extends TextInputPropComponent {
     return Node.builder()
       .ref(ref)
       .listen(List.of(
-        onMouseIn(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.IBEAM))),
-        onMouseOut(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.ARROW))),
+        onMouseEnter(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.IBEAM))),
+        onMouseLeave(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.ARROW))),
         onFocus(event -> isFocused.accept(true)),
         onBlur(event -> {
           isFocused.accept(false);
           cursorPosition.accept(Optional.empty());
         }),
         onMouseClick(event -> {
-          var pos = event.getPoint().getX();
           if (content.get().isEmpty()) {
             cursorPosition.accept(Optional.of(0));
           } else {
-            cursorPosition.accept(Optional.of(para.getParagraph().getGlyphPositionAtCoordinate(pos, 0).getPosition()));
+            var pos = event.getPoint();
+            var content = ref.get().getLayout().getContentRect();
+            var x = pos.getX() - content.getLeft();
+            var y = pos.getY() - content.getTop();
+            cursorPosition.accept(Optional.of(para.getParagraph().getGlyphPositionAtCoordinate(x, y).getPosition()));
           }
         }),
         onKeyDown(event -> {
@@ -94,8 +97,9 @@ public non-sealed class TextInput extends TextInputPropComponent {
             return;
           } else if (key == Key.RIGHT) {
             var p = ignore(() -> para.getParagraph());
-            var metrics = p.getLineMetrics()[0];
-            int endPos = (int) metrics.getEndIndex();
+            var lineMetrics = p.getLineMetrics();
+            var lastLineMetrics = lineMetrics[lineMetrics.length - 1];
+            int endPos = (int) lastLineMetrics.getEndIndex();
             cursorPosition.accept(cur -> cur.map(v -> Math.min(endPos, v + 1)));
             return;
           } else if (key == Key.BACKSPACE && split > 0) {
@@ -129,9 +133,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
             layout.getPaddingRect().withRadii(radius), paint);
         }
       })
-      .paintAfter((canvas, layout) -> {
-        paintCursor(canvas, layout);
-      })
+      .paintAfter(this::paintCursor)
       .children(children.apply(para))
       .build();
   }
@@ -151,15 +153,15 @@ public non-sealed class TextInput extends TextInputPropComponent {
         }
 
         var p = ignore(() -> para.getParagraph());
-        var metrics = p.getLineMetrics()[0];
-        int endPos = (int) metrics.getEndIndex();
-        var x = pos < endPos
-          ? p.getRectsForRange(pos, pos + 1, RectHeightMode.MAX, RectWidthMode.MAX)[0].getRect().getLeft()
-          : p.getRectsForRange(endPos - 1, endPos, RectHeightMode.MAX, RectWidthMode.MAX)[0].getRect().getRight();
-        x = x + layout.getContentRect().getLeft();
-        var y = layout.getContentRect().getTop();
-
-        canvas.drawLine(x, y, x, y + (float) metrics.getLineHeight(), paint);
+        var lineMetrics = p.getLineMetrics();
+        var lastLineMetrics = lineMetrics[lineMetrics.length - 1];
+        int endPos = (int) lastLineMetrics.getEndIndex();
+        var rect = pos < endPos
+          ? p.getRectsForRange(pos, pos + 1, RectHeightMode.MAX, RectWidthMode.MAX)[0].getRect()
+          : p.getRectsForRange(endPos - 1, endPos, RectHeightMode.MAX, RectWidthMode.MAX)[0].getRect();
+        var x = layout.getContentRect().getLeft() + (pos < endPos ? rect.getLeft() : rect.getRight());
+        var yOffset = layout.getContentRect().getTop();
+        canvas.drawLine(x, yOffset + rect.getTop(), x, yOffset + rect.getBottom(), paint);
       }
     });
   }

@@ -243,8 +243,7 @@ public class UiWindow {
             hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
           }
 
-          // TODO: possibly check up tree instead of just target for click test
-          if (hovered != null && mouseDown == hovered) {
+          if (hovered != null && (mouseDown == hovered || hovered.getParents().contains(mouseDown))) {
             hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_CLICK, hovered, e));
           } else if (mouseDown != null) {
             mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
@@ -259,6 +258,7 @@ public class UiWindow {
       case EventWindowFocusOut e -> {
         if (hovered != null) {
           hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
+          hovered.bubble(new MouseEvent(EventType.MOUSE_LEAVE, hovered, mousePosition.get()));
         }
         hovered = null;
       }
@@ -288,9 +288,10 @@ public class UiWindow {
       }
 
       if (newHovered != null) {
+        newHovered.bubble(new MouseEvent(EventType.MOUSE_IN, newHovered, mousePosition.get()));
         var node = newHovered;
         while (node != null && !parents.contains(node)) {
-          node.fire(new MouseEvent(EventType.MOUSE_IN, node, mousePosition.get()));
+          node.fire(new MouseEvent(EventType.MOUSE_ENTER, node, mousePosition.get()));
           node = node.getParent();
         }
       }

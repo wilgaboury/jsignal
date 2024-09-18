@@ -20,7 +20,8 @@ public class MouseEvent extends Event {
   public MouseEvent(
     EventType type,
     Node target,
-    Point screenPoint) {
+    Point screenPoint
+  ) {
     this(type, target, screenPoint, null, Collections.emptySet());
   }
 
@@ -39,7 +40,7 @@ public class MouseEvent extends Event {
   }
 
   public Point getPoint() {
-    return MathUtil.apply(MathUtil.inverse(getTarget().getFullTransform()), getScreenPoint());
+    return MathUtil.apply(MathUtil.inverse(getCurrent().getFullTransform()), getScreenPoint());
   }
 
   public Point getScreenPoint() {

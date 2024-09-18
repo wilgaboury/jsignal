@@ -391,6 +391,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   @SuppressWarnings("unchecked") // cast here is safe
   public <T extends Event> void fire(T event) {
     for (var listener : listeners.getOrDefault(event.getType(), Collections.emptySet())) {
+      event.setCurrent(this);
       ((Consumer<T>) listener).accept(event);
 
       if (event.isImmediatePropagationStopped()) {
