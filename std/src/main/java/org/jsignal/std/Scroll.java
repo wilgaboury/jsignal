@@ -11,6 +11,7 @@ import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Effect;
+import org.jsignal.rx.Ref;
 import org.jsignal.rx.RxUtil;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
@@ -74,64 +75,65 @@ public non-sealed class Scroll extends ScrollPropComponent {
   private final Signal<Boolean> xBarMouseOver = Signal.create(false);
   private final Signal<Boolean> yBarMouseOver = Signal.create(false);
 
-  private final Signal<Node> content = Signal.empty();
-  private final Signal<Node> view = Signal.empty();
-  private final Signal<Node> xBar = Signal.empty();
-  private final Signal<Node> yBar = Signal.empty();
-
   private final Signal<Float> xScale = Signal.create(Float.NaN);
   private final Signal<Float> yScale = Signal.create(Float.NaN);
+
+  private final Ref<Node> content = new Ref<>();
+  private final Ref<Node> view = new Ref<>();
+  private final Ref<Node> xBar = new Ref<>();
+  private final Ref<Node> yBar = new Ref<>();
 
   private Supplier<Boolean> shouldAddYBarSpace;
   private Supplier<Boolean> shouldAddXBarSpace;
 
   @Override
   protected void onBuild() {
-    shouldAddYBarSpace = RxUtil.createMemo(() -> !yScale.get().isNaN() && yScale.get() < 1f && !overlay.get());
-    shouldAddXBarSpace = RxUtil.createMemo(() -> !xScale.get().isNaN() && xScale.get() < 1f && !overlay.get());
+    shouldAddYBarSpace = RxUtil.createMemo(() -> !overlay.get() && !yScale.get().isNaN() && yScale.get() < 1f);
+    shouldAddXBarSpace = RxUtil.createMemo(() -> !overlay.get() && !xScale.get().isNaN() && xScale.get() < 1f);
   }
 
   @Override
   public Element render() {
     var window = UiWindow.context.use();
 
-    Effect.create(() -> {
-      if (xBar.get() != null && xBarMouseDown.get()) {
-        var pos = window.getMousePosition();
-        var rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos);
-        var newOffset = (rel.getX() - xMouseDownOffset) / ignore(xScale);
-        xOffset.accept(-newOffset);
-      }
-    });
+    onResolve(() -> {
+      Effect.create(() -> {
+        if (xBarMouseDown.get()) {
+          var pos = window.getMousePosition();
+          var rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos);
+          var newOffset = (rel.getX() - xMouseDownOffset) / ignore(xScale);
+          xOffset.accept(-newOffset);
+        }
+      });
 
-    Effect.create(() -> {
-      if (yBar.get() != null && yBarMouseDown.get()) {
-        var pos = window.getMousePosition();
-        var rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos);
-        var newOffset =
-          (rel.getY() - yMouseDownOffset) / ignore(() -> yScale.get() * (yBar.get().getLayout().getHeight()
-            / view.get().getLayout().getHeight()));
-        yOffset.accept(-newOffset);
-      }
-    });
+      Effect.create(() -> {
+        if (yBarMouseDown.get()) {
+          var pos = window.getMousePosition();
+          var rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos);
+          var newOffset =
+            (rel.getY() - yMouseDownOffset) / ignore(() -> yScale.get() * (yBar.get().getLayout().getHeight()
+              / view.get().getLayout().getHeight()));
+          setYOffset(-newOffset);
+        }
+      });
 
-    Effect.create(() -> {
-      if (view.get() != null && content.get() != null) {
-        var viewSize = view.get().getLayout().getSize();
-        var contentSize = content.get().getLayout().getSize();
-        yScale.accept(viewSize.getY() / contentSize.getY());
-      }
+      Effect.create(() -> {
+        var viewHeight = view.get().getLayout().getHeight();
+        var contentHeight = content.get().getLayout().getHeight();
+        yScale.accept(viewHeight / contentHeight);
+        setYOffset(ignore(yOffset));
+      });
     });
 
     return Node.builder()
       .ref(view)
       .listen(List.of(
-        onScroll(e -> yOffset.accept(v -> v + e.getDeltaY())),
+        onScroll(e -> setYOffset(yOffset.get() + e.getDeltaY())),
         onKeyDown(e -> {
           if (e.getEvent().getKey() == Key.DOWN) {
-            yOffset.accept(y -> y - 100);
+            setYOffset(yOffset.get() - 100);
           } else if (e.getEvent().getKey() == Key.UP) {
-            yOffset.accept(y -> y + 100);
+            setYOffset(yOffset.get() + 100);
           }
         })
       ))
@@ -141,9 +143,9 @@ public non-sealed class Scroll extends ScrollPropComponent {
       })
       .children(Nodes.fromList(List.of(
         Node.builder()
-          .ref(meta -> {
-            content.accept(meta);
-            meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
+          .ref(ref -> {
+            content.accept(ref);
+            ref.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
           .layout(config -> {
             innerLayout.layout(config);
@@ -158,14 +160,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
 
             lb.build().layout(config);
           })
-          .transform(layout -> {
-            var height = view.get().getLayout().getHeight();
-            var max = layout.getHeight() - height;
-            // TODO: enforce constraints on set
-            var tmp = Math.min(0f, Math.max(-max, yOffset.get()));
-            yOffset.accept(tmp);
-            return Matrix33.makeTranslate(0f, yOffset.get());
-          })
+          .transform(layout -> Matrix33.makeTranslate(0f, yOffset.get()))
           .children(children.get())
           .build(),
         Node.builder()
@@ -206,7 +201,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             .build()
           )
           .children(compose(
-            new ScrollButton(upIcon, yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y + 100)),
+            new ScrollButton(upIcon, yBarWidth, this::yBarShow, () -> setYOffset(yOffset.get() + 100)),
             Node.builder()
               .ref(ref -> {
                 yBar.accept(ref);
@@ -233,9 +228,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
               )
               .paint((canvas, node) -> paintHorizScrollBar(canvas))
               .build(),
-            new ScrollButton(downIcon, yBarWidth, this::yBarShow, () -> yOffset.accept(y -> y - 100)),
-            // spacer
-            // TODO: put spacer only when x bar is showing
+            new ScrollButton(downIcon, yBarWidth, this::yBarShow, () -> setYOffset(yOffset.get() - 100)),
             Nodes.dynamic(() -> {
               if (shouldAddXBarSpace.get()) {
                 return Node.builder()
@@ -251,8 +244,17 @@ public non-sealed class Scroll extends ScrollPropComponent {
       .build();
   }
 
+  private void setYOffset(Float value) {
+    var height = view.get().getLayout().getHeight();
+    var max = content.get().getLayout().getHeight() - height;
+    var tmp = Math.min(0f, Math.max(-max, value));
+    if (!Float.isNaN(tmp)) {
+      yOffset.accept(tmp);
+    }
+  }
+
   private boolean yBarShow() {
-    return yBarMouseOver.get() || yBarMouseDown.get() || shouldAddYBarSpace.get();
+    return shouldAddYBarSpace.get() || (overlay.get() && yBarMouseOver.get());
   }
 
   private Optional<Rect> vertBarRect(Node meta) {

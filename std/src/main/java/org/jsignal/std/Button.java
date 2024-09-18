@@ -38,18 +38,9 @@ public non-sealed class Button extends ButtonPropComponent {
     return Node.builder()
       .listen(List.of(
         onMouseDown(e -> mouseDown.accept(true)),
+        onMouseUp(e -> mouseDown.accept(false)),
         onMouseEnter(e -> mouseOver.accept(true)),
-        onMouseLeave(e -> {
-          mouseDown.accept(false);
-          mouseOver.accept(false);
-        }),
-        onMouseUp(e -> {
-//          var prev = mouseDown.get();
-          mouseDown.accept(false);
-//          if (prev) {
-//            action.get().run();
-//          }
-        }),
+        onMouseLeave(e -> mouseOver.accept(false)),
         onMouseClick(e -> action.get().run())
       ))
       .layout(this::layout)

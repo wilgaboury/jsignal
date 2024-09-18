@@ -63,13 +63,13 @@ public non-sealed class TextInput extends TextInputPropComponent {
   public Element render() {
     var ref = new Ref<Node>();
 
-    var maybeWindow = UiWindow.context.use().getWindow();
+    var window = UiWindow.context.use().getWindow().get();
 
     return Node.builder()
       .ref(ref)
       .listen(List.of(
-        onMouseEnter(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.IBEAM))),
-        onMouseLeave(event -> maybeWindow.ifPresent(window -> window.setMouseCursor(MouseCursor.ARROW))),
+        onMouseEnter(event -> window.setMouseCursor(MouseCursor.IBEAM)),
+        onMouseLeave(event -> window.setMouseCursor(MouseCursor.ARROW)),
         onFocus(event -> isFocused.accept(true)),
         onBlur(event -> {
           isFocused.accept(false);
