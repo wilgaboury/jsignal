@@ -1,6 +1,5 @@
 package org.jsignal.examples.todo;
 
-import org.jsignal.rx.Effect;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.Button;
 import org.jsignal.std.Para;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.jsignal.rx.RxUtil.batch;
-import static org.jsignal.rx.RxUtil.createMapped;
 import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.layout.Insets.insets;
 import static org.jsignal.ui.layout.LayoutValue.percent;
@@ -99,6 +97,11 @@ public class TodoApp extends Component {
                     TextInput.builder()
                       .content(todo)
                       .onInput(todo)
+                      .children(para -> Node.builder()
+                        .layoutBuilder(lb -> lb.minWidth(pixel(150f)))
+                        .children(para)
+                        .build()
+                      )
                       .build(),
                     Button.builder()
                       .color(EzColors.BLUE_500)
@@ -122,15 +125,24 @@ public class TodoApp extends Component {
                 )
                 .layoutBuilder(lb -> lb
                   .padding(insets(16f).pixels())
+                  .row()
+                  .justify(LayoutConfig.JustifyContent.BETWEEN)
+                  .alignItems(LayoutConfig.Align.CENTER)
                 )
-                .children(
+                .children(compose(
                   Para.builder()
                     .string(content)
                     .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
                       .fontSize(16f)
                     ))
+                    .build(),
+                  Button.builder()
+                    .color(EzColors.RED_600)
+                    .action(() -> todos.mutate(list -> { list.remove((int)idx.get()); }))
+                    .size(Button.Size.SM)
+                    .children(() -> Para.fromString("Remove"))
                     .build()
-                )
+                ))
                 .build()
             )
           ))
