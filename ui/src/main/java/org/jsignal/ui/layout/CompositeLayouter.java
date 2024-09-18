@@ -50,6 +50,33 @@ public class CompositeLayouter implements Layouter {
       return this;
     }
 
+    public Builder justify(LayoutConfig.JustifyContent justify) {
+      return this.justify(Constant.of(justify));
+    }
+
+    public Builder justify(Supplier<LayoutConfig.JustifyContent> justify) {
+      operations.add(config -> config.setJustifyContent(justify.get()));
+      return this;
+    }
+
+    public Builder alignItems(LayoutConfig.Align align) {
+      return this.alignItems(Constant.of(align));
+    }
+
+    public Builder alignItems(Supplier<LayoutConfig.Align> align) {
+      operations.add(config -> config.setAlignItems(align.get()));
+      return this;
+    }
+
+    public Builder alignContent(LayoutConfig.Align align) {
+      return this.alignContent(Constant.of(align));
+    }
+
+    public Builder alignContent(Supplier<LayoutConfig.Align> align) {
+      operations.add(config -> config.setAlignContent(align.get()));
+      return this;
+    }
+
     public Builder fill() {
       operations.add(config -> {
         config.setWidth(percent(100f));
@@ -59,12 +86,18 @@ public class CompositeLayouter implements Layouter {
     }
 
     public Builder row() {
-      operations.add(config -> config.setFlexDirection(LayoutConfig.FlexDirection.ROW));
+      operations.add(config -> {
+        config.setDisplay(LayoutConfig.Display.FLEX);
+        config.setFlexDirection(LayoutConfig.FlexDirection.ROW);
+      });
       return this;
     }
 
     public Builder column() {
-      operations.add(config -> config.setFlexDirection(LayoutConfig.FlexDirection.COLUMN));
+      operations.add(config -> {
+        config.setDisplay(LayoutConfig.Display.FLEX);
+        config.setFlexDirection(LayoutConfig.FlexDirection.COLUMN);
+      });
       return this;
     }
 

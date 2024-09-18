@@ -22,7 +22,7 @@ public non-sealed class CardPainter extends CardPainterPropHelper implements Pai
   @Override
   public void paint(Canvas canvas, Layout layout) {
     try (var paint = new Paint()) {
-      paint.setImageFilter(ImageFilter.makeDropShadow(0f, 4f, 4f, 4f, EzColors.BLACK));
+      paint.setImageFilter(ImageFilter.makeDropShadow(0f, 4f, 4f, 4f, EzColors.GRAY_500));
       paint.setColor(backgroundColor.get());
       canvas.drawRRect(layout.getBoundingRect().withRadii(radius.get()), paint);
     }

@@ -23,6 +23,7 @@ import org.jsignal.ui.Nodes;
 import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
@@ -58,11 +59,9 @@ public non-sealed class Scroll extends ScrollPropComponent {
   @Prop
   Supplier<Element> children = Nodes::empty;
   @Prop
-  Layouter layout = CompositeLayouter.builder()
-    .width(percent(100f))
-    .height(percent(100f))
-    .overflow()
-    .build();
+  Layouter outerLayout = CompositeLayouter.builder().fill().build();
+  @Prop
+  Layouter innerLayout = Layouter.empty();
 
   private final Signal<Float> xOffset = Signal.create(0f);
   private final Signal<Float> yOffset = Signal.create(0f);
@@ -136,22 +135,26 @@ public non-sealed class Scroll extends ScrollPropComponent {
           }
         })
       ))
-      .layout(layout)
+      .layout(config -> {
+        outerLayout.layout(config);
+        config.setOverflow(LayoutConfig.Overflow.SCROLL);
+      })
       .children(Nodes.fromList(List.of(
         Node.builder()
           .ref(meta -> {
             content.accept(meta);
             meta.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
           })
-          .layoutBuilder(lb -> {
+          .layout(config -> {
+            innerLayout.layout(config);
+
+            var lb = CompositeLayouter.builder();
             if (shouldAddYBarSpace.get()) {
-              return lb
-                .padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
+              lb.padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
             } else {
-              return lb
-                .width(percent(100f))
-                .padding(insets(0f).pixels());
+              lb.padding(insets(0f).pixels());
             }
+            lb.build().layout(config);
           })
           .transform(layout -> {
             var height = view.get().getLayout().getHeight();
@@ -178,13 +181,12 @@ public non-sealed class Scroll extends ScrollPropComponent {
             }),
             onMouseUp(e -> xBarMouseDown.accept(false))
           ))
-          .layout(EzLayout.builder()
+          .layoutBuilder(lb -> lb
             .width(percent(100f))
             .height(() -> pixel(xBarWidth.get()))
             .absolute()
             .left(pixel(0f))
             .bottom(pixel(0f))
-            .build()
           )
           .paint(this::paintVertScrollBar)
           .build(),
