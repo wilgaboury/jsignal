@@ -1,5 +1,6 @@
 package org.jsignal.ui.layout;
 
+import org.jsignal.ui.UiWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -330,5 +331,6 @@ public class YogaLayoutConfig implements LayoutConfig {
   @Override
   public void markDirty() {
     YGNodeMarkDirty(node);
+    UiWindow.context.use().requestLayout();
   }
 }

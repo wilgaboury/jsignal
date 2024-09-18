@@ -76,8 +76,6 @@ public non-sealed class Para extends ParaPropComponent {
         return result.build();
       });
     }
-
-
   }
 
   @Override
