@@ -149,11 +149,13 @@ public non-sealed class Scroll extends ScrollPropComponent {
             innerLayout.layout(config);
 
             var lb = CompositeLayouter.builder();
+            // may trigger second layout pass because shouldAddYBarSpace is based on yScale
             if (shouldAddYBarSpace.get()) {
               lb.padding(insets(0f, yBarWidth.get(), xBarWidth.get(), 0f).pixels());
             } else {
               lb.padding(insets(0f).pixels());
             }
+
             lb.build().layout(config);
           })
           .transform(layout -> {

@@ -1,6 +1,15 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.jwm.*;
+import io.github.humbleui.jwm.App;
+import io.github.humbleui.jwm.EventKey;
+import io.github.humbleui.jwm.EventMouseButton;
+import io.github.humbleui.jwm.EventMouseMove;
+import io.github.humbleui.jwm.EventMouseScroll;
+import io.github.humbleui.jwm.EventWindowClose;
+import io.github.humbleui.jwm.EventWindowCloseRequest;
+import io.github.humbleui.jwm.EventWindowFocusOut;
+import io.github.humbleui.jwm.EventWindowResize;
+import io.github.humbleui.jwm.Window;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
@@ -9,19 +18,34 @@ import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Provider;
 import org.jsignal.rx.Signal;
-import org.jsignal.ui.event.*;
+import org.jsignal.ui.event.EventType;
+import org.jsignal.ui.event.FocusEvent;
+import org.jsignal.ui.event.KeyboardEvent;
+import org.jsignal.ui.event.MouseEvent;
+import org.jsignal.ui.event.ScrollEvent;
 import org.lwjgl.util.yoga.Yoga;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.batch;
 
 public class UiWindow {
+  private static final Logger logger = LoggerFactory.getLogger(UiWindow.class);
+
   public static final Context<UiWindow> context = Context.create();
   public static final Context<Surface> paintSurfaceContext = Context.create();
 
   private static final Set<UiWindow> windows = new HashSet<>();
+  private static final Logger log = LoggerFactory.getLogger(UiWindow.class);
 
   private @Nullable Window window;
   private final Node root;
@@ -93,13 +117,19 @@ public class UiWindow {
   }
 
   private void layout() {
-    // this loop is a somewhat hacky (elegant?) way to get around reactive layout updates
-    while (shouldLayout && window != null) {
+    // this loop is a way to get around reactive layout updates
+    int maxLayoutPasses = 10;
+    while (shouldLayout && window != null && maxLayoutPasses > 0) {
       shouldLayout = false;
       var rect = window.getContentRect();
       Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
       batch(root::updateLayout);
       transformUpdate();
+      maxLayoutPasses--;
+    }
+
+    if (maxLayoutPasses == 0) {
+      logger.warn("maximum layout passes reached for single frame");
     }
   }
 

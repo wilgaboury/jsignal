@@ -20,8 +20,10 @@ import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
 import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.layout.YogaLayoutConfig;
+import org.jsignal.ui.paint.NullPaintCacheStrategy;
 import org.jsignal.ui.paint.PaintCacheStrategy;
 import org.jsignal.ui.paint.PicturePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
@@ -75,6 +77,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   private Set<Object> tags;
 
   private final long yoga;
+  private final YogaLayoutConfig layoutConfig;
   private final Layout layoutResult;
 
   private final Map<EventType, Collection<Consumer<?>>> listeners;
@@ -93,15 +96,15 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   private Supplier<List<Node>> children;
 
   public Node() {
+    // TODO: when garbage collected, free the allocated yoga node pointer
     this.yoga = Yoga.YGNodeNew();
+    this.layoutConfig = new YogaLayoutConfig(yoga);
     this.layoutResult = new Layout(yoga);
     this.listeners = new HashMap<>();
 
     this.tags = new HashSet<>();
 
     this.paintCacheStrategy = defaultPaintCacheStrategy.use().get();
-
-    Cleanups.onCleanup(this::cleanup);
   }
 
   @Override
@@ -124,10 +127,6 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     if (transitive.ref != null) {
       transitive.ref.accept(this);
     }
-  }
-
-  private void cleanup() {
-    Yoga.YGNodeFree(yoga);
   }
 
   private void paintEffectInner() {
@@ -238,9 +237,13 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   public void runLayouter() {
     if (layout != null) {
       UiUtil.clearNodeStyle(yoga);
-      layout.layout(new YogaLayoutConfig(yoga));
+      layout.layout(layoutConfig);
       window.requestLayout();
     }
+  }
+
+  public YogaLayoutConfig getLayoutConfig() {
+    return layoutConfig;
   }
 
   private Supplier<List<Node>> createChildren(Nodes ns) {

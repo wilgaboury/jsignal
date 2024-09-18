@@ -9,24 +9,20 @@ import io.github.humbleui.skija.paragraph.TypefaceFontProvider;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.prop.TransitiveProps;
-import org.jsignal.rx.Constant;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Effect;
-import org.jsignal.rx.Provider;
+import org.jsignal.rx.Ref;
+import org.jsignal.rx.Signal;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.Node;
-import org.jsignal.ui.UiThread;
-import org.jsignal.ui.UiWindow;
 import org.jsignal.ui.layout.LayoutConfig;
-import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
-import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.jsignal.rx.RxUtil.createMemo;
+import static org.jsignal.rx.RxUtil.*;
 
 @GeneratePropComponent
 public non-sealed class Para extends ParaPropComponent {
@@ -62,10 +58,58 @@ public non-sealed class Para extends ParaPropComponent {
   Supplier<Paragraph> para;
   @Prop
   Supplier<ParaStyle> style = ParaStyle.context.use();
-  @Prop
-  Supplier<Boolean> line = Constant.of(false);
+
+  private final Signal<Float> height = Signal.empty();
 
   public Para() {}
+
+  @Override
+  protected void onBuild(Transitive transitive) {
+    if (transitive.styleBuilder != null) {
+      this.style = createMemo(() -> transitive.styleBuilder.apply(style.get().toBuilder()).build());
+    }
+
+    if (para == null) {
+      para = createMemo(() -> {
+        var result = new ParagraphBuilder(style.get().toSkia(), fontsContext.use());
+        result.addText(transitive.string.get());
+        return result.build();
+      });
+    }
+
+
+  }
+
+  @Override
+  public Element render() {
+    Ref<Node> nodeRef = new Ref<>();
+    onResolve(() -> Effect.create(onDefer(para, () -> nodeRef.get().getLayoutConfig().markDirty())));
+
+    return Node.builder()
+      .ref(nodeRef)
+      .layout(config ->
+        config.setMeasure((width, widthMode, height, heightMode) -> {
+          var layoutWidth = widthMode == LayoutConfig.MeasureMode.UNDEFINED ? Float.POSITIVE_INFINITY : width;
+          var layoutHeight = heightMode == LayoutConfig.MeasureMode.UNDEFINED ? Float.POSITIVE_INFINITY : height;
+          var p = ignore(para);
+          p.layout(layoutWidth);
+          return new LayoutConfig.Size(
+            Math.min(p.getMaxIntrinsicWidth(), layoutWidth),
+            Math.min(p.getHeight(), layoutHeight)
+          );
+        })
+      )
+      .paint((canvas, layout) -> {
+        var p = para.get();
+        p.layout(layout.getWidth());
+        p.paint(canvas, 0f, 0f);
+      })
+      .build();
+  }
+
+  public Paragraph getParagraph() {
+    return para.get();
+  }
 
   public static Para from(Paragraph paragraph) {
     return Para.builder().para(paragraph).build();
@@ -81,66 +125,5 @@ public non-sealed class Para extends ParaPropComponent {
 
   public static Para fromString(Supplier<String> string) {
     return Para.builder().string(string).build();
-  }
-
-  @Override
-  protected void onBuild(Transitive transitive) {
-    if (transitive.styleBuilder != null) {
-      this.style = createMemo(() -> transitive.styleBuilder.apply(style.get().toBuilder()).build());
-    }
-
-    if (para == null) {
-      para = createMemo(() -> {
-        var result = new ParagraphBuilder(style.get().toSkia(), fontsContext.use());
-        result.addText(transitive.string.get());
-        return result.build();
-      });
-    }
-  }
-
-  @Override
-  public Element render() {
-    var provider = Provider.get();
-    return Node.builder()
-      .ref(meta -> meta.setPaintCacheStrategy(
-        new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new)))
-      .id("para")
-      .layout(config -> {
-        UiThread.queueMicrotask(() -> {
-          provider.provide(() -> {
-            Effect.create(() -> {
-              // track state
-              para.get();
-              line.get();
-
-              config.markDirty();
-              UiWindow.context.use().requestLayout();
-            });
-          });
-        });
-        config.setMeasure((width, widthMode, height, heightMode) -> {
-          var p = para.get();
-          p.layout(width);
-          float intrinsicWidth = Math.round(p.getMaxIntrinsicWidth() + 0.5f);
-          return new LayoutConfig.Size(
-            line.get() ? intrinsicWidth : Math.min(width, intrinsicWidth),
-            p.getHeight()
-          );
-        });
-      })
-      .paint((canvas, layout) -> {
-        var p = para.get();
-        // Extra layout call prevents wierd cutoff errors.
-        // I know you, at some point you will see this and think, "this is a repeat call to
-        // layout, let's just delete this line to make the code simpler and faster".
-        // DON'T DELETE IT!
-        p.layout(layout.getWidth());
-        p.paint(canvas, 0f, 0f);
-      })
-      .build();
-  }
-
-  public Paragraph getParagraph() {
-    return para.get();
   }
 }

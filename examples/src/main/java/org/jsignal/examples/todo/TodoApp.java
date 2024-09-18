@@ -43,7 +43,8 @@ public class TodoApp extends Component {
   private final Signal<List<String>> todos = Signal.create(new ArrayList<>(List.of(
     "ONE",
     "TWO",
-    "THREE"
+    "THREE",
+    "1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234 1234"
   )));
 
   @Override
@@ -56,6 +57,7 @@ public class TodoApp extends Component {
       )
       .innerLayout(CompositeLayouter.builder()
         .width(percent(100f))
+        .maxWidth(percent(100f))
         .row()
         .alignItems(LayoutConfig.Align.START)
         .justify(LayoutConfig.JustifyContent.CENTER)
@@ -90,6 +92,7 @@ public class TodoApp extends Component {
                 Node.builder()
                   .layoutBuilder(lb -> lb
                     .row()
+                    .alignItems(LayoutConfig.Align.CENTER)
                     .wrap()
                     .gap(16f)
                   )
@@ -124,17 +127,24 @@ public class TodoApp extends Component {
                   .build()
                 )
                 .layoutBuilder(lb -> lb
+                  .maxWidth(percent(100f))
                   .padding(insets(16f).pixels())
                   .row()
+                  .gap(16f)
                   .justify(LayoutConfig.JustifyContent.BETWEEN)
                   .alignItems(LayoutConfig.Align.CENTER)
                 )
                 .children(compose(
-                  Para.builder()
-                    .string(content)
-                    .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
-                      .fontSize(16f)
-                    ))
+                  Node.builder()
+                    .layoutBuilder(lb -> lb.shrink(1f))
+                    .children(
+                      Para.builder()
+                        .string(content)
+                        .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
+                          .fontSize(16f)
+                        ))
+                        .build()
+                    )
                     .build(),
                   Button.builder()
                     .color(EzColors.RED_600)

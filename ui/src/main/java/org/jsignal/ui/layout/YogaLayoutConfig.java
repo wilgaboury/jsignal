@@ -16,6 +16,11 @@ public class YogaLayoutConfig implements LayoutConfig {
     this.node = node;
   }
 
+  public long getNode() {
+    return node;
+  }
+
+  // TODO: investigate why this causes crashes when called
   @Override
   public void reset() {
     YGNodeReset(node);
