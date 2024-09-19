@@ -41,6 +41,15 @@ publishing {
     }
 }
 
+
+
+// signing is configured using the following properties stored in ~/local.properties
+// for details look at the user documentation: https://docs.gradle.org/current/userguide/signing_plugin.html
+//
+// signing.keyId
+// signing.password
+// signing.secretKeyRingFile
+
 signing {
     sign(publishing.publications["mavenCentral"])
 }
