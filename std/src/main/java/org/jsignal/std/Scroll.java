@@ -169,7 +169,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
             onMouseLeave(e -> xBarMouseOver.accept(false)),
             onMouseDown(e -> {
               var pos = MathUtil.apply(MathUtil.inverse(ref.getFullTransform()), window.getMousePosition());
-              vertBarRect(ref).ifPresent(rect -> {
+              vertBarRect().ifPresent(rect -> {
                 if (MathUtil.contains(rect, pos)) {
                   xMouseDownOffset = pos.getX() - rect.getLeft();
                   xBarMouseDown.accept(true);
@@ -257,7 +257,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
     return shouldAddYBarSpace.get() || (overlay.get() && yBarMouseOver.get());
   }
 
-  private Optional<Rect> vertBarRect(Node meta) {
+  private Optional<Rect> vertBarRect() {
     return Optional.empty();
   }
 

@@ -5,6 +5,7 @@ import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseCursor;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
+import io.github.humbleui.skija.Region;
 import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
 import org.jsignal.prop.GeneratePropComponent;
@@ -70,7 +71,12 @@ public non-sealed class TextInput extends TextInputPropComponent {
       .listen(List.of(
         onMouseEnter(event -> window.setMouseCursor(MouseCursor.IBEAM)),
         onMouseLeave(event -> window.setMouseCursor(MouseCursor.ARROW)),
-        onFocus(event -> isFocused.accept(true)),
+        onFocus(event -> {
+          isFocused.accept(true);
+          if (cursorPosition.get().isEmpty()) {
+            cursorPosition.accept(Optional.of(0));
+          }
+        }),
         onBlur(event -> {
           isFocused.accept(false);
           cursorPosition.accept(Optional.empty());
@@ -87,8 +93,12 @@ public non-sealed class TextInput extends TextInputPropComponent {
           }
         }),
         onKeyDown(event -> {
+          if (cursorPosition.get().isEmpty()) {
+            return;
+          }
+
           var str = content.get();
-          var split = cursorPosition.get().get();
+          int split = cursorPosition.get().get();
 
           var key = event.getEvent().getKey();
 

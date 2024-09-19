@@ -45,7 +45,6 @@ public class UiWindow {
   public static final Context<Surface> paintSurfaceContext = Context.create();
 
   private static final Set<UiWindow> windows = new HashSet<>();
-  private static final Logger log = LoggerFactory.getLogger(UiWindow.class);
 
   private @Nullable Window window;
   private final Node root;
@@ -66,7 +65,7 @@ public class UiWindow {
 
   private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
 
-  public UiWindow(@Nullable Window window, Supplier<Element> root) {
+  public UiWindow(Window window, Supplier<Element> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();

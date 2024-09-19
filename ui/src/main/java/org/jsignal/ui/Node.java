@@ -20,10 +20,8 @@ import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
 import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
-import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.Layouter;
 import org.jsignal.ui.layout.YogaLayoutConfig;
-import org.jsignal.ui.paint.NullPaintCacheStrategy;
 import org.jsignal.ui.paint.PaintCacheStrategy;
 import org.jsignal.ui.paint.PicturePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
@@ -74,7 +72,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
   private @Nullable Node parent;
   
-  private Set<Object> tags;
+  private final Set<Object> tags;
 
   private final long yoga;
   private final YogaLayoutConfig layoutConfig;
@@ -90,8 +88,6 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
   private PaintCacheStrategy paintCacheStrategy;
   private boolean offScreen = false;
-
-  private WeakHashMap<NodeImpl, Node> metaNodeCache;
 
   private Supplier<List<Node>> children;
 
