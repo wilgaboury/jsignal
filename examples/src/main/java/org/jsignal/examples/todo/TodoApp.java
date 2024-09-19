@@ -1,19 +1,9 @@
 package org.jsignal.examples.todo;
 
 import org.jsignal.rx.Signal;
-import org.jsignal.std.Button;
-import org.jsignal.std.Para;
-import org.jsignal.std.ParaStyle;
-import org.jsignal.std.Scroll;
-import org.jsignal.std.TextInput;
+import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
-import org.jsignal.ui.Component;
-import org.jsignal.ui.Element;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.UiThread;
-import org.jsignal.ui.UiUtil;
-import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.*;
 import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.LayoutConfig;
 
@@ -33,8 +23,8 @@ public class TodoApp extends Component {
       window.setTitle("Todo Application");
       window.setContentSize(500, 500);
       ParaStyle.context.customize(sb -> sb.textStyleBuilder(tsb -> tsb
-        .color(EzColors.BLACK)
-      ))
+          .color(EzColors.BLACK)
+        ))
         .provide(() -> new UiWindow(window, TodoApp::new));
     }));
   }
@@ -149,7 +139,7 @@ public class TodoApp extends Component {
                     .build(),
                   Button.builder()
                     .color(EzColors.RED_600)
-                    .action(() -> todos.mutate(list -> { list.remove((int)idx.get()); }))
+                    .action(() -> todos.mutate(list -> {list.remove((int) idx.get());}))
                     .size(Button.Size.SM)
                     .children(() -> Para.fromString("Remove"))
                     .build()
