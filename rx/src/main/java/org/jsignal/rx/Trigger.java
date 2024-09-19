@@ -13,6 +13,6 @@ public class Trigger extends SignalDecorator<Object> {
   }
 
   public void trigger() {
-    accept(v -> null);
+    transform(v -> null);
   }
 }

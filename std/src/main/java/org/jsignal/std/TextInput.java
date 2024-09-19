@@ -5,7 +5,6 @@ import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseCursor;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.Paint;
-import io.github.humbleui.skija.Region;
 import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
 import org.jsignal.prop.GeneratePropComponent;
@@ -103,30 +102,31 @@ public non-sealed class TextInput extends TextInputPropComponent {
           var key = event.getEvent().getKey();
 
           if (key == Key.LEFT) {
-            cursorPosition.accept(cur -> cur.map(v -> Math.max(0, v - 1)));
+            cursorPosition.transform(cur -> cur.map(v -> Math.max(0, v - 1)));
             return;
           } else if (key == Key.RIGHT) {
             var p = ignore(() -> para.getParagraph());
             var lineMetrics = p.getLineMetrics();
             var lastLineMetrics = lineMetrics[lineMetrics.length - 1];
             int endPos = (int) lastLineMetrics.getEndIndex();
-            cursorPosition.accept(cur -> cur.map(v -> Math.min(endPos, v + 1)));
+            cursorPosition.transform(cur -> cur.map(v -> Math.min(endPos, v + 1)));
             return;
           } else if (key == Key.BACKSPACE && split > 0) {
             onInput.accept(str.substring(0, split - 1) + str.substring(split));
-            cursorPosition.accept(cur -> cur.map(v -> v - 1));
+            cursorPosition.transform(cur -> cur.map(v -> v - 1));
           } else if (key == Key.DELETE && split < str.length()) {
             onInput.accept(str.substring(0, split) + str.substring(split + 1));
           }
 
           var insert = keyToInputString(key, !event.getEvent().isModifierDown(KeyModifier.SHIFT));
 
-          if (insert == null)
+          if (insert == null) {
             return;
+          }
 
           batch(() -> {
             onInput.accept(str.substring(0, split) + insert + str.substring(split));
-            cursorPosition.accept(cur -> cur.map(v -> v + 1));
+            cursorPosition.transform(cur -> cur.map(v -> v + 1));
           });
         })
       ))
@@ -140,7 +140,8 @@ public non-sealed class TextInput extends TextInputPropComponent {
           paint.setColor(isFocused.get() ? EzColors.SKY_500 : EzColors.BLACK);
           float radius = 4f;
           canvas.drawDRRect(layout.getBorderRect().withRadii(radius),
-            layout.getPaddingRect().withRadii(radius), paint);
+            layout.getPaddingRect().withRadii(radius), paint
+          );
         }
       })
       .paintAfter(this::paintCursor)

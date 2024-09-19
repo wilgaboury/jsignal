@@ -17,8 +17,8 @@ public class SignalDecorator<T> implements SignalLike<T> {
   }
 
   @Override
-  public void accept(Function<T, T> transform) {
-    this.signal.accept(transform);
+  public void transform(Function<T, T> transform) {
+    this.signal.transform(transform);
   }
 
   @Override

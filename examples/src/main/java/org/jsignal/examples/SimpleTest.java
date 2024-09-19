@@ -4,23 +4,10 @@ import com.google.common.net.MediaType;
 import io.github.humbleui.skija.Color;
 import io.github.humbleui.skija.FontStyle;
 import org.jsignal.rx.Signal;
-import org.jsignal.std.BasicPainter;
-import org.jsignal.std.Blob;
-import org.jsignal.std.BlobException;
-import org.jsignal.std.Button;
-import org.jsignal.std.Image;
-import org.jsignal.std.Para;
-import org.jsignal.std.ParaStyle;
-import org.jsignal.std.Scroll;
+import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.ui.Component;
-import org.jsignal.ui.Element;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.UiThread;
-import org.jsignal.ui.UiUtil;
-import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,22 +98,22 @@ public class SimpleTest extends Component {
               .children(compose(
                 Button.builder()
                   .color(EzColors.BLUE_300)
-                  .action(() -> count.accept(c -> c + 1))
+                  .action(() -> count.transform(c -> c + 1))
                   .children(() -> Para.fromString("Increase"))
                   .build(),
                 Button.builder()
                   .color(EzColors.BLUE_700)
-                  .action(() -> count.accept(c -> c - 1))
+                  .action(() -> count.transform(c -> c - 1))
                   .children(() -> Para.fromString("Decrease"))
                   .build(),
                 Button.builder()
                   .color(EzColors.RED_300)
-                  .action(() -> count.accept(c -> c * 2))
+                  .action(() -> count.transform(c -> c * 2))
                   .children(() -> Para.fromString("Multiply"))
                   .build(),
                 Button.builder()
                   .color(EzColors.RED_700)
-                  .action(() -> count.accept(c -> c / 2))
+                  .action(() -> count.transform(c -> c / 2))
                   .children(() -> Para.fromString("Divide"))
                   .build()
 
@@ -134,7 +121,7 @@ public class SimpleTest extends Component {
               .build(),
             Button.builder()
               .color(EzColors.RED_900)
-              .action(() -> fontSize.accept(v -> v + 2))
+              .action(() -> fontSize.transform(v -> v + 2))
               .children(() -> Para.fromString("Increase Font Size"))
               .build(),
             ParaStyle.context.customize(style -> style.textStyleBuilder(tsb ->
@@ -171,7 +158,7 @@ public class SimpleTest extends Component {
               .color(buttonColor)
               .action(() -> {
                 buttonColor.accept(Color.withA(rand.nextInt(), 255));
-                showFire.accept(show -> !show);
+                showFire.transform(show -> !show);
               })
               .children(() -> Para.fromString(this::buttonText))
               .build(),
@@ -204,7 +191,7 @@ public class SimpleTest extends Component {
               .height(pixel(200))
               .build(),
             Button.builder()
-              .action(() -> testState.accept(c -> c + 1))
+              .action(() -> testState.transform(c -> c + 1))
               .children(() -> Para.fromString(() -> testState.get().toString()))
               .build()
           );

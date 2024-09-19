@@ -8,6 +8,7 @@ import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.ui.Element;
+import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
@@ -93,12 +94,7 @@ public non-sealed class Button extends ButtonPropComponent {
   private void paint(Canvas canvas, Layout layout) {
     var size = layout.getSize();
     if (mouseDown.get()) {
-      float pressScale = 0.95f;
-      canvas.scale(pressScale, pressScale);
-      canvas.translate(
-        size.getX() * (1f - pressScale) / 2f,
-        size.getY() * (1f - pressScale) / 2f
-      );
+      canvas.concat(MathUtil.scaleCenter(0.95f, size.getX(), size.getY()));
     }
     try (Paint paint = new Paint()) {
       paint.setColor(mouseOver.get() ? hoverColor(color.get()) : color.get());

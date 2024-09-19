@@ -3,9 +3,9 @@ package org.jsignal.std;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Signal;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Nodes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,10 +46,10 @@ public class Portal {
     @Override
     public Element render() {
       var suppliers = getSuppliers(id);
-      suppliers.mutate(list -> {
+      suppliers.modify(list -> {
         list.add(child);
       });
-      Cleanups.onCleanup(() -> suppliers.mutate(list -> {
+      Cleanups.onCleanup(() -> suppliers.modify(list -> {
         list.remove(child);
       }));
       return Nodes.empty();

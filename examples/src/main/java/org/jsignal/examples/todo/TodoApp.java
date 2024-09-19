@@ -100,9 +100,7 @@ public class TodoApp extends Component {
                     Button.builder()
                       .color(EzColors.BLUE_500)
                       .action(() -> batch(() -> {
-                        todos.mutate(list -> {
-                          list.add(todo.get());
-                        });
+                        todos.modify(list -> list.add(todo.get()));
                         todo.accept("");
                       }))
                       .children(() -> Para.fromString("Add"))
@@ -111,12 +109,19 @@ public class TodoApp extends Component {
                   .build()
               ))
               .build(),
-            Nodes.forEach(todos, (content, idx) ->
-              Node.builder()
+            Nodes.forEach(todos, (content, idx) -> {
+              var enterAnim = AnimationHelper.builder()
+                .function(EasingFunction::easeOutQuad)
+                .build();
+
+              enterAnim.start();
+
+              return Node.builder()
                 .paint(CardPainter.builder()
                   .radius(16f)
                   .build()
                 )
+                .transform(layout -> MathUtil.scaleCenter(enterAnim.get(), layout.getWidth(), layout.getHeight()))
                 .layoutBuilder(lb -> lb
                   .maxWidth(percent(100f))
                   .padding(insets(16f).pixels())
@@ -139,13 +144,13 @@ public class TodoApp extends Component {
                     .build(),
                   Button.builder()
                     .color(EzColors.RED_600)
-                    .action(() -> todos.mutate(list -> {list.remove((int) idx.get());}))
+                    .action(() -> todos.modify(list -> list.remove((int) idx.get())))
                     .size(Button.Size.SM)
                     .children(() -> Para.fromString("Remove"))
                     .build()
                 ))
-                .build()
-            )
+                .build();
+            })
           ))
           .build()
       )

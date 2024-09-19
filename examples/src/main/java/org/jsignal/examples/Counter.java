@@ -4,13 +4,7 @@ import org.jsignal.rx.Signal;
 import org.jsignal.std.Button;
 import org.jsignal.std.Para;
 import org.jsignal.std.ez.EzColors;
-import org.jsignal.ui.Component;
-import org.jsignal.ui.Element;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.UiThread;
-import org.jsignal.ui.UiUtil;
-import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.*;
 
 public class Counter extends Component {
   public static void main(String[] args) {
@@ -43,7 +37,7 @@ public class Counter extends Component {
           .build(),
         Button.builder()
           .color(EzColors.BLUE_300)
-          .action(() -> count.accept(c -> c + 1))
+          .action(() -> count.transform(c -> c + 1))
           .children(() -> Para.fromString("Increment"))
           .build()
       ))

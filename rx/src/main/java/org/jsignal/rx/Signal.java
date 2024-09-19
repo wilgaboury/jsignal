@@ -64,7 +64,7 @@ public class Signal<T> implements SignalLike<T>, SkipMemo {
   }
 
   @Override
-  public void accept(Function<T, T> transform) {
+  public void transform(Function<T, T> transform) {
     mutate(oldValue -> {
       value = transform.apply(oldValue);
       return !equals.apply(oldValue, value);
@@ -86,10 +86,11 @@ public class Signal<T> implements SignalLike<T>, SkipMemo {
         EffectRef ref = itr.next();
         Optional<EffectLike> effect = ref.getEffect();
 
-        if (effect.isEmpty() || effect.get().isDisposed())
+        if (effect.isEmpty() || effect.get().isDisposed()) {
           itr.remove();
-        else
+        } else {
           batch.add(ref);
+        }
       }
     });
   }

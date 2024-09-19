@@ -38,7 +38,7 @@ public class AnimationTest extends Component {
   @Override
   public Element render() {
     var animation = new Animation((deltaTimeNano, stop) ->
-      angle.accept(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
+      angle.transform(cur -> cur + (deltaTimeNano * 1e-9f * ANGULAR_VEL_DEG_SEC)));
 
     return Node.builder()
       .layout(EzLayout.builder()

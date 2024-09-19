@@ -53,4 +53,14 @@ public class MathUtil {
       0, 0, vec[2]
     );
   }
+
+  public static Matrix33 scaleCenter(float xy, float width, float height) {
+    return scaleCenter(xy, xy, width, height);
+  }
+
+  public static Matrix33 scaleCenter(float x, float y, float width, float height) {
+    return Matrix33.makeTranslate(width / 2f, height / 2f)
+      .makeConcat(Matrix33.makeScale(x, y))
+      .makeConcat(Matrix33.makeTranslate(-width / 2f, -height / 2f));
+  }
 }

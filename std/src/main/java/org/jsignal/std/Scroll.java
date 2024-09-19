@@ -9,19 +9,10 @@ import io.github.humbleui.types.RRect;
 import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.rx.Constant;
-import org.jsignal.rx.Effect;
-import org.jsignal.rx.Ref;
-import org.jsignal.rx.RxUtil;
-import org.jsignal.rx.Signal;
+import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.ui.Component;
-import org.jsignal.ui.Element;
-import org.jsignal.ui.MathUtil;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.*;
 import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
@@ -45,7 +36,8 @@ public non-sealed class Scroll extends ScrollPropComponent {
   private static final float DEFAULT_WIDTH = 15f;
 
   private static final SVGDOM upIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-up-s-line.svg"));
-  private static final SVGDOM downIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-down-s-line.svg"));
+  private static final SVGDOM downIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream(
+    "/icons/arrow-down-s-line.svg"));
 
   @Prop
   Supplier<Boolean> overlay = Constant.of(false);
@@ -349,11 +341,8 @@ public non-sealed class Scroll extends ScrollPropComponent {
           }
 
           if (mouseDown.get()) {
-            canvas.concat(
-              Matrix33.makeTranslate(size.get() / 2f, size.get() / 2f)
-                .makeConcat(Matrix33.makeScale(0.8f))
-                .makeConcat(Matrix33.makeTranslate(-size.get() / 2f, -size.get() / 2f))
-            );
+            var s = size.get();
+            canvas.concat(MathUtil.scaleCenter(0.8f, s, s));
           }
 
           if (mouseOver.get()) {

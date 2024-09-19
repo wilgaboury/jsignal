@@ -11,23 +11,26 @@ import static org.jsignal.rx.RxUtil.ignore;
 
 @GeneratePropHelper
 public non-sealed class AnimationHelper extends AnimationHelperPropHelper implements Supplier<Float> {
-  @Prop(required = true)
-  Supplier<Float> start;
-  @Prop(required = true)
-  Supplier<Float> end;
-  @Prop(required = true)
-  Supplier<Float> durationSeconds;
+  @Prop
+  Supplier<Float> start = Constant.of(0f);
+  @Prop
+  Supplier<Float> end = Constant.of(1f);
+  @Prop
+  Supplier<Float> durationSeconds = Constant.of(0.2f);
   @Prop
   Supplier<EasingFunction> function = Constant.of(EasingFunction::linear);
+  @Prop
+  Runnable onFinish = () -> {};
 
   private final Signal<Float> progress = Signal.create(0f);
   private final Signal<State> state = Signal.create(State.INITIAL);
   private final Animation animation = new Animation((deltaTime, stop) -> {
     float increment = (deltaTime * 1e-9f) / durationSeconds.get();
-    progress.accept(cur -> cur + increment);
+    progress.transform(cur -> cur + increment);
     if (progress.get() > 1) {
       stop.run();
       state.accept(State.FINISHED);
+      onFinish.run();
     }
   });
 

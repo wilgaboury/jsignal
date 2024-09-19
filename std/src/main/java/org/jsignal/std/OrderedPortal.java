@@ -4,11 +4,14 @@ import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Computed;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Signal;
-import org.jsignal.ui.Nodes;
-import org.jsignal.ui.Element;
 import org.jsignal.ui.Component;
+import org.jsignal.ui.Element;
+import org.jsignal.ui.Nodes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeMap;
 
 public class OrderedPortal {
   public static final class Key<T> {
@@ -33,7 +36,12 @@ public class OrderedPortal {
     public Element render() {
       // TODO: find way to assert no duplicate out points
       var map = getNodesMap(id);
-      return Nodes.fromList(Computed.create(() -> map.get().values().stream().flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream())).toList()));
+      return Nodes.fromList(Computed.create(() -> map
+        .get()
+        .values()
+        .stream()
+        .flatMap(nodes -> nodes.stream().flatMap(n -> n.getNodeList().stream()))
+        .toList()));
     }
   }
 
@@ -52,12 +60,11 @@ public class OrderedPortal {
     @Override
     public Element render() {
       var suppliers = getNodesMap(id);
-      suppliers.mutate(map -> {
-        ((TreeMap<T, List<Nodes>>) map)
-          .computeIfAbsent(level, ignored -> new ArrayList<>())
-          .add(child);
-      });
-      Cleanups.onCleanup(() -> suppliers.mutate(map -> {
+      suppliers.modify(map -> ((TreeMap<T, List<Nodes>>) map)
+        .computeIfAbsent(level, ignored -> new ArrayList<>())
+        .add(child)
+      );
+      Cleanups.onCleanup(() -> suppliers.modify(map -> {
         map.get(level).remove(child);
       }));
       return Nodes.empty();

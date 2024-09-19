@@ -22,6 +22,6 @@ public class Computed<T> extends SignalDecorator<T> implements SkipMemo {
   }
 
   public static <T> Computed<T> create(SignalLike<T> signal, Supplier<T> supplier) {
-    return new Computed<>(signal, Effect.create(() -> signal.accept(supplier)));
+    return new Computed<>(signal, Effect.create(() -> signal.accept(supplier.get())));
   }
 }

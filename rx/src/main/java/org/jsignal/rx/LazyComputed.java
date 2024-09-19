@@ -33,6 +33,6 @@ public class LazyComputed<T> extends SignalDecorator<T> implements SkipMemo {
   }
 
   public static <T> LazyComputed<T> create(SignalLike<T> signal, Supplier<T> supplier) {
-    return new LazyComputed<>(signal, new Effect(() -> signal.accept(supplier)));
+    return new LazyComputed<>(signal, new Effect(() -> signal.accept(supplier.get())));
   }
 }
