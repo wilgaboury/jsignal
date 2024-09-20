@@ -60,8 +60,13 @@ public non-sealed class Para extends ParaPropComponent {
   Supplier<ParaStyle> style = ParaStyle.context.use();
 
   private final Signal<Float> height = Signal.empty();
+  private final Ref<Node> ref = new Ref<>();
 
   public Para() {}
+
+  public Node getRef() {
+    return ref.get();
+  }
 
   @Override
   protected void onBuild(Transitive transitive) {
@@ -80,11 +85,9 @@ public non-sealed class Para extends ParaPropComponent {
 
   @Override
   public Element render() {
-    Ref<Node> nodeRef = new Ref<>();
-    onResolve(() -> Effect.create(onDefer(para, () -> nodeRef.get().getLayoutConfig().markDirty())));
-
+    onResolve(() -> Effect.create(onDefer(para, () -> ref.get().getLayoutConfig().markDirty())));
     return Node.builder()
-      .ref(nodeRef)
+      .ref(ref)
       .layout(config ->
         config.setMeasure((width, widthMode, height, heightMode) -> {
           var layoutWidth = widthMode == LayoutConfig.MeasureMode.UNDEFINED ? Float.POSITIVE_INFINITY : width;

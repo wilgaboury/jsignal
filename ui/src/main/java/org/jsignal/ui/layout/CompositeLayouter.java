@@ -50,6 +50,15 @@ public class CompositeLayouter implements Layouter {
       return this;
     }
 
+    public Builder alignSelf(LayoutConfig.Align align) {
+      return alignSelf(Constant.of(align));
+    }
+
+    public Builder alignSelf(Supplier<LayoutConfig.Align> align) {
+      operations.add(config -> config.setAlignSelf(align.get()));
+      return this;
+    }
+
     public Builder justify(LayoutConfig.JustifyContent justify) {
       return this.justify(Constant.of(justify));
     }

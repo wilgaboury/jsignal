@@ -17,12 +17,14 @@ public non-sealed class CardPainter extends CardPainterPropHelper implements Pai
   @Prop
   Supplier<Integer> backgroundColor = Constant.of(EzColors.WHITE);
   @Prop
-  Supplier<Float> radius = Constant.of(4f);
+  Supplier<Integer> shadowColor = Constant.of(EzColors.GRAY_500);
+  @Prop
+  Supplier<Float> radius = Constant.of(8f);
 
   @Override
   public void paint(Canvas canvas, Layout layout) {
     try (var paint = new Paint()) {
-      paint.setImageFilter(ImageFilter.makeDropShadow(0f, 4f, 4f, 4f, EzColors.GRAY_500));
+      paint.setImageFilter(ImageFilter.makeDropShadow(0f, 4f, 4f, 4f, shadowColor.get()));
       paint.setColor(backgroundColor.get());
       canvas.drawRRect(layout.getBoundingRect().withRadii(radius.get()), paint);
     }

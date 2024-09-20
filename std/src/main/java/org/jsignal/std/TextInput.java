@@ -4,6 +4,7 @@ import io.github.humbleui.jwm.Key;
 import io.github.humbleui.jwm.KeyModifier;
 import io.github.humbleui.jwm.MouseCursor;
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
@@ -11,13 +12,16 @@ import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.Constant;
+import org.jsignal.rx.Effect;
 import org.jsignal.rx.Ref;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
 import org.jsignal.ui.Element;
+import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.event.MouseEvent;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
 
@@ -52,7 +56,10 @@ public non-sealed class TextInput extends TextInputPropComponent {
   private final Signal<Boolean> isFocused = Signal.create(false);
 
   private Para para;
+  private final Ref<Node> ref = new Ref<>();
   private final Signal<Optional<Integer>> cursorPosition = Signal.create(Optional.empty());
+  private final Signal<Boolean> mouseDown = Signal.create(false);
+  private final Signal<Optional<SelectionRange>> selectionRange = Signal.create(Optional.empty());
 
   @Override
   protected void onBuild(Transitive transitive) {
@@ -61,9 +68,20 @@ public non-sealed class TextInput extends TextInputPropComponent {
 
   @Override
   public Element render() {
-    var ref = new Ref<Node>();
-
     var window = UiWindow.context.use().getWindow().get();
+
+    Effect.create(() -> {
+      if (mouseDown.get()) {
+        Effect.create(() -> {
+          var pos = MathUtil.apply(
+            MathUtil.inverse(para.getRef().getFullTransform()),
+            UiWindow.context.use().getMousePosition()
+          );
+          var gPos = para.getParagraph().getGlyphPositionAtCoordinate(pos.getX(), pos.getY());
+          selectionRange.accept(Optional.of(new SelectionRange(selectionRange.get().get().start, gPos.getPosition())));
+        });
+      }
+    });
 
     return Node.builder()
       .ref(ref)
@@ -79,16 +97,18 @@ public non-sealed class TextInput extends TextInputPropComponent {
         onBlur(event -> {
           isFocused.accept(false);
           cursorPosition.accept(Optional.empty());
+          selectionRange.accept(Optional.empty());
         }),
+        onMouseDown(event -> {
+          var pos = mouseEventToPosition(event, ref.get());
+          cursorPosition.accept(Optional.empty());
+          pos.ifPresent(p -> selectionRange.accept(Optional.of(new SelectionRange(p, p))));
+          mouseDown.accept(true);
+        }),
+        onMouseUp(event -> mouseDown.accept(false)),
         onMouseClick(event -> {
-          if (content.get().isEmpty()) {
-            cursorPosition.accept(Optional.of(0));
-          } else {
-            var pos = event.getPoint();
-            var content = ref.get().getLayout().getContentRect();
-            var x = pos.getX() - content.getLeft();
-            var y = pos.getY() - content.getTop();
-            cursorPosition.accept(Optional.of(para.getParagraph().getGlyphPositionAtCoordinate(x, y).getPosition()));
+          if (selectionRange.get().isEmpty() || selectionRange.get().get().start == selectionRange.get().get().end) {
+            cursorPosition.accept(mouseEventToPosition(event, ref.get()));
           }
         }),
         onKeyDown(event -> {
@@ -143,10 +163,24 @@ public non-sealed class TextInput extends TextInputPropComponent {
             layout.getPaddingRect().withRadii(radius), paint
           );
         }
+
+        paintSelection(canvas, layout);
       })
       .paintAfter(this::paintCursor)
       .children(children.apply(para))
       .build();
+  }
+
+  private Optional<Integer> mouseEventToPosition(MouseEvent e, Node node) {
+    if (content.get().isEmpty()) {
+      return Optional.of(0);
+    } else {
+      var pos = e.getPoint();
+      var content = node.getLayout().getContentRect();
+      var x = pos.getX() - content.getLeft();
+      var y = pos.getY() - content.getTop();
+      return Optional.of(para.getParagraph().getGlyphPositionAtCoordinate(x, y).getPosition());
+    }
   }
 
   private void paintCursor(Canvas canvas, Layout layout) {
@@ -163,7 +197,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
           return;
         }
 
-        var p = ignore(() -> para.getParagraph());
+        var p = para.getParagraph();
         var lineMetrics = p.getLineMetrics();
         var lastLineMetrics = lineMetrics[lineMetrics.length - 1];
         int endPos = (int) lastLineMetrics.getEndIndex();
@@ -175,6 +209,40 @@ public non-sealed class TextInput extends TextInputPropComponent {
         canvas.drawLine(x, yOffset + rect.getTop(), x, yOffset + rect.getBottom(), paint);
       }
     });
+  }
+
+  private void paintSelection(Canvas canvas, Layout layout) {
+    selectionRange.get().ifPresent(range -> {
+      if (range.start == range.end) {
+        return;
+      }
+
+      var p = para.getParagraph();
+      var rects = p.getRectsForRange(range.getMin(), range.getMax(), RectHeightMode.MAX, RectWidthMode.MAX);
+      var contentRect = layout.getContentRect();
+      int count = canvas.save();
+      try {
+        canvas.concat(Matrix33.makeTranslate(contentRect.getLeft(), contentRect.getTop()));
+        try (var paint = new Paint()) {
+          paint.setColor(EzColors.BLUE_400);
+          for (var rect : rects) {
+            canvas.drawRect(rect.getRect(), paint);
+          }
+        }
+      } finally {
+        canvas.restoreToCount(count);
+      }
+    });
+  }
+
+  private record SelectionRange(int start, int end) {
+    public int getMin() {
+      return Math.min(start, end);
+    }
+
+    public int getMax() {
+      return Math.max(start, end);
+    }
   }
 
   public static String keyToInputString(Key key, boolean lower) {

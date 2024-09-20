@@ -1,5 +1,6 @@
 package org.jsignal.examples.todo;
 
+import io.github.humbleui.skija.FontStyle;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
@@ -117,20 +118,29 @@ public class TodoApp extends Component {
               enterAnim.start();
 
               return Node.builder()
-                .paint(CardPainter.builder()
-                  .radius(16f)
-                  .build()
-                )
+                .paint(new CardPainter())
                 .transform(layout -> MathUtil.scaleCenter(enterAnim.get(), layout.getWidth(), layout.getHeight()))
                 .layoutBuilder(lb -> lb
                   .maxWidth(percent(100f))
                   .padding(insets(16f).pixels())
                   .row()
                   .gap(16f)
-                  .justify(LayoutConfig.JustifyContent.BETWEEN)
+                  .justify(LayoutConfig.JustifyContent.START)
                   .alignItems(LayoutConfig.Align.CENTER)
                 )
                 .children(compose(
+                  Node.builder()
+                    .layoutBuilder(lb -> lb.alignSelf(LayoutConfig.Align.START))
+                    .children(
+                      Para.builder()
+                        .string(idx.get().toString() + ")")
+                        .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
+                          .fontSize(20f)
+                          .fontStyle(FontStyle.BOLD)
+                        ))
+                        .build()
+                    )
+                    .build(),
                   Node.builder()
                     .layoutBuilder(lb -> lb.shrink(1f))
                     .children(
@@ -142,6 +152,7 @@ public class TodoApp extends Component {
                         .build()
                     )
                     .build(),
+                  Node.builder().layoutBuilder(lb -> lb.grow(1f)).build(),
                   Button.builder()
                     .color(EzColors.RED_600)
                     .action(() -> todos.modify(list -> list.remove((int) idx.get())))

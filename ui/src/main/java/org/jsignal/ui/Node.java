@@ -8,13 +8,7 @@ import jakarta.annotation.Nullable;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
 import org.jsignal.prop.TransitiveProps;
-import org.jsignal.rx.Cleanups;
-import org.jsignal.rx.Constant;
-import org.jsignal.rx.Context;
-import org.jsignal.rx.Effect;
-import org.jsignal.rx.Ref;
-import org.jsignal.rx.RxUtil;
-import org.jsignal.rx.SideEffect;
+import org.jsignal.rx.*;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
@@ -27,18 +21,7 @@ import org.jsignal.ui.paint.PicturePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 import org.lwjgl.util.yoga.Yoga;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -53,25 +36,40 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
 
   @TransitiveProps
   public static class Transitive {
-    @Prop Collection<Object> tags = Collections.emptyList();
-    @Prop Collection<EventListener<?>> listen = Collections.emptyList();
-    @Prop Element children = Nodes.empty();
-    @Prop Consumer<Node> ref;
-    @Prop Function<CompositeLayouter.Builder, CompositeLayouter.Builder> layoutBuilder;
+    @Prop
+    Collection<Object> tags = Collections.emptyList();
+    @Prop
+    Collection<EventListener<?>> listen = Collections.emptyList();
+    @Prop
+    Element children = Nodes.empty();
+    @Prop
+    Consumer<Node> ref;
+    @Prop
+    Function<CompositeLayouter.Builder, CompositeLayouter.Builder> layoutBuilder;
   }
 
-  @Prop Object id;
+  @Prop
+  Object id;
 
-  @Prop UiWindow window = UiWindow.context.use();
+  @Prop
+  UiWindow window = UiWindow.context.use();
 
-  @Prop @Nullable Layouter layout;
-  @Prop Transformer transform =  n -> Matrix33.IDENTITY;
-  @Prop @Nullable Painter paint;
-  @Prop @Nullable Painter paintAfter;
-  @Prop HitTester hitTest = HitTester::boundsTest;
+  @Prop
+  @Nullable
+  Layouter layout;
+  @Prop
+  Transformer transform = n -> Matrix33.IDENTITY;
+  @Prop
+  @Nullable
+  Painter paint;
+  @Prop
+  @Nullable
+  Painter paintAfter;
+  @Prop
+  HitTester hitTest = HitTester::boundsTest;
 
   private @Nullable Node parent;
-  
+
   private final Set<Object> tags;
 
   private final long yoga;
