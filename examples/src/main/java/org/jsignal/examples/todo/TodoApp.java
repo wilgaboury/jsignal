@@ -93,7 +93,7 @@ public class TodoApp extends Component {
                       .content(todo)
                       .onInput(todo)
                       .children(para -> Node.builder()
-                        .layoutBuilder(lb -> lb.minWidth(pixel(150f)))
+                        .layoutBuilder(lb -> lb.minWidth(pixel(150f)).minHeight(pixel(150f)))
                         .children(para)
                         .build()
                       )
@@ -101,7 +101,7 @@ public class TodoApp extends Component {
                     Button.builder()
                       .color(EzColors.BLUE_500)
                       .action(() -> batch(() -> {
-                        todos.modify(list -> list.add(todo.get()));
+                        todos.modify(list -> list.addFirst(todo.get()));
                         todo.accept("");
                       }))
                       .children(() -> Para.fromString("Add"))
@@ -113,13 +113,14 @@ public class TodoApp extends Component {
             Nodes.forEach(todos, (content, idx) -> {
               var enterAnim = AnimationHelper.builder()
                 .function(EasingFunction::easeOutQuad)
+                .run(true)
                 .build();
 
-              enterAnim.start();
+              var anim = Signal.create(enterAnim);
 
               return Node.builder()
                 .paint(new CardPainter())
-                .transform(layout -> MathUtil.scaleCenter(enterAnim.get(), layout.getWidth(), layout.getHeight()))
+                .transform(layout -> MathUtil.scaleCenter(anim.get().get(), layout.getWidth(), layout.getHeight()))
                 .layoutBuilder(lb -> lb
                   .maxWidth(percent(100f))
                   .padding(insets(16f).pixels())
@@ -133,7 +134,7 @@ public class TodoApp extends Component {
                     .layoutBuilder(lb -> lb.alignSelf(LayoutConfig.Align.START))
                     .children(
                       Para.builder()
-                        .string(idx.get().toString() + ")")
+                        .string(() -> idx.get() + 1 + ")")
                         .styleBuilder(sb -> sb.textStyleBuilder(tsb -> tsb
                           .fontSize(20f)
                           .fontStyle(FontStyle.BOLD)
@@ -155,7 +156,14 @@ public class TodoApp extends Component {
                   Node.builder().layoutBuilder(lb -> lb.grow(1f)).build(),
                   Button.builder()
                     .color(EzColors.RED_600)
-                    .action(() -> todos.modify(list -> list.remove((int) idx.get())))
+                    .action(() -> anim.accept(AnimationHelper.builder()
+                      .start(1f)
+                      .end(0f)
+                      .function(EasingFunction::easeOutQuad)
+                      .onFinish(() -> todos.modify(list -> list.remove((int) idx.get())))
+                      .run(true)
+                      .build()
+                    ))
                     .size(Button.Size.SM)
                     .children(() -> Para.fromString("Remove"))
                     .build()

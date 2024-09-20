@@ -198,7 +198,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
         if (ignore(content).isEmpty()) {
           var x = layout.getContentRect().getLeft();
           var y = layout.getContentRect().getTop();
-          canvas.drawLine(x, y, x, y + layout.getContentRect().getHeight(), paint);
+          canvas.drawLine(x, y, x, y + para.getParagraph().getHeight(), paint);
           return;
         }
 

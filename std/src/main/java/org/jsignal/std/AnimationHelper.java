@@ -2,6 +2,7 @@ package org.jsignal.std;
 
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
+import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Signal;
 
@@ -22,6 +23,12 @@ public non-sealed class AnimationHelper extends AnimationHelperPropHelper implem
   @Prop
   Runnable onFinish = () -> {};
 
+  @TransitiveProps
+  static class Build {
+    @Prop
+    boolean run = false;
+  }
+
   private final Signal<Float> progress = Signal.create(0f);
   private final Signal<State> state = Signal.create(State.INITIAL);
   private final Animation animation = new Animation((deltaTime, stop) -> {
@@ -33,6 +40,13 @@ public non-sealed class AnimationHelper extends AnimationHelperPropHelper implem
       onFinish.run();
     }
   });
+
+  @Override
+  void onBuild(Build buildProps) {
+    if (buildProps.run) {
+      start();
+    }
+  }
 
   public void start() {
     if (ignore(state) != State.RUNNING && ignore(state) != State.FINISHED) {

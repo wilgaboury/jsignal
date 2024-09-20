@@ -1,32 +1,15 @@
 package org.jsignal.prop;
 
-import com.palantir.javapoet.ClassName;
-import com.palantir.javapoet.FieldSpec;
-import com.palantir.javapoet.JavaFile;
-import com.palantir.javapoet.MethodSpec;
-import com.palantir.javapoet.ParameterSpec;
-import com.palantir.javapoet.TypeName;
-import com.palantir.javapoet.TypeSpec;
+import com.palantir.javapoet.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -88,17 +71,16 @@ public class PropGenerator {
       .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.SEALED)
       .addPermittedSubclass(TypeName.get(element.asType()));
 
-    MethodSpec.Builder onBuildMethod = MethodSpec.methodBuilder("onBuild")
-      .addModifiers(Modifier.PROTECTED);
+    MethodSpec.Builder onBuildMethod = MethodSpec.methodBuilder("onBuild");
 
     if (transitiveElement != null) {
-        onBuildMethod.addParameter(ParameterSpec.builder(
+      onBuildMethod.addParameter(ParameterSpec.builder(
             TypeName.get(transitiveElement.asType()),
             "transitive"
           )
           .build()
-        );
-      }
+      );
+    }
     genClassBuilder.addMethod(onBuildMethod.build());
 
     if (isComponentClass(element)) {
@@ -110,7 +92,8 @@ public class PropGenerator {
     genClassBuilder.addMethod(MethodSpec.methodBuilder("builder")
       .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
       .returns(genClassInnerName(element, builderReturnType.name()))
-      .addCode("""
+      .addCode(
+        """
           return new $T();
           """,
         builderClassName(element)
@@ -138,7 +121,11 @@ public class PropGenerator {
       .toList();
   }
 
-  public TypeSpec generateBuilders(TypeElement element, TypeElement transitiveElement, TypeSpec.Builder genClassBuilder) {
+  public TypeSpec generateBuilders(
+    TypeElement element,
+    TypeElement transitiveElement,
+    TypeSpec.Builder genClassBuilder
+  ) {
     List<TypeSpec> builderInterfaces = new ArrayList<>();
 
     Set<? extends Element> transitivePropFields = transitiveElement != null
@@ -172,24 +159,26 @@ public class PropGenerator {
 
     MethodSpec.Builder builderClassConstructor = MethodSpec.constructorBuilder()
       .addModifiers(Modifier.PUBLIC)
-      .addCode("""
-            this.$L = new $T();
-            """,
+      .addCode(
+        """
+          this.$L = new $T();
+          """,
         BUILDER_FIELD_NAME,
         ClassName.get(element)
       );
 
     if (transitiveElement != null) {
       builderClassBuilder.addField(FieldSpec.builder(
-          TypeName.get(transitiveElement.asType()),
-          BUILDER_TRANSITIVE_FIELD_NAME
-        )
-        .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
-        .build()
+            TypeName.get(transitiveElement.asType()),
+            BUILDER_TRANSITIVE_FIELD_NAME
+          )
+          .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+          .build()
       );
-      builderClassConstructor.addCode("""
-        this.$L = new $T();
-        """,
+      builderClassConstructor.addCode(
+        """
+          this.$L = new $T();
+          """,
         BUILDER_TRANSITIVE_FIELD_NAME,
         ClassName.get(transitiveElement)
       );
@@ -200,7 +189,8 @@ public class PropGenerator {
     MethodSpec.Builder toBuilderMethod = MethodSpec.methodBuilder("toBuilder")
       .addModifiers(Modifier.PUBLIC)
       .returns(genClassInnerName(element, BUILDER_CLASS_NAME))
-      .addCode("""
+      .addCode(
+        """
           $T $L = new $T();
           $T that = ($T)this;
           """,
@@ -221,7 +211,14 @@ public class PropGenerator {
       for (var oneofPropField : oneofPropEntry.getValue()) {
         boolean isTransitive = transitivePropFields.contains(oneofPropField);
         addSetterMethods(false, isTransitive, oneofStep, oneofPropField, previousBuilderType, null);
-        addSetterMethods( true, isTransitive, builderClassBuilder, oneofPropField, builderClassName(element), toBuilderMethod);
+        addSetterMethods(
+          true,
+          isTransitive,
+          builderClassBuilder,
+          oneofPropField,
+          builderClassName(element),
+          toBuilderMethod
+        );
       }
 
       builderInterfaces.add(oneofStep.build());
@@ -235,7 +232,14 @@ public class PropGenerator {
 
       boolean isTransitive = transitivePropFields.contains(requiredPropField);
       addSetterMethods(false, isTransitive, requiredStep, requiredPropField, previousBuilderType, null);
-      addSetterMethods(true, isTransitive, builderClassBuilder, requiredPropField, builderClassName(element), toBuilderMethod);
+      addSetterMethods(
+        true,
+        isTransitive,
+        builderClassBuilder,
+        requiredPropField,
+        builderClassName(element),
+        toBuilderMethod
+      );
 
       builderInterfaces.add(requiredStep.build());
       previousBuilderType = genClassInnerName(element, interfaceName);
@@ -243,7 +247,14 @@ public class PropGenerator {
 
     for (var optionalPropField : optionalPropFields) {
       boolean isTransitive = transitivePropFields.contains(optionalPropField);
-      addSetterMethods(true, isTransitive, builderClassBuilder, optionalPropField, builderClassName(element), toBuilderMethod);
+      addSetterMethods(
+        true,
+        isTransitive,
+        builderClassBuilder,
+        optionalPropField,
+        builderClassName(element),
+        toBuilderMethod
+      );
     }
 
     MethodSpec.Builder buildMethod = MethodSpec.methodBuilder("build")
@@ -251,7 +262,8 @@ public class PropGenerator {
       .returns(TypeName.get(element.asType()));
 
     if (transitiveElement == null) {
-      buildMethod.addCode("""
+      buildMethod.addCode(
+        """
           (($T)$L).onBuild();
           return $L;
           """,
@@ -260,7 +272,8 @@ public class PropGenerator {
         BUILDER_FIELD_NAME
       );
     } else {
-      buildMethod.addCode("""
+      buildMethod.addCode(
+        """
           (($T)$L).onBuild($L);
           return $L;
           """,
@@ -280,7 +293,8 @@ public class PropGenerator {
       .toList()
     ).build();
 
-    toBuilderMethod.addCode("""
+    toBuilderMethod.addCode(
+      """
         return $L;
         """,
       TO_BUILDER_VAR_NAME
@@ -294,7 +308,14 @@ public class PropGenerator {
     return builderInterfaces.isEmpty() ? builderClass : builderInterfaces.getFirst();
   }
 
-  public void addSetterMethods(boolean isBuilder, boolean isTransitive, TypeSpec.Builder typeBuilder, Element field, TypeName returnType, MethodSpec.Builder toBuilderMethod) {
+  public void addSetterMethods(
+    boolean isBuilder,
+    boolean isTransitive,
+    TypeSpec.Builder typeBuilder,
+    Element field,
+    TypeName returnType,
+    MethodSpec.Builder toBuilderMethod
+  ) {
     Prop annotation = field.getAnnotation(Prop.class);
 
     var fieldName = field.getSimpleName().toString();
@@ -312,7 +333,8 @@ public class PropGenerator {
 
     if (!annotation.noRx() && supplierTypeArgument != null) {
       if (isBuilder) {
-        directSetterMethodBuilder.addCode("""
+        directSetterMethodBuilder.addCode(
+          """
             this.$L.$L = $T.createMemo($L);
             return this;
             """,
@@ -335,7 +357,8 @@ public class PropGenerator {
           .returns(returnType);
 
         if (isBuilder) {
-          constSetterMethodBuilder.addCode("""
+          constSetterMethodBuilder.addCode(
+            """
               this.$L.$L = $T.of($L);
               return this;
               """,
@@ -349,7 +372,8 @@ public class PropGenerator {
         typeBuilder.addMethod(constSetterMethodBuilder.build());
       }
     } else if (isBuilder) {
-      directSetterMethodBuilder.addCode("""
+      directSetterMethodBuilder.addCode(
+        """
           this.$L.$L = $L;
           return this;
           """,
@@ -360,7 +384,8 @@ public class PropGenerator {
     }
 
     if (!isTransitive && toBuilderMethod != null) {
-      toBuilderMethod.addCode("""
+      toBuilderMethod.addCode(
+        """
           $L.$L.$L = that.$L;
           """,
         TO_BUILDER_VAR_NAME,
@@ -408,7 +433,10 @@ public class PropGenerator {
     }
   }
 
-  public static Optional<AnnotationMirror> findAnnotation(Element element, Class<? extends Annotation> annotationClass) {
+  public static Optional<AnnotationMirror> findAnnotation(
+    Element element,
+    Class<? extends Annotation> annotationClass
+  ) {
     for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
       if (annotationMirror.getAnnotationType().toString().equals(annotationClass.getCanonicalName())) {
         return Optional.of(annotationMirror);

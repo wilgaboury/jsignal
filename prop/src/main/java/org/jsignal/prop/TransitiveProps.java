@@ -1,4 +1,4 @@
 package org.jsignal.prop;
 
-public @interface TransitiveProps {
-}
+// TODO: the word transitive is used incorrectly, rename to BuildProps
+public @interface TransitiveProps {}
