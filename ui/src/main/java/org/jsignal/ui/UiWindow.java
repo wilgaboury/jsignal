@@ -1,15 +1,6 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.jwm.App;
-import io.github.humbleui.jwm.EventKey;
-import io.github.humbleui.jwm.EventMouseButton;
-import io.github.humbleui.jwm.EventMouseMove;
-import io.github.humbleui.jwm.EventMouseScroll;
-import io.github.humbleui.jwm.EventWindowClose;
-import io.github.humbleui.jwm.EventWindowCloseRequest;
-import io.github.humbleui.jwm.EventWindowFocusOut;
-import io.github.humbleui.jwm.EventWindowResize;
-import io.github.humbleui.jwm.Window;
+import io.github.humbleui.jwm.*;
 import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
@@ -18,22 +9,12 @@ import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Provider;
 import org.jsignal.rx.Signal;
-import org.jsignal.ui.event.EventType;
-import org.jsignal.ui.event.FocusEvent;
-import org.jsignal.ui.event.KeyboardEvent;
-import org.jsignal.ui.event.MouseEvent;
-import org.jsignal.ui.event.ScrollEvent;
+import org.jsignal.ui.event.*;
 import org.lwjgl.util.yoga.Yoga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static org.jsignal.rx.RxUtil.batch;
@@ -258,8 +239,18 @@ public class UiWindow {
         if (hovered != null) {
           hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
           hovered.bubble(new MouseEvent(EventType.MOUSE_LEAVE, hovered, mousePosition.get()));
+          hovered = null;
         }
-        hovered = null;
+
+        if (mouseDown != null) {
+          mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, mouseDown, mousePosition.get()));
+          mouseDown = null;
+        }
+
+        if (focus != null) {
+          focus.fire(new FocusEvent(EventType.BLUR, focus));
+          focus = null;
+        }
       }
       default -> {
       }

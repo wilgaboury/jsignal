@@ -57,7 +57,6 @@ public non-sealed class TextInput extends TextInputPropComponent {
 
   private Para para;
   private final Ref<Node> ref = new Ref<>();
-  private final Signal<Optional<Integer>> cursorPosition = Signal.create(Optional.empty());
   private final Signal<Boolean> mouseDown = Signal.create(false);
   private final Signal<Optional<SelectionRange>> selectionRange = Signal.create(Optional.empty());
 
@@ -88,66 +87,70 @@ public non-sealed class TextInput extends TextInputPropComponent {
       .listen(List.of(
         onMouseEnter(event -> window.setMouseCursor(MouseCursor.IBEAM)),
         onMouseLeave(event -> window.setMouseCursor(MouseCursor.ARROW)),
-        onFocus(event -> {
-          isFocused.accept(true);
-          if (cursorPosition.get().isEmpty()) {
-            cursorPosition.accept(Optional.of(0));
-          }
-        }),
+        onFocus(event -> isFocused.accept(true)),
         onBlur(event -> {
           isFocused.accept(false);
-          cursorPosition.accept(Optional.empty());
           selectionRange.accept(Optional.empty());
         }),
         onMouseDown(event -> {
           var pos = mouseEventToPosition(event, ref.get());
-          cursorPosition.accept(Optional.empty());
-          pos.ifPresent(p -> selectionRange.accept(Optional.of(new SelectionRange(p, p))));
+          pos.ifPresent(p -> selectionRange.accept(Optional.of(new SelectionRange(p))));
           mouseDown.accept(true);
         }),
         onMouseUp(event -> mouseDown.accept(false)),
-        onMouseClick(event -> {
-          if (selectionRange.get().isEmpty() || selectionRange.get().get().start == selectionRange.get().get().end) {
-            cursorPosition.accept(mouseEventToPosition(event, ref.get()));
-          }
-        }),
         onKeyDown(event -> {
-          if (cursorPosition.get().isEmpty()) {
+          if (selectionRange.get().isEmpty()) {
             return;
           }
 
           var str = content.get();
-          int split = cursorPosition.get().get();
+          SelectionRange selection = selectionRange.get().get();
 
           var key = event.getEvent().getKey();
 
           if (key == Key.LEFT) {
-            cursorPosition.transform(cur -> cur.map(v -> Math.max(0, v - 1)));
-            return;
+            selectionRange.transform(cur -> cur.map(v -> new SelectionRange(
+              selection.isPoint() ? Math.max(0, v.getMin() - 1) : selection.getMin()
+            )));
           } else if (key == Key.RIGHT) {
             var p = ignore(() -> para.getParagraph());
             var lineMetrics = p.getLineMetrics();
             var lastLineMetrics = lineMetrics[lineMetrics.length - 1];
             int endPos = (int) lastLineMetrics.getEndIndex();
-            cursorPosition.transform(cur -> cur.map(v -> Math.min(endPos, v + 1)));
-            return;
-          } else if (key == Key.BACKSPACE && split > 0) {
-            onInput.accept(str.substring(0, split - 1) + str.substring(split));
-            cursorPosition.transform(cur -> cur.map(v -> v - 1));
-          } else if (key == Key.DELETE && split < str.length()) {
-            onInput.accept(str.substring(0, split) + str.substring(split + 1));
+            selectionRange.transform(cur -> cur.map(v -> new SelectionRange(
+              selection.isPoint() ? Math.min(endPos, v.getMax() + 1) : selection.getMax()
+            )));
+          } else if (key == Key.BACKSPACE) {
+            if (selection.isPoint()) {
+              if (selection.start > 0) {
+                onInput.accept(str.substring(0, selection.start - 1) + str.substring(selection.start));
+                selectionRange.transform(cur -> cur.map(v -> new SelectionRange(v.start - 1)));
+              }
+            } else {
+              onInput.accept(str.substring(0, selection.getMin()) + str.substring(selection.getMax()));
+              selectionRange.accept(Optional.of(new SelectionRange(selection.getMin())));
+            }
+          } else if (key == Key.DELETE) {
+            if (selection.isPoint()) {
+              if (selection.start < str.length()) {
+                onInput.accept(str.substring(0, selection.start) + str.substring(selection.start + 1));
+              }
+            } else {
+              onInput.accept(str.substring(0, selection.getMin()) + str.substring(selection.getMax()));
+              selectionRange.accept(Optional.of(new SelectionRange(selection.getMin())));
+            }
+          } else {
+            var insert = keyToInputString(key, !event.getEvent().isModifierDown(KeyModifier.SHIFT));
+
+            if (insert == null) {
+              return;
+            }
+
+            batch(() -> {
+              onInput.accept(str.substring(0, selection.getMin()) + insert + str.substring(selection.getMax()));
+              selectionRange.transform(cur -> cur.map(v -> new SelectionRange(v.getMin() + 1)));
+            });
           }
-
-          var insert = keyToInputString(key, !event.getEvent().isModifierDown(KeyModifier.SHIFT));
-
-          if (insert == null) {
-            return;
-          }
-
-          batch(() -> {
-            onInput.accept(str.substring(0, split) + insert + str.substring(split));
-            cursorPosition.transform(cur -> cur.map(v -> v + 1));
-          });
         })
       ))
       .layout(EzLayout.builder()
@@ -184,7 +187,9 @@ public non-sealed class TextInput extends TextInputPropComponent {
   }
 
   private void paintCursor(Canvas canvas, Layout layout) {
-    cursorPosition.get().ifPresent(pos -> {
+    var maybeSelection = selectionRange.get();
+    if (maybeSelection.isPresent() && maybeSelection.get().isPoint()) {
+      var pos = maybeSelection.get().start;
       try (var paint = new Paint()) {
         paint.setColor(EzColors.BLACK);
         paint.setAntiAlias(false);
@@ -208,7 +213,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
         var yOffset = layout.getContentRect().getTop();
         canvas.drawLine(x, yOffset + rect.getTop(), x, yOffset + rect.getBottom(), paint);
       }
-    });
+    }
   }
 
   private void paintSelection(Canvas canvas, Layout layout) {
@@ -236,12 +241,24 @@ public non-sealed class TextInput extends TextInputPropComponent {
   }
 
   private record SelectionRange(int start, int end) {
+    public SelectionRange(int value) {
+      this(value, value);
+    }
+
+    public SelectionRange(SelectionRange prev, int newEnd) {
+      this(prev.start, newEnd);
+    }
+
     public int getMin() {
       return Math.min(start, end);
     }
 
     public int getMax() {
       return Math.max(start, end);
+    }
+
+    public boolean isPoint() {
+      return start == end;
     }
   }
 
