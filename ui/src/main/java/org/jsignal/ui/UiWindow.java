@@ -119,11 +119,14 @@ public class UiWindow {
   }
 
   public void requestFrame() {
+    // TODO: underlying JWM issue where requestFrame consistently gets ignored causing window to freeze.
+    //  Issue still happens when this if statement is commented out
     if (shouldPaint || window == null) {
       return;
     }
 
     shouldPaint = true;
+//    logger.info("frame requested", new Throwable());
     window.requestFrame();
   }
 
@@ -167,6 +170,7 @@ public class UiWindow {
         root.setOffScreen(canvas);
         paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
         shouldPaint = false;
+//        logger.info("frame painted");
 
         calculateDeltaFrame();
 

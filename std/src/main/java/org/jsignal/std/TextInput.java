@@ -8,9 +8,9 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import io.github.humbleui.skija.paragraph.RectHeightMode;
 import io.github.humbleui.skija.paragraph.RectWidthMode;
+import org.jsignal.prop.BuildProps;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Effect;
 import org.jsignal.rx.Ref;
@@ -48,7 +48,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
   @Prop
   Function<Para, Element> children = (para) -> para;
 
-  @TransitiveProps
+  @BuildProps
   public static class Transitive {
     Function<Supplier<String>, Para> toPara = Para::fromString;
   }

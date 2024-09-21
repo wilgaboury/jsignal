@@ -4,12 +4,7 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Paint;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.rx.Computed;
-import org.jsignal.rx.Constant;
-import org.jsignal.rx.Effect;
-import org.jsignal.rx.Ref;
-import org.jsignal.rx.Signal;
-import org.jsignal.rx.SkipMemo;
+import org.jsignal.rx.*;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
 import org.jsignal.ui.Element;
@@ -36,7 +31,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
   @Prop
   Supplier<Float> animDurationSeconds = Constant.of(0.2f);
   @Prop
-  Supplier<EasingFunction> openAnimFunc = Constant.of(EasingFunction::linear);
+  Supplier<TimingFunction> openAnimFunc = Constant.of(TimingFunction::linear);
   @Prop
   Runnable backgroundClick;
 
@@ -87,7 +82,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
   }
 
   private Supplier<Supplier<Float>> createTranslation(Supplier<Float> width) {
-    Ref<AnimationHelper> prevAnimation = new Ref<>();
+    Ref<IntervalAnimation> prevAnimation = new Ref<>();
     Ref<Boolean> first = new Ref<>(true);
     return Computed.create(() -> {
       var o = open.get();
@@ -112,8 +107,8 @@ public non-sealed class Drawer extends DrawerPropComponent {
         start = Constant.of(ignore(prev));
       }
 
-      var helper = AnimationHelper.builder()
-        .start(start)
+      var helper = IntervalAnimation.builder()
+        .begin(start)
         .end(end)
         .durationSeconds(animDurationSeconds)
         .function(openAnimFunc)

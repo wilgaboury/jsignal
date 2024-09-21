@@ -108,7 +108,7 @@ public class PropGenerator {
     return (TypeElement) element.getEnclosedElements()
       .stream()
       .filter(enclosed -> enclosed.getKind() == ElementKind.CLASS)
-      .filter(enclosed -> findAnnotation(enclosed, TransitiveProps.class).isPresent())
+      .filter(enclosed -> findAnnotation(enclosed, BuildProps.class).isPresent())
       .findFirst()
       .orElse(null);
   }

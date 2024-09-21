@@ -3,7 +3,7 @@ package org.jsignal.std;
 /**
  * Functions copied from <a href="https://easings.net/" >https://easings.net/</a>
  */
-public interface EasingFunction {
+public interface TimingFunction {
   float calculate(float x);
 
   default float apply(float x, float start, float end) {
@@ -160,7 +160,7 @@ public interface EasingFunction {
     } else if (x < 0.5f) {
       return -((float) Math.pow(2, 20 * x - 10) * (float) Math.sin((20 * x - 11.125) * c5)) / 2;
     } else {
-      return ((float)Math.pow(2, -20 * x + 10) * (float) Math.sin((20 * x - 11.125) * c5)) / 2 + 1;
+      return ((float) Math.pow(2, -20 * x + 10) * (float) Math.sin((20 * x - 11.125) * c5)) / 2 + 1;
     }
   }
 

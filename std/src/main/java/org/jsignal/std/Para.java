@@ -6,9 +6,9 @@ import io.github.humbleui.skija.paragraph.FontCollection;
 import io.github.humbleui.skija.paragraph.Paragraph;
 import io.github.humbleui.skija.paragraph.ParagraphBuilder;
 import io.github.humbleui.skija.paragraph.TypefaceFontProvider;
+import org.jsignal.prop.BuildProps;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
-import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Effect;
 import org.jsignal.rx.Ref;
@@ -45,7 +45,7 @@ public non-sealed class Para extends ParaPropComponent {
     }
   }
 
-  @TransitiveProps
+  @BuildProps
   public static class Transitive {
     @Prop(oneofKey = "content")
     Supplier<String> string;

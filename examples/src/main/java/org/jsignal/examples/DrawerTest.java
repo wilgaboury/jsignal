@@ -1,20 +1,10 @@
 package org.jsignal.examples;
 
 import org.jsignal.rx.Signal;
-import org.jsignal.std.BasicPainter;
-import org.jsignal.std.Button;
-import org.jsignal.std.Drawer;
-import org.jsignal.std.EasingFunction;
-import org.jsignal.std.Para;
-import org.jsignal.std.Scroll;
+import org.jsignal.std.*;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
-import org.jsignal.ui.Component;
-import org.jsignal.ui.Element;
-import org.jsignal.ui.Node;
-import org.jsignal.ui.UiThread;
-import org.jsignal.ui.UiUtil;
-import org.jsignal.ui.UiWindow;
+import org.jsignal.ui.*;
 
 import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.layout.Insets.insets;
@@ -56,7 +46,7 @@ public class DrawerTest extends Component {
           .build(),
         Drawer.builder()
           .open(open)
-          .openAnimFunc(EasingFunction::easeOutBounce)
+          .openAnimFunc(TimingFunction::easeOutBounce)
           .animDurationSeconds(0.5f)
           .content(Node.builder()
             .layout(EzLayout.builder()

@@ -2,9 +2,9 @@ package org.jsignal.std;
 
 import io.github.humbleui.skija.paragraph.*;
 import jakarta.annotation.Nullable;
+import org.jsignal.prop.BuildProps;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
-import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.ComputedContext;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Provider;
@@ -25,7 +25,7 @@ public final class ParaStyle extends ParaStylePropHelper {
 
   public static final Context context = new Context();
 
-  @TransitiveProps
+  @BuildProps
   public static class Transitive {
     @Prop
     Function<ParaTextStyle.Builder, ParaTextStyle.Builder> textStyleBuilder;
@@ -72,13 +72,27 @@ public final class ParaStyle extends ParaStylePropHelper {
   public ParagraphStyle toSkia() {
     var para = new ParagraphStyle();
     para.setTextStyle(textStyle.toSkia());
-    if (alignment != null) para.setAlignment(alignment);
-    if (height != null) para.setHeight(height);
-    if (direction != null) para.setDirection(direction);
-    if (strutStyle != null) para.setStrutStyle(strutStyle);
-    if (ellipsis != null) para.setEllipsis(ellipsis);
-    if (heightMode != null) para.setHeightMode(heightMode);
-    if (maxLinesCount != null) para.setMaxLinesCount(maxLinesCount);
+    if (alignment != null) {
+      para.setAlignment(alignment);
+    }
+    if (height != null) {
+      para.setHeight(height);
+    }
+    if (direction != null) {
+      para.setDirection(direction);
+    }
+    if (strutStyle != null) {
+      para.setStrutStyle(strutStyle);
+    }
+    if (ellipsis != null) {
+      para.setEllipsis(ellipsis);
+    }
+    if (heightMode != null) {
+      para.setHeightMode(heightMode);
+    }
+    if (maxLinesCount != null) {
+      para.setMaxLinesCount(maxLinesCount);
+    }
     return para;
   }
 }

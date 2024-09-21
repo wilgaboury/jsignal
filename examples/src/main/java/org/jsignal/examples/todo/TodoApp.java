@@ -111,9 +111,9 @@ public class TodoApp extends Component {
               ))
               .build(),
             Nodes.forEach(todos, (content, idx) -> {
-              var enterAnim = AnimationHelper.builder()
-                .function(EasingFunction::easeOutQuad)
-                .run(true)
+              var enterAnim = IntervalAnimation.builder()
+                .function(TimingFunction::easeOutQuad)
+                .start(true)
                 .build();
 
               var anim = Signal.create(enterAnim);
@@ -156,12 +156,12 @@ public class TodoApp extends Component {
                   Node.builder().layoutBuilder(lb -> lb.grow(1f)).build(),
                   Button.builder()
                     .color(EzColors.RED_600)
-                    .action(() -> anim.accept(AnimationHelper.builder()
-                      .start(1f)
+                    .action(() -> anim.accept(IntervalAnimation.builder()
+                      .begin(1f)
                       .end(0f)
-                      .function(EasingFunction::easeOutQuad)
+                      .function(TimingFunction::easeOutQuad)
                       .onFinish(() -> todos.modify(list -> list.remove((int) idx.get())))
-                      .run(true)
+                      .start(true)
                       .build()
                     ))
                     .size(Button.Size.SM)

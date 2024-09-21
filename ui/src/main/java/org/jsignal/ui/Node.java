@@ -5,9 +5,9 @@ import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
+import org.jsignal.prop.BuildProps;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
-import org.jsignal.prop.TransitiveProps;
 import org.jsignal.rx.*;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
@@ -34,7 +34,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
     () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
 
-  @TransitiveProps
+  @BuildProps
   public static class Transitive {
     @Prop
     Collection<Object> tags = Collections.emptyList();
