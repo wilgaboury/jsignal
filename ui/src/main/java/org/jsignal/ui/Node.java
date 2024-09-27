@@ -206,7 +206,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     try {
       transformEffect.run(() -> canvas.concat(getTransform()));
 
-      paintCacheStrategy.paint(canvas, this::paintCacheUseMetaNode, cacheCanvas -> {
+      paintCacheStrategy.paint(canvas, this::paintCacheUseNode, cacheCanvas -> {
         if (paint != null) {
           paintEffect.run(() -> paint.paint(cacheCanvas, layoutResult));
         }
@@ -224,7 +224,11 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     }
   }
 
-  private <T> T paintCacheUseMetaNode(Function<Node, T> use) {
+  /**
+   * This is necessary for tracking cache dependencies on node layout, but because paint cache generation happens
+   * conditionally, the paint function cannot simply be wrapped in a side effect. It must be passed in as a callback.
+   */
+  private <T> T paintCacheUseNode(Function<Node, T> use) {
     return paintCacheEffect.run(() -> use.apply(Node.this));
   }
 

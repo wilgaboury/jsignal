@@ -10,7 +10,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 
 public class RxUtil {
-  private RxUtil() {
+  private RxUtil() {}
+
+  public static <T> Supplier<T> memo(Supplier<T> supplier) {
+    Ref<T> result = new Ref<>();
+    return () -> {
+      if (result.get() == null) {
+        result.accept(supplier.get());
+      }
+      return result.get();
+    };
   }
 
   public static <T> Supplier<T> createMemo(Supplier<T> supplier) {
@@ -164,7 +173,10 @@ public class RxUtil {
     runnable.run();
   }
 
-  public static <T, U> Computed<List<U>> createMapped(Supplier<? extends List<T>> list, BiFunction<T, Supplier<Integer>, U> map) {
+  public static <T, U> Computed<List<U>> createMapped(
+    Supplier<? extends List<T>> list,
+    BiFunction<T, Supplier<Integer>, U> map
+  ) {
     List<U> result = new ArrayList<>();
     Flipper<Map<T, Mapped<U>>> mapping = new Flipper<>(HashMap::new);
 
@@ -213,7 +225,10 @@ public class RxUtil {
 
   private record Mapped<U>(U value, Signal<Integer> idx, Cleanups cleanups) {}
 
-  public static <T, U> Computed<List<U>> createIndexed(Supplier<? extends List<T>> list, BiFunction<Supplier<T>, Integer, U> map) {
+  public static <T, U> Computed<List<U>> createIndexed(
+    Supplier<? extends List<T>> list,
+    BiFunction<Supplier<T>, Integer, U> map
+  ) {
     List<Indexed<T>> indexes = new ArrayList<>();
     List<U> result = new ArrayList<>();
 

@@ -24,10 +24,12 @@ public class SurfacePaintCacheStrategy implements PaintCacheStrategy {
   @Override
   public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
     if (image == null) {
-      try (Surface surface = useNode.use(meta -> {
-        var size = meta.getLayout().getSize();
-        return UiWindow.paintSurfaceContext.use().makeSurface((int) size.getX(), (int) size.getY());
-      })) {
+      try (
+        Surface surface = useNode.use(node -> {
+          var size = node.getLayout().getSize();
+          return UiWindow.paintSurfaceContext.use().makeSurface((int) size.getX(), (int) size.getY());
+        })
+      ) {
         orElse.accept(surface.getCanvas());
         image = surface.makeImageSnapshot();
       }

@@ -127,7 +127,10 @@ public class UiWindow {
 
     shouldPaint = true;
 //    logger.info("frame requested", new Throwable());
-    window.requestFrame();
+    UiThread.invokeLater(() -> {
+      logger.info("frame requested");
+      window.requestFrame();
+    });
   }
 
   public void requestTransformUpdate() {
@@ -170,7 +173,7 @@ public class UiWindow {
         root.setOffScreen(canvas);
         paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
         shouldPaint = false;
-//        logger.info("frame painted");
+        logger.info("frame painted");
 
         calculateDeltaFrame();
 

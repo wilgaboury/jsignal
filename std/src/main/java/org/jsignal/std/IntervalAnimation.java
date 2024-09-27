@@ -78,6 +78,10 @@ public final class IntervalAnimation extends IntervalAnimationPropHelper impleme
     }
   }
 
+  public State getState() {
+    return state.get();
+  }
+
   public Float get() {
     return function.get().apply(Math.min(1f, progress.get()), begin.get(), end.get());
   }

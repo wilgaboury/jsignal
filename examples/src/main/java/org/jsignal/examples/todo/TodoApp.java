@@ -112,7 +112,7 @@ public class TodoApp extends Component {
               .build(),
             Nodes.forEach(todos, (content, idx) -> {
               var enterAnim = IntervalAnimation.builder()
-                .function(TimingFunction::easeOutQuad)
+                .function(TimingFunction::easeOutBack)
                 .start(true)
                 .build();
 
