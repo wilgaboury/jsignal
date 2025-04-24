@@ -7,12 +7,13 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * The core reactive primitive. Wraps another object and adds the ability for access and mutation of the value to be
  * automatically tracked.
  */
-public class Signal<T> implements SignalLike<T>, SkipMemo {
+public class Signal<T> implements Acceptable<T>, Supplier<T>, Mutateable<T>, SkipMemo {
   private final static Logger logger = LoggerFactory.getLogger(Signal.class);
 
   protected T value;
@@ -32,12 +33,10 @@ public class Signal<T> implements SignalLike<T>, SkipMemo {
     this.effects = new LinkedHashMap<>();
   }
 
-  @Override
   public Thread getThread() {
     return thread;
   }
 
-  @Override
   public void track() {
     Effect.context.use().ifPresent(effect -> {
       if (thread.threadId() == effect.getThread().threadId()) {
@@ -49,7 +48,6 @@ public class Signal<T> implements SignalLike<T>, SkipMemo {
     });
   }
 
-  @Override
   public void untrack() {
     Effect.context.use().ifPresent(effect -> {
       effects.remove(effect.getId());
@@ -84,7 +82,7 @@ public class Signal<T> implements SignalLike<T>, SkipMemo {
       Iterator<EffectRef> itr = effects.values().iterator();
       while (itr.hasNext()) {
         EffectRef ref = itr.next();
-        Optional<EffectLike> effect = ref.getEffect();
+         var effect = ref.getEffect();
 
         if (effect.isEmpty() || effect.get().isDisposed()) {
           itr.remove();

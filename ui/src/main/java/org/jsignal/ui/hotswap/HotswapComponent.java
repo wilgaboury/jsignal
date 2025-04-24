@@ -22,7 +22,7 @@ public class HotswapComponent {
   public HotswapComponent(Component component, @Nullable HotswapComponent parent) {
     this.component = component;
     this.parent = parent;
-    this.rerender = new Trigger();
+    this.rerender = Trigger.create();
     this.tags = new HashSet<>();
 
     classNameToHotswap.computeIfAbsent(component.getClass().getName(), k -> new LinkedHashSet<>()).add(this);

@@ -1,16 +1,13 @@
 package org.jsignal.rx;
 
-import org.jsignal.rx.interfaces.EffectLike;
-
 import java.lang.ref.WeakReference;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 
 public class EffectRef implements Runnable {
   private final int id;
-  private final WeakReference<EffectLike> effect;
+  private final WeakReference<Effect> effect;
 
-  public EffectRef(EffectLike effect) {
+  public EffectRef(Effect effect) {
     this.id = effect.getId();
     this.effect = new WeakReference<>(effect);
   }
@@ -19,7 +16,7 @@ public class EffectRef implements Runnable {
     return id;
   }
 
-  public Optional<EffectLike> getEffect() {
+  public Optional<Effect> getEffect() {
     return Optional.ofNullable(effect.get());
   }
 

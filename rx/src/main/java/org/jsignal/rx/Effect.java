@@ -1,15 +1,12 @@
 package org.jsignal.rx;
 
-import org.jsignal.rx.interfaces.EffectLike;
-import org.jsignal.rx.interfaces.SignalLike;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.jsignal.rx.RxUtil.batch;
 
-public class Effect implements EffectLike {
-  public static final Context<Optional<EffectLike>> context = new Context<>(Optional.empty());
+public class Effect implements Runnable {
+  public static final Context<Optional<Effect>> context = new Context<>(Optional.empty());
   protected static final AtomicInteger nextId = new AtomicInteger(0);
 
   protected final Thread thread;
@@ -17,10 +14,11 @@ public class Effect implements EffectLike {
   protected final Runnable effect;
   protected final Cleanups cleanups;
   protected final Provider provider;
-  protected final LinkedHashSet<SignalLike<?>> signals;
+  protected final LinkedHashSet<Signal<?>> inbound;
+  protected final Set<Signal<?>> outbound;
   protected boolean disposed;
 
-  public Effect(Runnable effect) {
+  public Effect(Runnable effect, Set<Signal<?>> outbound) {
     this.thread = Thread.currentThread();
     this.id = nextId();
     this.effect = effect;
@@ -29,39 +27,35 @@ public class Effect implements EffectLike {
       Cleanups.context.with(Optional.of(cleanups)),
       context.with(Optional.of(this))
     );
-    this.signals = new LinkedHashSet<>();
+    this.inbound = new LinkedHashSet<>();
+    this.outbound = outbound;
     this.disposed = false;
 
     Cleanups.onCleanup(this::dispose); // create strong reference in parent effect
   }
 
-  @Override
   public Thread getThread() {
     return thread;
   }
 
   /**
-   * This method should only be called inside of implementations of {@link SignalLike#track()}
+   * This method should only be called inside of implementations of {@link Signal#track()}
    */
-  @Override
-  public void onTrack(SignalLike<?> signal) {
-    signals.add(signal);
+  public void onTrack(Signal<?> signal) {
+    inbound.add(signal);
   }
 
   /**
-   * This method should only be called inside of implementations of {@link SignalLike#untrack()}
+   * This method should only be called inside of implementations of {@link Signal#untrack()}
    */
-  @Override
-  public void onUntrack(SignalLike<?> signal) {
-    signals.remove(signal);
+  public void onUntrack(Signal<?> signal) {
+    inbound.remove(signal);
   }
 
-  @Override
   public int getId() {
     return id;
   }
 
-  @Override
   public void dispose() {
     if (disposed)
       return;
@@ -71,22 +65,22 @@ public class Effect implements EffectLike {
     provider.provide(this::clear);
   }
 
-  @Override
   public boolean isDisposed() {
     return disposed;
   }
 
-  @Override
   public void run() {
     run(effect);
   }
 
-  @Override
-  public Collection<SignalLike<?>> getSignals() {
-    return Collections.unmodifiableSet(signals);
+  public Collection<Signal<?>> getInbound() {
+    return Collections.unmodifiableSet(inbound);
   }
 
-  @Override
+  public Collection<Signal<?>> getOutbound() {
+    return outbound;
+  }
+
   public Cleanups getCleanups() {
     return cleanups;
   }
@@ -102,8 +96,8 @@ public class Effect implements EffectLike {
   }
 
   protected void clear() {
-    while (!signals.isEmpty()) {
-      signals.getFirst().untrack();
+    while (inbound.isEmpty()) {
+      inbound.getFirst().untrack();
     }
 
     cleanups.run();
@@ -131,7 +125,13 @@ public class Effect implements EffectLike {
   }
 
   public static Effect create(Runnable runnable) {
-    var effect = new Effect(runnable);
+    var effect = new Effect(runnable, Set.of());
+    effect.run();
+    return effect;
+  }
+
+  public static Effect create(Runnable runnable, Set<Signal<?>> outbound) {
+    var effect = new Effect(runnable, outbound);
     effect.run();
     return effect;
   }
