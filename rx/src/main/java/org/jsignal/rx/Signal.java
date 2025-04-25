@@ -37,6 +37,10 @@ public class Signal<T> implements Acceptable<T>, Supplier<T>, Mutateable<T>, Ski
     return thread;
   }
 
+  public Collection<EffectRef> effects() {
+    return Collections.unmodifiableCollection(effects.values());
+  }
+
   public void track() {
     Effect.context.use().ifPresent(effect -> {
       if (thread.threadId() == effect.getThread().threadId()) {
@@ -77,8 +81,7 @@ public class Signal<T> implements Acceptable<T>, Supplier<T>, Mutateable<T>, Ski
   }
 
   protected void runEffects() {
-    var batch = Batch.batch.get();
-    batch.run(() -> {
+    RxUtil.batch(batch -> {
       Iterator<EffectRef> itr = effects.values().iterator();
       while (itr.hasNext()) {
         EffectRef ref = itr.next();

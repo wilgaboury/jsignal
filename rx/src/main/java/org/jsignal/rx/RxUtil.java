@@ -50,8 +50,12 @@ public class RxUtil {
     }
   }
 
-  public static void batch(Runnable inner) {
-    Batch.batch.get().run(inner);
+  public static void batch(Runnable runnable) {
+    BatchRunner.batch(toConsumer(runnable));
+  }
+
+  public static void batch(Consumer<Batch> consumer) {
+    BatchRunner.batch(consumer);
   }
 
   public static void ignore(Runnable inner) {

@@ -105,14 +105,7 @@ public class Effect implements Runnable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == this)
-      return true;
-
-    else if (!(obj instanceof Effect))
-      return false;
-
-    Effect that = (Effect) obj;
-    return this.id == that.id;
+    return obj == this || (obj instanceof Effect that && this.id == that.id);
   }
 
   @Override
