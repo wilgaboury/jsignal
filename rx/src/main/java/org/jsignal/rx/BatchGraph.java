@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+/**
+ * Graph analyzing batch implementation that searches the dependency graph and executes effects in topological order
+ */
 public class BatchGraph implements Batch {
   private static final Logger logger = LoggerFactory.getLogger(BatchGraph.class);
 
@@ -21,23 +24,28 @@ public class BatchGraph implements Batch {
     dfs(new HashSet<>(), ref).ifPresent(batch::add);
   }
 
-  public Optional<GraphNode> dfs(Set<Effect> stack, EffectRef ref) {
+  private Optional<GraphNode> dfs(Set<Effect> stack, EffectRef ref) {
     return ref.getEffect().flatMap(effect -> {
       if (stack.contains(effect)) {
         // cycle detected
+        // TODO: add detailed logging
         return Optional.empty();
       } else if (graph.containsKey(effect)) {
         var node = graph.get(effect);
         node.inbound++;
         node.updateSort(batch);
+        return Optional.of(node);
       } else {
         var node = new GraphNode(effect);
         graph.put(effect, node);
+        stack.add(effect);
         for (Signal<?> signal : effect.getOutbound()) {
           for (EffectRef neighbor : signal.effects()) {
-            dfs(neighbor);
+            dfs(stack, neighbor).ifPresent(node.neighbors::add);
           }
         }
+        stack.remove(effect);
+        return Optional.of(node);
       }
     });
   }
@@ -45,12 +53,17 @@ public class BatchGraph implements Batch {
   @Override
   public void commit() {
     while (!batch.isEmpty()) {
-      var node = batch.removeFirst();
+      var node = batch.removeFirst(); // remove the node with the smallest number of inbound dependencies
+      graph.remove(node.effect);
+      for (var neighbor : node.neighbors) {
+        neighbor.inbound--;
+        neighbor.updateSort(batch);
+      }
 
       try {
         node.effect.run();
       } catch (Exception e) {
-        logger.error("uncaught exception in effect");
+        logger.error("uncaught exception in effect", e);
       }
     }
   }
@@ -58,7 +71,7 @@ public class BatchGraph implements Batch {
   private static class GraphNode {
     public final Effect effect;
     public int inbound;
-    public Set<Effect> neighbors;
+    public Set<GraphNode> neighbors;
 
     public GraphNode(Effect effect) {
       this.effect = effect;

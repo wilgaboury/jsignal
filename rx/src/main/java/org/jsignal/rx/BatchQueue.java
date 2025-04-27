@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
 
+/**
+ * Naive batch implementation that runs effects in the order that they were added to the batch
+ */
 public class BatchQueue implements Batch {
   private static final Logger logger = LoggerFactory.getLogger(BatchQueue.class);
 
@@ -27,7 +30,7 @@ public class BatchQueue implements Batch {
       try {
         effect.run();
       } catch (Exception e) {
-        logger.error("uncaught exception in effect");
+        logger.error("uncaught exception in effect", e);
       }
     }
   }
