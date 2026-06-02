@@ -15,7 +15,8 @@ public class BatchGraph implements Batch {
   private final Map<Effect, GraphNode> graph;
 
   public BatchGraph() {
-    this.batch = new TreeSet<>(Comparator.comparingInt(n -> n.inbound));
+    this.batch = new TreeSet<>(Comparator.<GraphNode>comparingInt(n -> n.inbound)
+            .thenComparingInt(n -> n.effect.getId()));
     this.graph = new HashMap<>();
   }
 
@@ -28,7 +29,6 @@ public class BatchGraph implements Batch {
     return ref.getEffect().flatMap(effect -> {
       if (stack.contains(effect)) {
         // cycle detected
-        // TODO: add detailed logging
         return Optional.empty();
       } else if (graph.containsKey(effect)) {
         var node = graph.get(effect);

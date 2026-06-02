@@ -96,7 +96,7 @@ public class Effect implements Runnable {
   }
 
   protected void clear() {
-    while (inbound.isEmpty()) {
+    while (!inbound.isEmpty()) {
       inbound.getFirst().untrack();
     }
 
