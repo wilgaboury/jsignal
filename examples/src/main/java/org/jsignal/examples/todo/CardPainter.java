@@ -1,8 +1,5 @@
 package org.jsignal.examples.todo;
 
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.ImageFilter;
-import io.github.humbleui.skija.Paint;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Constant;
@@ -10,6 +7,8 @@ import org.jsignal.std.ez.EzColors;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
 
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.function.Supplier;
 
 @GeneratePropHelper
@@ -22,7 +21,12 @@ public non-sealed class CardPainter extends CardPainterPropHelper implements Pai
   Supplier<Float> radius = Constant.of(8f);
 
   @Override
-  public void paint(Canvas canvas, Layout layout) {
+  public void paint(Graphics2D canvas, Layout layout) {
+    Painter.drawRoundRectWithBlurredShadow(
+            canvas,
+            new Rectangle2D.Float()
+    );
+
     try (var paint = new Paint()) {
       paint.setImageFilter(ImageFilter.makeDropShadow(0f, 4f, 4f, 4f, shadowColor.get()));
       paint.setColor(backgroundColor.get());

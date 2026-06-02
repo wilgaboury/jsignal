@@ -93,7 +93,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
         if (xBarMouseDown.get()) {
           var pos = window.getMousePosition();
           var rel = MathUtil.apply(MathUtil.inverse(xBar.get().getFullTransform()), pos);
-          var newOffset = (rel.getX() - xMouseDownOffset) / ignore(xScale);
+          var newOffset = (rel.x() - xMouseDownOffset) / ignore(xScale);
           xOffset.accept(-newOffset);
         }
       });
@@ -103,7 +103,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
           var pos = window.getMousePosition();
           var rel = MathUtil.apply(MathUtil.inverse(yBar.get().getFullTransform()), pos);
           var newOffset =
-            (rel.getY() - yMouseDownOffset) / ignore(() -> yScale.get() * (yBar.get().getLayout().getHeight()
+            (rel.y() - yMouseDownOffset) / ignore(() -> yScale.get() * (yBar.get().getLayout().getHeight()
               / view.get().getLayout().getHeight()));
           setYOffset(-newOffset);
         }

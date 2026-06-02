@@ -1,7 +1,6 @@
 package org.jsignal.ui.layout;
 
-import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
+import org.joml.Vector2f;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Computed;
 import org.jsignal.rx.Trigger;
@@ -189,8 +188,8 @@ public class Layout {
       .shink(rect);
   }
 
-  public Point getParentOffset() {
-    return new Point(getLeft(), getTop());
+  public Vector2f getParentOffset() {
+    return new Vector2f(getLeft(), getTop());
   }
 
   public boolean isOverflow() {

@@ -5,6 +5,7 @@ import io.github.humbleui.jwm.skija.EventFrameSkija;
 import io.github.humbleui.skija.Surface;
 import io.github.humbleui.types.Point;
 import jakarta.annotation.Nullable;
+import org.joml.Vector2f;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Provider;
@@ -14,6 +15,8 @@ import org.lwjgl.util.yoga.Yoga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -23,7 +26,8 @@ public class UiWindow {
   private static final Logger logger = LoggerFactory.getLogger(UiWindow.class);
 
   public static final Context<UiWindow> context = Context.create();
-  public static final Context<Surface> paintSurfaceContext = Context.create();
+  public static final Context<BufferedImage> paintSurfaceContext = Context.create();
+  public static final Context<BufferedImage> bufferedImageContext = Context.create();
 
   private static final Set<UiWindow> windows = new HashSet<>();
 
@@ -44,9 +48,9 @@ public class UiWindow {
   private Node hovered = null;
   private Node focus = null;
 
-  private final Signal<Point> mousePosition = Signal.create(new Point(0, 0));
+  private final Signal<Vector2f> mousePosition = Signal.create(new Vector2f(0, 0));
 
-  public UiWindow(Window window, Supplier<Element> root) {
+  public UiWindow(Frame window, Supplier<Element> root) {
     this.window = window;
 
     this.preFrame = new ArrayDeque<>();

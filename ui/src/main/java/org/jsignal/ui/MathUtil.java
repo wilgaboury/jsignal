@@ -1,8 +1,11 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.skija.Matrix33;
-import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
+import org.joml.Matrix3f;
+import org.joml.Matrix3x2f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
+
+import java.awt.geom.AffineTransform;
 
 public class MathUtil {
   // TODO: humbleui types needs to update, code on master contains this method
@@ -10,11 +13,18 @@ public class MathUtil {
     return rect.getLeft() <= p.getX() && p.getX() <= rect.getRight() && rect.getTop() <= p.getY() && p.getY() <= rect.getBottom();
   }
 
-  public static Point apply(Matrix33 matrix, Point point) {
-    float[] vec = new float[]{point.getX(), point.getY(), 1};
-    float[] ret = apply(matrix, vec);
+  public static AffineTransform matrixToAwt(Matrix3x2f m) {
+      return new AffineTransform(
+        m.m00(), m.m01(),
+        m.m10(), m.m11(),
+        m.m20(), m.m21()
+      );
+  }
 
-    return new Point(ret[0], ret[1]);
+  public static Vector2f apply(Matrix3x2f matrix, Vector2f point) {
+    var result = new Vector2f();
+    new Vector3f(point, 1).mul(matrix).xy(result);
+    return result;
   }
 
   public static float[] apply(Matrix33 matrix, float[] vec) {
@@ -27,8 +37,10 @@ public class MathUtil {
     };
   }
 
-  public static Matrix33 inverse(Matrix33 matrix) {
-    float[] mat = matrix.getMat();
+  public static Matrix3f inverse(Matrix3f matrix) {
+
+    matrix.inve
+    float[] mat = matrix.();
     float invDet = 1f / ((mat[0] * (mat[4] * mat[8] - mat[5] * mat[7]))
       - (mat[1] * (mat[3] * mat[8] - mat[5] * mat[6]))
       + (mat[2] * (mat[3] * mat[7] - mat[4] * mat[6])));

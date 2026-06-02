@@ -1,14 +1,12 @@
 package org.jsignal.std;
 
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Paint;
-import io.github.humbleui.types.RRect;
 import jakarta.annotation.Nullable;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Ref;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
 
+import java.awt.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -28,7 +26,7 @@ public class BasicPainter implements Painter {
   }
 
   @Override
-  public void paint(Canvas canvas, Layout layout) {
+  public void paint(Graphics2D canvas, Layout layout) {
     try (Paint paint = new Paint()) {
       Ref<RRect> borderInner = new Ref<>();
       borderColor.get().ifPresent(color -> {
@@ -45,7 +43,7 @@ public class BasicPainter implements Painter {
           ? borderInner.get()
           : layout.getPaddingRect().withRadii(0f);
         paint.setColor(color);
-        canvas.drawRRect(rect, paint);
+        canvas.drawRoundRect(rect, paint);
       });
     }
   }

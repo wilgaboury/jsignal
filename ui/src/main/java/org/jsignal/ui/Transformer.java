@@ -1,9 +1,9 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.skija.Matrix33;
+import org.joml.Matrix3x2f;
 import org.jsignal.ui.layout.Layout;
 
 @FunctionalInterface
 public interface Transformer {
-  Matrix33 transform(Layout layout);
+  Matrix3x2f transform(Layout layout);
 }

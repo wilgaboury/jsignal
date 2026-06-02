@@ -1,10 +1,8 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Matrix33;
-import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
+import org.joml.Matrix3x2f;
+import org.joml.Vector2f;
 import org.jsignal.prop.BuildProps;
 import org.jsignal.prop.GeneratePropHelper;
 import org.jsignal.prop.Prop;
@@ -12,16 +10,16 @@ import org.jsignal.rx.*;
 import org.jsignal.ui.event.Event;
 import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
-import org.jsignal.ui.layout.CompositeLayouter;
-import org.jsignal.ui.layout.Layout;
-import org.jsignal.ui.layout.Layouter;
-import org.jsignal.ui.layout.YogaLayoutConfig;
+import org.jsignal.ui.layout.*;
 import org.jsignal.ui.paint.PaintCacheStrategy;
 import org.jsignal.ui.paint.PicturePaintCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 import org.lwjgl.util.yoga.Yoga;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -58,7 +56,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   @Nullable
   Layouter layout;
   @Prop
-  Transformer transform = n -> Matrix33.IDENTITY;
+  Transformer transform = n -> new Matrix3x2f();
   @Prop
   @Nullable
   Painter paint;
@@ -177,11 +175,11 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   }
 
   // investigate whether this is worthwhile performance-wise
-  void setOffScreen(Canvas canvas) {
-    var count = canvas.save();
+  void setOffScreen(Graphics2D canvas) {
+    var prev = canvas.getTransform();
     try {
-      canvas.concat(getTransform());
-      offScreen = canvas.quickReject(Rect.makeWH(layoutResult.getWidth(), layoutResult.getHeight()));
+      canvas.transform(MathUtil.matrixToAwt(getTransform()));
+      offScreen = canvas.hitClip(0, 0, (int)layoutResult.getWidth(), (int)layoutResult.getHeight());
       if (offScreen) {
         setOffScreen();
       } else {
@@ -190,7 +188,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
         }
       }
     } finally {
-      canvas.restoreToCount(count);
+      canvas.setTransform(prev);
     }
   }
 
@@ -201,10 +199,10 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     }
   }
 
-  void paint(Canvas canvas) {
-    var count = canvas.save();
+  void paint(Graphics2D canvas) {
+    AffineTransform prev = canvas.getTransform();
     try {
-      transformEffect.run(() -> canvas.concat(getTransform()));
+      transformEffect.run(() -> canvas.transform(MathUtil.matrixToAwt(getTransform())));
 
       paintCacheStrategy.paint(canvas, this::paintCacheUseNode, cacheCanvas -> {
         if (paint != null) {
@@ -220,7 +218,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
         }
       });
     } finally {
-      canvas.restoreToCount(count);
+      canvas.setTransform(prev);
     }
   }
 
@@ -276,14 +274,14 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     }
   }
 
-  private static Point createTestPoint(Point p, Matrix33 transform) {
-    return MathUtil.apply(MathUtil.inverse(transform), p);
+  private static Vector2f createTestPoint(Vector2f p, Matrix3x2f transform) {
+    return MathUtil.apply(transform.invert(), p);
   }
 
   /**
    * @param point must be relative to the node
    */
-  public @Nullable Node pick(Point point) {
+  public @Nullable Node pick(Vector2f point) {
     if (offScreen) {
       return null;
     }
@@ -307,14 +305,17 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
     return layoutResult;
   }
 
-  public Matrix33 getTransform() {
+  public Matrix3x2f getTransform() {
     var offset = layoutResult.getParentOffset();
-    return Matrix33.makeTranslate(offset.getX(), offset.getY()).makeConcat(transform.transform(layoutResult));
+    var matrix = new Matrix3x2f();
+    matrix.translate(offset.x(), offset.y());
+    matrix.mul(transform.transform(layoutResult));
+    return matrix;
   }
 
-  public Matrix33 getFullTransform() {
-    Ref<Matrix33> mat = new Ref<>(Matrix33.IDENTITY);
-    visitParents(n -> mat.accept(n.getTransform().makeConcat(mat.get())));
+  public Matrix3x2f getFullTransform() {
+    Ref<Matrix3x2f> mat = new Ref<>(new Matrix3x2f());
+    visitParents(n -> mat.accept(n.getTransform().mul(mat.get())));
     return mat.get();
   }
 

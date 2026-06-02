@@ -1,14 +1,13 @@
 package org.jsignal.ui.paint;
 
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Image;
-import io.github.humbleui.skija.Surface;
 import org.jsignal.ui.UiWindow;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 public class SurfacePaintCacheStrategy implements PaintCacheStrategy {
-  private Image image;
+  private BufferedImage image;
 
   @Override
   public boolean isDirty() {
@@ -17,15 +16,14 @@ public class SurfacePaintCacheStrategy implements PaintCacheStrategy {
 
   @Override
   public void markDirty() {
-    image.close();
     image = null;
   }
 
   @Override
-  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
+  public void paint(Graphics2D canvas, UseNode useNode, Consumer<Canvas> orElse) {
     if (image == null) {
       try (
-        Surface surface = useNode.use(node -> {
+        BufferedImage surface = useNode.use(node -> {
           var size = node.getLayout().getSize();
           return UiWindow.paintSurfaceContext.use().makeSurface((int) size.getX(), (int) size.getY());
         })

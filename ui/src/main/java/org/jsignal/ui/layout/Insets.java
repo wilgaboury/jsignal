@@ -1,7 +1,5 @@
 package org.jsignal.ui.layout;
 
-import io.github.humbleui.types.Rect;
-
 import static org.jsignal.ui.layout.LayoutValue.percent;
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
