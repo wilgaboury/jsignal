@@ -41,12 +41,12 @@ public class Layout {
   public Layout(long yoga) {
     this.yoga = yoga;
     this.cleanups = Cleanups.create();
-    this.update = new Trigger();
+    this.update = Trigger.create();
   }
 
   private <T> Computed<T> create(Supplier<T> inner) {
     return Cleanups.provide(cleanups, () -> Computed.create(() -> {
-      update.track();
+      update.signal().track();
       return inner.get();
     }));
   }

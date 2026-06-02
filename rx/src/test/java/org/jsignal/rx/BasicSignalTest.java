@@ -142,11 +142,11 @@ public class BasicSignalTest {
   @Test
   public void duplicateTest() {
     Ref<Integer> count = new Ref<>(0);
-    Trigger trigger = new Trigger();
+    Trigger trigger = Trigger.create();
     Computed<Void> computed = Computed.create(() -> {
-      trigger.track();
+      trigger.signal().track();
       Computed.create(() -> {
-        trigger.track();
+        trigger.signal().track();
         count.accept(count.get() + 1);
         return null;
       });

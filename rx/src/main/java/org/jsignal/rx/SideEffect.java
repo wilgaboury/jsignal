@@ -1,11 +1,12 @@
 package org.jsignal.rx;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class SideEffect extends Effect {
   public SideEffect(Runnable effect) {
-    super(effect);
+    super(effect, Set.of());
   }
 
   @Override

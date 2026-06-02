@@ -1,18 +1,13 @@
 package org.jsignal.rx;
 
 import org.jsignal.rx.interfaces.Equals;
-import org.jsignal.rx.interfaces.SignalLike;
 
-public class Trigger extends SignalDecorator<Object> {
-  public Trigger() {
-    this(Signal.builder(null).setEquals(Equals::never).build());
-  }
-
-  public Trigger(SignalLike<Object> signal) {
-    super(signal);
+public record Trigger(Signal<Void> signal) {
+  public static Trigger create() {
+    return new Trigger(Signal.<Void>builder(null).setEquals(Equals::never).build());
   }
 
   public void trigger() {
-    transform(v -> null);
+    signal.transform(v -> null);
   }
 }

@@ -18,7 +18,7 @@ public class HotswapInstrumentation implements ComponentConstructorInstrumentati
   public Nodes instrument(Component component, Supplier<Nodes> render) {
     var hotswapComponent = component.getMeta().use(context);
     var rendered = Computed.create(() -> {
-      hotswapComponent.getRenderTrigger().track();
+      hotswapComponent.getRenderTrigger().signal().track();
       return context.with(hotswapComponent).provide(render);
     });
     return Nodes.fromNodes(rendered);

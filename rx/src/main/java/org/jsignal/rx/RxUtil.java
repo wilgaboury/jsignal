@@ -2,7 +2,6 @@ package org.jsignal.rx;
 
 import org.jsignal.rx.interfaces.Equals;
 import org.jsignal.rx.interfaces.OnFn;
-import org.jsignal.rx.interfaces.SignalLike;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,7 +25,7 @@ public class RxUtil {
     return createMemo(Signal::empty, supplier);
   }
 
-  public static <T> Supplier<T> createMemo(Supplier<SignalLike<T>> signal, Supplier<T> supplier) {
+  public static <T> Supplier<T> createMemo(Supplier<Signal<T>> signal, Supplier<T> supplier) {
     if (SkipMemo.shouldSkip(supplier)) {
       return supplier;
     }
@@ -35,7 +34,7 @@ public class RxUtil {
   }
 
   public static <T> Supplier<T> maybeRemoveComputed(Computed<T> computed) {
-    if (computed.getEffect().getSignals().isEmpty()) {
+    if (computed.getEffect().getInbound().isEmpty()) {
       computed.getEffect().getCleanups().drain();
       return Constant.of(ignore(computed));
     } else {
@@ -51,8 +50,12 @@ public class RxUtil {
     }
   }
 
-  public static void batch(Runnable inner) {
-    Batch.batch.get().run(inner);
+  public static void batch(Runnable runnable) {
+    BatchRunner.batch(toConsumer(runnable));
+  }
+
+  public static void batch(Consumer<Batch> consumer) {
+    BatchRunner.batch(consumer);
   }
 
   public static void ignore(Runnable inner) {
