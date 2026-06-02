@@ -178,7 +178,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   void setOffScreen(Graphics2D canvas) {
     var prev = canvas.getTransform();
     try {
-      canvas.transform(MathUtil.matrixToAwt(getTransform()));
+      canvas.transform(MathUtil.toAwt(getTransform()));
       offScreen = canvas.hitClip(0, 0, (int)layoutResult.getWidth(), (int)layoutResult.getHeight());
       if (offScreen) {
         setOffScreen();
@@ -202,7 +202,7 @@ public non-sealed class Node extends NodePropHelper implements Nodes {
   void paint(Graphics2D canvas) {
     AffineTransform prev = canvas.getTransform();
     try {
-      transformEffect.run(() -> canvas.transform(MathUtil.matrixToAwt(getTransform())));
+      transformEffect.run(() -> canvas.transform(MathUtil.toAwt(getTransform())));
 
       paintCacheStrategy.paint(canvas, this::paintCacheUseNode, cacheCanvas -> {
         if (paint != null) {

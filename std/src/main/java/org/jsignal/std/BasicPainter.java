@@ -3,8 +3,10 @@ package org.jsignal.std;
 import jakarta.annotation.Nullable;
 import org.jsignal.rx.Constant;
 import org.jsignal.rx.Ref;
+import org.jsignal.std.ez.EzColors;
 import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
+import org.jsignal.ui.layout.Rect;
 
 import java.awt.*;
 import java.util.Optional;
@@ -26,26 +28,24 @@ public class BasicPainter implements Painter {
   }
 
   @Override
-  public void paint(Graphics2D canvas, Layout layout) {
-    try (Paint paint = new Paint()) {
-      Ref<RRect> borderInner = new Ref<>();
-      borderColor.get().ifPresent(color -> {
-        if (border.get() > 0f) {
-          var borderOuter = layout.getBorderRect().withRadii(radius.get());
-          var inner = borderOuter.inflate(-border.get());
-          borderInner.accept(inner instanceof RRect i ? i : inner.withRadii(0f));
-          paint.setColor(color);
-          canvas.drawDRRect(borderOuter, borderInner.get(), paint);
-        }
-      });
-      backgroundColor.get().ifPresent(color -> {
-        var rect = borderInner.get() != null
-          ? borderInner.get()
-          : layout.getPaddingRect().withRadii(0f);
-        paint.setColor(color);
-        canvas.drawRoundRect(rect, paint);
-      });
-    }
+  public void paint(Graphics2D g2d, Layout layout) {
+    Ref<Shape> borderInner = new Ref<>();
+    borderColor.get().ifPresent(color -> {
+      if (border.get() > 0f) {
+        var borderOuter = layout.getBorderRect().toAwtRound(radius.get());
+        var inner = Rect.inflate(borderOuter, -border.get());
+        borderInner.accept(inner);
+        g2d.setColor(new Color(color, true));
+        g2d.fill(borderInner.get());
+      }
+    });
+
+    var color = backgroundColor.get().orElse(EzColors.TRANSPARENT);
+    var shape = borderInner.get() != null
+      ? borderInner.get()
+      : layout.getPaddingRect().toAwt();
+    g2d.setColor(new Color(color, true));
+    g2d.fill(shape);
   }
 
   public static Builder builder() {

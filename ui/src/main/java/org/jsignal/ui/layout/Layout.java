@@ -162,8 +162,8 @@ public class Layout {
     return paddingLeft.get();
   }
 
-  public Point getSize() {
-    return new Point(getWidth(), getHeight());
+  public Vector2f getSize() {
+    return new Vector2f(getWidth(), getHeight());
   }
 
   public Rect getBoundingRect() {

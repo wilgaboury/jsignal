@@ -1,8 +1,30 @@
 package org.jsignal.ui.layout;
 
 import org.joml.Vector2f;
+import org.jsignal.ui.MathUtil;
+
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 
 public record Rect(Vector2f topLeft, Vector2f bottomRight) {
+    public float getX() {
+        return getLeft();
+    }
+
+    public float getY() {
+        return getTop();
+    }
+
+    public float getWidth() {
+        return getRight() - getLeft();
+    }
+
+    public float getHeight() {
+        return getBottom() - getTop();
+    }
+
     public float getLeft() {
         return topLeft.x();
     }
@@ -17,6 +39,22 @@ public record Rect(Vector2f topLeft, Vector2f bottomRight) {
 
     public float getBottom() {
         return bottomRight.y();
+    }
+
+    public Rectangle2D.Float toAwt() {
+        return new Rectangle2D.Float(getX(), getY(), getWidth(), getHeight());
+    }
+
+    public RoundRectangle2D.Float toAwtRound(float radius) {
+        return new RoundRectangle2D.Float(getX(), getY(), getWidth(), getHeight(), radius, radius);
+    }
+
+    public static Shape inflate(RoundRectangle2D.Float rect, float scale) {
+        var transform = new AffineTransform();
+        transform.translate(-rect.width/2f, -rect.height/2f);
+        transform.scale(scale, scale);
+        transform.translate(rect.width/2f, rect.height/2f);
+        return transform.createTransformedShape(rect);
     }
 
     public static Rect makeWH(float wh) {

@@ -14,6 +14,7 @@ import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 
+import java.awt.*;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -91,10 +92,10 @@ public non-sealed class Button extends ButtonPropComponent {
     };
   }
 
-  private void paint(Canvas canvas, Layout layout) {
+  private void paint(Graphics2D canvas, Layout layout) {
     var size = layout.getSize();
     if (mouseDown.get()) {
-      canvas.concat(MathUtil.scaleCenter(0.95f, size.getX(), size.getY()));
+      canvas.transform(MathUtil.toAwt(MathUtil.scaleCenter(0.95f, size.x(), size.y())));
     }
     try (Paint paint = new Paint()) {
       paint.setColor(mouseOver.get() ? hoverColor(color.get()) : color.get());
