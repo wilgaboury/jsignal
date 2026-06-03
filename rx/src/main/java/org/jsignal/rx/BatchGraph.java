@@ -2,6 +2,7 @@ package org.jsignal.rx;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
 
 import java.util.*;
 
@@ -15,49 +16,59 @@ public class BatchGraph implements Batch {
   private final Map<Effect, GraphNode> graph;
 
   public BatchGraph() {
-    this.batch = new TreeSet<>(Comparator.<GraphNode>comparingInt(n -> n.inbound)
+    this.batch = new TreeSet<>(Comparator.<GraphNode>comparingInt(n -> n.inbound.size())
             .thenComparingInt(n -> n.effect.getId()));
     this.graph = new HashMap<>();
   }
 
   @Override
   public void add(EffectRef ref) {
-    dfs(new HashSet<>(), ref).ifPresent(batch::add);
+    ref.getEffect().ifPresent(effect -> {
+      var node = graph.computeIfAbsent(effect, GraphNode::new);
+      batch.add(node);
+      var stack = new HashSet<GraphNode>();
+      stack.add(node);
+      dfs(stack, node);
+    });
   }
 
-  private Optional<GraphNode> dfs(Set<Effect> stack, EffectRef ref) {
-    return ref.getEffect().flatMap(effect -> {
-      if (stack.contains(effect)) {
-        // cycle detected
-        return Optional.empty();
-      } else if (graph.containsKey(effect)) {
-        var node = graph.get(effect);
-        updateInbound(node, () -> node.inbound++);
-        return Optional.of(node);
-      } else {
-        var node = new GraphNode(effect);
-        batch.add(node);
-        graph.put(effect, node);
-        stack.add(effect);
-        for (Signal<?> signal : effect.getOutbound()) {
-          for (EffectRef neighbor : signal.effects()) {
-            dfs(stack, neighbor).ifPresent(node.neighbors::add);
+  private void dfs(Set<GraphNode> stack, GraphNode node) {
+    if (stack.contains(node)) {
+      // cycle detected, no-op
+      return;
+    }
+
+    for (Signal<?> signal : node.effect.getOutbound()) {
+      for (EffectRef neighbor : signal.effects()) {
+        neighbor.getEffect().ifPresent(effect -> {
+          if (graph.containsKey(effect)) {
+            var next = graph.get(effect);
+            node.outbound.add(next);
+            next.update(batch, () -> next.inbound.add(node));
+          } else {
+            var next = new GraphNode(effect);
+            graph.put(effect, next);
+            node.outbound.add(next);
+            next.inbound.add(node);
+
+            stack.add(next);
+            dfs(stack, next);
+            stack.remove(next);
           }
-        }
-        stack.remove(effect);
-        return Optional.of(node);
+        });
       }
-    });
+    }
   }
 
   @Override
   public void commit() {
     while (!batch.isEmpty()) {
-      var node = batch.removeFirst(); // remove the node with the smallest number of inbound dependencies
+      var node = batch.removeFirst(); // remove node with fewest path dependencies
       graph.remove(node.effect);
-      for (var neighbor : node.neighbors) {
-        updateInbound(neighbor, () -> neighbor.inbound--);
+      for (var outbound : node.outbound) {
+        outbound.update(batch, () -> outbound.inbound.remove(node));
       }
+      node.outbound.clear();
 
       try {
         node.effect.run();
@@ -67,22 +78,22 @@ public class BatchGraph implements Batch {
     }
   }
 
-  private void updateInbound(GraphNode node, Runnable runnable) {
-    if (batch.remove(node)) {
-      runnable.run();
-      batch.add(node);
-    }
-  }
-
   private static class GraphNode {
     public final Effect effect;
-    public int inbound;
-    public Set<GraphNode> neighbors;
+    public final Set<GraphNode> inbound;
+    public final Set<GraphNode> outbound;
 
     public GraphNode(Effect effect) {
       this.effect = effect;
-      this.inbound = 0;
-      this.neighbors = new HashSet<>();
+      this.inbound = new LinkedHashSet<>();
+      this.outbound = new LinkedHashSet<>();
+    }
+
+    public void update(Set<GraphNode> batch, Runnable runnable) {
+      if (batch.remove(this)) {
+        runnable.run();
+        batch.add(this);
+      }
     }
   }
 }

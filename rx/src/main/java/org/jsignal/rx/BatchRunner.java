@@ -4,7 +4,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class BatchRunner {
-  private static final ThreadLocal<BatchRunner> threadBatchRunner = ThreadLocal.withInitial(() -> new BatchRunner(BatchGraph::new));
+  private static final ThreadLocal<BatchRunner> threadBatchRunner = ThreadLocal.withInitial(
+          () -> new BatchRunner(BatchGraph::new));
 
   public static void batch(Consumer<Batch> consumer) {
     threadBatchRunner.get().run(consumer);
