@@ -1,6 +1,5 @@
 package org.jsignal.examples;
 
-import org.jsignal.examples.todo.TodoApp;
 import org.jsignal.std.BasicPainter;
 import org.jsignal.std.Para;
 import org.jsignal.std.ParaStyle;
@@ -14,12 +13,11 @@ import org.jsignal.ui.UiWindow;
 
 import static org.jsignal.ui.Nodes.compose;
 import static org.jsignal.ui.layout.LayoutValue.percent;
-import static org.jsignal.ui.layout.LayoutValue.pixel;
 
 public class LayoutTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Todo Application");
       window.setContentSize(250, 250);
       ParaStyle.context.customize(sb -> sb.textStyleBuilder(tsb -> tsb

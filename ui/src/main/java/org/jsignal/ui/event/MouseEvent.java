@@ -1,10 +1,7 @@
 package org.jsignal.ui.event;
 
-import io.github.humbleui.jwm.EventMouseButton;
-import io.github.humbleui.jwm.KeyModifier;
-import io.github.humbleui.jwm.MouseButton;
-import io.github.humbleui.types.Point;
 import jakarta.annotation.Nullable;
+import org.joml.Vector2f;
 import org.jsignal.ui.MathUtil;
 import org.jsignal.ui.Node;
 
@@ -13,14 +10,14 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public class MouseEvent extends Event {
-  private final Point screenPoint;
-  private final @Nullable MouseButton mouseButton;
-  private final Set<KeyModifier> modifiers;
+  private final Vector2f screenPoint;
+  private final @Nullable Integer mouseButton;
+  private final @Nullable Integer modifiers;
 
   public MouseEvent(
     EventType type,
     Node target,
-    Point screenPoint
+    Vector2f screenPoint
   ) {
     this(type, target, screenPoint, null, Collections.emptySet());
   }
@@ -28,9 +25,9 @@ public class MouseEvent extends Event {
   public MouseEvent(
     EventType type,
     Node target,
-    Point screenPoint,
-    @Nullable MouseButton mouseButton,
-    Set<KeyModifier> modifiers
+    Vector2f screenPoint,
+    @Nullable Integer mouseButton,
+    @Nullable Integer modifiers
   ) {
     super(type, target);
 

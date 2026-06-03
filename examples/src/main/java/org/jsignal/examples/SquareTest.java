@@ -16,7 +16,7 @@ import static org.jsignal.ui.layout.LayoutValue.pixel;
 public class SquareTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Test Square");
       window.setContentSize(400, 400);
       new UiWindow(window, SquareTest::new);

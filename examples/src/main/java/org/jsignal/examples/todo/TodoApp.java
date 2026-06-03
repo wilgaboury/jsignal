@@ -20,7 +20,7 @@ import static org.jsignal.ui.layout.LayoutValue.pixel;
 public class TodoApp extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Todo Application");
       window.setContentSize(500, 500);
       ParaStyle.context.customize(sb -> sb.textStyleBuilder(tsb -> tsb

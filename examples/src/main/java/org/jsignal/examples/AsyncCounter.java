@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class AsyncCounter extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Async Counter");
       window.setContentSize(250, 250);
       new UiWindow(window, AsyncCounter::new);

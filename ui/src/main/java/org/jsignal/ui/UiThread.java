@@ -1,31 +1,44 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.jwm.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class UiThread {
   private static final Logger logger = LoggerFactory.getLogger(UiThread.class);
 
   private static boolean inThread = false;
   private static final Queue<Runnable> microtasks = new ArrayDeque<>();
+  private static final ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
 
   public static void start(Runnable runnable) {
-    App.start(() -> run(() -> {
+    invokeLater(() -> {
       UiUtil.init();
       runnable.run();
-    }));
+    });
   }
 
   public static void invoke(Runnable runnable) {
-    App.runOnUIThread(() -> run(runnable));
+    if (EventQueue.isDispatchThread()) {
+      run(runnable);
+    } else {
+      invokeLater(() -> run(runnable));
+    }
   }
 
   public static void invokeLater(Runnable runnable) {
-    App._nRunOnUIThread(() -> run(runnable));
+    EventQueue.invokeLater(() -> run(runnable));
+  }
+
+  public static void invokeLater(Runnable runnable, Duration dur) {
+    scheduled.schedule(() -> invokeLater(runnable), dur.toMillis(), TimeUnit.MILLISECONDS);
   }
 
   public static void queueMicrotask(Runnable runnable) {

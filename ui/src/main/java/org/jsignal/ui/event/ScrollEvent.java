@@ -3,20 +3,13 @@ package org.jsignal.ui.event;
 import org.jsignal.ui.Node;
 
 public class ScrollEvent extends Event {
-  private final float deltaX;
-  private final float deltaY;
-
-  public ScrollEvent(EventType type, Node target, float deltaX, float deltaY) {
+  private final int unitsToScroll;
+  public ScrollEvent(EventType type, Node target, int unitsToScroll) {
     super(type, target);
-    this.deltaX = deltaX;
-    this.deltaY = deltaY;
+    this.unitsToScroll = unitsToScroll;
   }
 
-  public float getDeltaX() {
-    return deltaX;
-  }
-
-  public float getDeltaY() {
-    return deltaY;
+  public float getUnitsToScroll() {
+    return unitsToScroll;
   }
 }

@@ -65,6 +65,10 @@ public record Rect(Vector2f topLeft, Vector2f bottomRight) {
         return makeXYWH(0, 0, w, h);
     }
 
+    public static Rect makeWH(Vector2f wh) {
+        return makeWH(wh.x, wh.y);
+    }
+
     public static Rect makeXYWH(float x, float y, float width, float height) {
         return new Rect(new Vector2f(x, y), new Vector2f(x + width, y + height));
     }

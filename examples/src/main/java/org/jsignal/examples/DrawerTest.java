@@ -14,7 +14,7 @@ import static org.jsignal.ui.layout.LayoutValue.pixel;
 public class DrawerTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Drawer Test");
       window.setContentSize(500, 500);
       new UiWindow(window, DrawerTest::new);

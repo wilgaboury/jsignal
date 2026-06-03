@@ -10,7 +10,6 @@ import io.github.humbleui.jwm.skija.LayerGLSkija;
 import io.github.humbleui.jwm.skija.LayerMetalSkija;
 import io.github.humbleui.jwm.skija.LayerRasterSkija;
 import org.jsignal.rx.*;
-import org.jsignal.ui.hotswap.HotswapComponent;
 import org.jsignal.ui.hotswap.HotswapInstrumentation;
 import org.jsignal.ui.hotswap.HotswapRerenderService;
 import org.jsignal.ui.hotswap.espresso.EspressoJSignalHotswapPlugin;
@@ -18,10 +17,8 @@ import org.lwjgl.util.yoga.Yoga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.EnumMap;
-import java.util.List;
+import java.awt.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class UiUtil {
   private static final Logger logger = LoggerFactory.getLogger(UiUtil.class);
@@ -79,32 +76,13 @@ public class UiUtil {
     return builder.atomic(UiThread::invokeLater);
   }
 
-  public static Window createWindow() {
-    return App.makeWindow();
+  public static Frame createFrame(String title) {
+    var frame = new Frame(title);
+    frame.setResizable(true);
+    return frame;
   }
 
   public static void clearNodeStyle(long node) {
     Yoga.YGNodeCopyStyle(node, clearNodeStyle);
-  }
-
-  private static final EnumMap<Platform, List<Supplier<? extends Layer>>> LAYER_INITIALIZERS = new EnumMap<>(Platform.class);
-
-  static {
-    LAYER_INITIALIZERS.put(Platform.MACOS, List.of(LayerMetalSkija::new, LayerGLSkija::new, LayerRasterSkija::new));
-    LAYER_INITIALIZERS.put(Platform.WINDOWS, List.of(LayerD3D12Skija::new, LayerGLSkija::new, LayerRasterSkija::new));
-    LAYER_INITIALIZERS.put(Platform.X11, List.of(LayerGLSkija::new, LayerRasterSkija::new));
-  }
-
-  public static Layer createLayer() {
-    for (var initializers : LAYER_INITIALIZERS.get(Platform.CURRENT)) {
-      try {
-        var layer = initializers.get();
-        logger.trace("using layer type: {}", layer.getClass().getSimpleName());
-        return layer;
-      } catch (Exception e) {
-        // no-op
-      }
-    }
-    throw new RuntimeException(String.format("failed to initialize layer for platform %s", Platform.CURRENT));
   }
 }

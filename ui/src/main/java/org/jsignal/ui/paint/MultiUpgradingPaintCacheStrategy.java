@@ -1,8 +1,8 @@
 package org.jsignal.ui.paint;
 
-import io.github.humbleui.skija.Canvas;
 import org.jsignal.rx.RxUtil;
 
+import java.awt.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class MultiUpgradingPaintCacheStrategy implements PaintCacheStrategy {
   }
 
   @Override
-  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
+  public void paint(Graphics2D g2d, UseNode useNode, Consumer<Graphics2D> orElse) {
     if (!isDirty()) {
       nonDirtyPaintCount++;
     } else {
@@ -60,7 +60,7 @@ public class MultiUpgradingPaintCacheStrategy implements PaintCacheStrategy {
       index++;
     }
 
-    upgrades.get(index).strategy().get().paint(canvas, useNode, orElse);
+    upgrades.get(index).strategy().get().paint(g2d, useNode, orElse);
   }
 
   private record Level(int nonDirtyPaints, Supplier<PaintCacheStrategy> strategy) {}

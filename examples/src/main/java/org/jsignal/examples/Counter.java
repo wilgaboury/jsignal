@@ -9,7 +9,7 @@ import org.jsignal.ui.*;
 public class Counter extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Counter");
       window.setContentSize(250, 250);
       new UiWindow(window, Counter::new);

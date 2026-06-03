@@ -38,7 +38,7 @@ public class SimpleTest extends Component {
 
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Test App");
       window.setContentSize(400, 400);
       new UiWindow(window, SimpleTest::new);

@@ -1,7 +1,6 @@
 package org.jsignal.ui.paint;
 
-import io.github.humbleui.skija.Canvas;
-
+import java.awt.*;
 import java.util.function.Consumer;
 
 public class NullPaintCacheStrategy implements PaintCacheStrategy {
@@ -18,7 +17,7 @@ public class NullPaintCacheStrategy implements PaintCacheStrategy {
   }
 
   @Override
-  public void paint(Canvas canvas, UseNode useNode, Consumer<Canvas> orElse) {
+  public void paint(Graphics2D canvas, UseNode useNode, Consumer<Graphics2D> orElse) {
     dirty = false;
     orElse.accept(canvas);
   }

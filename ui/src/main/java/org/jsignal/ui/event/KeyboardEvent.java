@@ -1,18 +1,19 @@
 package org.jsignal.ui.event;
 
-import io.github.humbleui.jwm.EventKey;
 import org.jsignal.ui.Node;
 
-public class KeyboardEvent extends UiEvent {
-  private final EventKey event;
+import java.awt.event.KeyEvent;
 
-  public KeyboardEvent(EventType type, Node target, EventKey event) {
+public class KeyboardEvent extends UiEvent {
+  private final KeyEvent event;
+
+  public KeyboardEvent(EventType type, Node target, KeyEvent event) {
     super(type, target);
 
     this.event = event;
   }
 
-  public EventKey getEvent() {
+  public KeyEvent getEvent() {
     return event;
   }
 }

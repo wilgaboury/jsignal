@@ -1,22 +1,22 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.jwm.*;
-import io.github.humbleui.jwm.skija.EventFrameSkija;
-import io.github.humbleui.skija.Surface;
-import io.github.humbleui.types.Point;
-import jakarta.annotation.Nullable;
 import org.joml.Vector2f;
 import org.jsignal.rx.Cleanups;
 import org.jsignal.rx.Context;
 import org.jsignal.rx.Provider;
 import org.jsignal.rx.Signal;
 import org.jsignal.ui.event.*;
+import org.jsignal.ui.event.FocusEvent;
+import org.jsignal.ui.event.MouseEvent;
 import org.lwjgl.util.yoga.Yoga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.event.*;
+import java.awt.image.BufferStrategy;
+
+import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -26,16 +26,17 @@ public class UiWindow {
   private static final Logger logger = LoggerFactory.getLogger(UiWindow.class);
 
   public static final Context<UiWindow> context = Context.create();
-  public static final Context<BufferedImage> paintSurfaceContext = Context.create();
-  public static final Context<BufferedImage> bufferedImageContext = Context.create();
 
   private static final Set<UiWindow> windows = new HashSet<>();
 
-  private @Nullable Window window;
+  private final Frame frame;
+  private final Canvas canvas;
+  private final BufferStrategy bufferStrategy;
   private final Node root;
   private final Cleanups rootCleanups;
 
-  private long prevFrameTimeNano = 0;
+  private static long MIN_FRAME_DUR_NANO = 16_670_000;
+  private long prevFrameTimeNano = System.nanoTime()-2*MIN_FRAME_DUR_NANO;
   private long deltaFrameNano = -1L;
   private final Queue<Runnable> preFrame;
   private final Queue<Runnable> postFrame;
@@ -50,8 +51,8 @@ public class UiWindow {
 
   private final Signal<Vector2f> mousePosition = Signal.create(new Vector2f(0, 0));
 
-  public UiWindow(Frame window, Supplier<Element> root) {
-    this.window = window;
+  public UiWindow(Frame frame, Supplier<Element> root) {
+    this.frame = frame;
 
     this.preFrame = new ArrayDeque<>();
     this.postFrame = new ArrayDeque<>();
@@ -68,23 +69,29 @@ public class UiWindow {
       )
       .provide(() -> Node.createRoot(root));
 
-    window.setLayer(UiUtil.createLayer());
-    UiThread.queueMicrotask(() -> {
-      window.setVisible(true);
-      window.getLayer().frame(); // fixes display glitch
+    this.canvas = new Canvas();
+    canvas.createBufferStrategy(2);
+    this.bufferStrategy = canvas.getBufferStrategy();
+
+    frame.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        close();
+      }
     });
-    window.setEventListener(e -> UiThread.invoke(() ->
-      context.with(this).provide(() -> handleEvent(e))));
+    frame.removeAll();
+    frame.add(canvas, BorderLayout.CENTER);
+    doFrame();
+    frame.setVisible(true);
+    setupEventHandling();
   }
 
-  public Optional<Window> getWindow() {
-    return Optional.ofNullable(window);
+  public Optional<Window> getFrame() {
+    return Optional.ofNullable(frame);
   }
 
   public void close() {
     windows.remove(this);
-    window.close();
-    window = null;
     rootCleanups.run();
   }
 
@@ -92,7 +99,7 @@ public class UiWindow {
     return root;
   }
 
-  public Point getMousePosition() {
+  public Vector2f getMousePosition() {
     return mousePosition.get();
   }
 
@@ -103,10 +110,9 @@ public class UiWindow {
   private void layout() {
     // this loop is a way to get around reactive layout updates
     int maxLayoutPasses = 10;
-    while (shouldLayout && window != null && maxLayoutPasses > 0) {
+    while (shouldLayout && frame != null && maxLayoutPasses > 0) {
       shouldLayout = false;
-      var rect = window.getContentRect();
-      Yoga.nYGNodeCalculateLayout(root.getYoga(), rect.getWidth(), rect.getHeight(), Yoga.YGDirectionLTR);
+      Yoga.nYGNodeCalculateLayout(root.getYoga(), frame.getWidth(), frame.getHeight(), Yoga.YGDirectionLTR);
       batch(root::updateLayout);
       transformUpdate();
       maxLayoutPasses--;
@@ -123,18 +129,18 @@ public class UiWindow {
   }
 
   public void requestFrame() {
-    // TODO: underlying JWM issue where requestFrame consistently gets ignored causing window to freeze.
-    //  Issue still happens when this if statement is commented out
-    if (shouldPaint || window == null) {
+    if (shouldPaint) {
       return;
     }
 
     shouldPaint = true;
-//    logger.info("frame requested", new Throwable());
-    UiThread.invokeLater(() -> {
-      logger.info("frame requested");
-      window.requestFrame();
-    });
+    logger.info("frame requested");
+    var elapsed = System.nanoTime() - prevFrameTimeNano;
+    if (elapsed > MIN_FRAME_DUR_NANO) {
+      UiThread.invokeLater(this::doFrame);
+    } else {
+      UiThread.invokeLater(this::doFrame, Duration.ofNanos(MIN_FRAME_DUR_NANO - elapsed));
+    }
   }
 
   public void requestTransformUpdate() {
@@ -159,94 +165,108 @@ public class UiWindow {
     postFrame.add(runnable);
   }
 
-  void handleEvent(io.github.humbleui.jwm.Event event) {
-    switch (event) {
-      case EventWindowCloseRequest e -> close();
-      case EventWindowClose e -> {
-        if (windows.isEmpty()) {
-          App.terminate();
-        }
+  void doFrame() {
+    UiThread.executeQueue(preFrame);
+
+    layout();
+    transformUpdate();
+    var g2d = (Graphics2D)bufferStrategy.getDrawGraphics();
+    root.setOffScreen(g2d);
+    root.paint(g2d);
+    g2d.dispose();
+    bufferStrategy.show();
+    shouldPaint = false;
+    Toolkit.getDefaultToolkit().sync();
+    logger.info("frame painted");
+
+    calculateDeltaFrame();
+
+    UiThread.executeQueue(postFrame);
+  }
+
+  void setupEventHandling() {
+    canvas.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        requestLayout();
       }
-      case EventFrameSkija e -> {
-        UiThread.executeQueue(preFrame);
-
-        layout();
-        transformUpdate();
-        var canvas = e.getSurface().getCanvas();
-        canvas.clear(0xFFFFFFFF);
-        root.setOffScreen(canvas);
-        paintSurfaceContext.with(e.getSurface()).provide(() -> root.paint(canvas));
-        shouldPaint = false;
-        logger.info("frame painted");
-
-        calculateDeltaFrame();
-
-        UiThread.executeQueue(postFrame);
-      }
-      case EventWindowResize e -> requestLayout();
-      case EventMouseScroll e -> {
+    });
+    canvas.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mousePressed(java.awt.event.MouseEvent e) {
         if (hovered != null) {
-          hovered.bubble(new ScrollEvent(EventType.SCROLL, hovered, e.getDeltaX(), e.getDeltaY()));
-        }
-      }
-      case EventKey e -> {
-        if (focus == null) {
-          if (root == null) {
-            return;
-          } else {
-            focus = root;
+          mouseDown = hovered;
+
+          mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_DOWN, mouseDown, e));
+
+          var focusTemp = mouseDown;
+          while (!focusTemp.hasListener(EventType.FOCUS)
+            && !focusTemp.hasListener(EventType.KEY_DOWN)
+            && !focusTemp.hasListener(EventType.KEY_UP)
+            && focusTemp.getParent() != null) {
+            focusTemp = focusTemp.getParent();
+          }
+
+          if (focus != focusTemp) {
+            if (focus != null) {
+              focus.fire(new FocusEvent(EventType.BLUR, focus));
+            }
+            focus = focusTemp;
+            focus.fire(new FocusEvent(EventType.FOCUS, focus));
           }
         }
-
-        if (e.isPressed()) {
-          focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, focus, e));
-        } else {
-          focus.bubble(new KeyboardEvent(EventType.KEY_UP, focus, e));
-        }
       }
-      case EventMouseButton e -> {
+
+      @Override
+      public void mouseReleased(java.awt.event.MouseEvent e) {
         if (hovered != null) {
-          if (e.isPressed()) {
-            mouseDown = hovered;
-
-            mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_DOWN, mouseDown, e));
-
-            var focusTemp = mouseDown;
-            while (!focusTemp.hasListener(EventType.FOCUS)
-              && !focusTemp.hasListener(EventType.KEY_DOWN)
-              && !focusTemp.hasListener(EventType.KEY_UP)
-              && focusTemp.getParent() != null) {
-              focusTemp = focusTemp.getParent();
-            }
-
-            if (focus != focusTemp) {
-              if (focus != null) {
-                focus.fire(new FocusEvent(EventType.BLUR, focus));
-              }
-              focus = focusTemp;
-              focus.fire(new FocusEvent(EventType.FOCUS, focus));
-            }
-          }
+          hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
         }
 
-        if (!e.isPressed()) {
-          if (hovered != null) {
-            hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
-          }
-
-          if (hovered != null && (mouseDown == hovered || hovered.getParents().contains(mouseDown))) {
-            hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_CLICK, hovered, e));
-          } else if (mouseDown != null) {
-            mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
-          }
+        if (hovered != null && (mouseDown == hovered || hovered.getParents().contains(mouseDown))) {
+          hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_CLICK, hovered, e));
+        } else if (mouseDown != null) {
+          mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
         }
       }
-      case EventMouseMove e -> {
-        var point = new Point(e.getX(), e.getY());
+
+      @Override
+      public void mouseMoved(java.awt.event.MouseEvent e) {
+        var point = new Vector2f(e.getX(), e.getY());
         handleMouseMove(point);
         mousePosition.accept(point);
       }
-      case EventWindowFocusOut e -> {
+
+      @Override
+      public void mouseWheelMoved(MouseWheelEvent e) {
+        if (hovered != null) {
+          hovered.bubble(new ScrollEvent(EventType.SCROLL, hovered, e.getUnitsToScroll()));
+        }
+      }
+    });
+    canvas.addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        if (focus == null) {
+          focus = root;
+        }
+
+        focus.bubble(new KeyboardEvent(EventType.KEY_DOWN, focus, e));
+      }
+
+      @Override
+      public void keyReleased(KeyEvent e) {
+        if (focus == null) {
+          focus = root;
+        }
+
+        focus.bubble(new KeyboardEvent(EventType.KEY_UP, focus, e));
+      }
+    });
+
+    frame.addWindowFocusListener(new WindowAdapter() {
+      @Override
+      public void windowLostFocus(WindowEvent e) {
         if (hovered != null) {
           hovered.bubble(new MouseEvent(EventType.MOUSE_OUT, hovered, mousePosition.get()));
           hovered.bubble(new MouseEvent(EventType.MOUSE_LEAVE, hovered, mousePosition.get()));
@@ -263,12 +283,10 @@ public class UiWindow {
           focus = null;
         }
       }
-      default -> {
-      }
-    }
+    });
   }
 
-  private void handleMouseMove(Point point) {
+  private void handleMouseMove(Vector2f point) {
     // TODO: convert from screen to paint space using scale - not sure what this means now?
     // TODO: handle mouse move should be an effect so that whenever transforms, which effect hit testing change,
     // automatically will cause new event firing, instead of current system of transform side effect and update

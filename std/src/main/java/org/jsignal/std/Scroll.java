@@ -1,12 +1,5 @@
 package org.jsignal.std;
 
-import io.github.humbleui.jwm.Key;
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Matrix33;
-import io.github.humbleui.skija.Paint;
-import io.github.humbleui.skija.svg.SVGDOM;
-import io.github.humbleui.types.RRect;
-import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.*;
@@ -17,7 +10,7 @@ import org.jsignal.ui.layout.CompositeLayouter;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.Layouter;
-import org.jsignal.ui.paint.SurfacePaintCacheStrategy;
+import org.jsignal.ui.paint.BufferedImageCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 
 import java.util.List;
@@ -137,7 +130,7 @@ public non-sealed class Scroll extends ScrollPropComponent {
         Node.builder()
           .ref(ref -> {
             content.accept(ref);
-            ref.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(SurfacePaintCacheStrategy::new));
+            ref.setPaintCacheStrategy(new UpgradingPaintCacheStrategy(BufferedImageCacheStrategy::new));
           })
           .layout(config -> {
             innerLayout.layout(config);

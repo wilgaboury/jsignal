@@ -1,23 +1,26 @@
 package org.jsignal.examples;
 
 import com.google.common.net.MediaType;
-import io.github.humbleui.skija.Matrix33;
+import org.joml.Matrix3x2f;
 import org.jsignal.rx.Signal;
 import org.jsignal.std.*;
+import org.jsignal.std.Image;
 import org.jsignal.std.ez.EzColors;
 import org.jsignal.std.ez.EzLayout;
 import org.jsignal.ui.*;
+import org.jsignal.ui.Component;
 import org.jsignal.ui.layout.LayoutValue;
+
+import java.awt.*;
 
 import static org.jsignal.ui.Nodes.compose;
 
 public class AnimationTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.conditionallyProvideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
-      window.setTitle("Test App");
-      window.setContentSize(400, 400);
-      new UiWindow(window, AnimationTest::new);
+      var frame = new Frame("Test App");
+      frame.setSize(400, 400);
+      new UiWindow(frame, AnimationTest::new);
     }));
   }
 
@@ -51,7 +54,9 @@ public class AnimationTest extends Component {
         Node.builder()
           .transform(layout -> {
             var size = layout.getSize();
-            return Matrix33.makeTranslate(size.getX() / 2f, size.getY() / 2f)
+            var matrix = new Matrix3x2f();
+            matrix.translate(size.getX() / 2f, size.getY() / 2f);
+            return Matrix3x2f.makeTranslate()
               .makeConcat(Matrix33.makeRotate(angle.get()))
               .makeConcat(Matrix33.makeTranslate(-size.getX() / 2f, -size.getY() / 2f));
           })

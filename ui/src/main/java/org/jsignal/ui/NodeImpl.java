@@ -1,10 +1,10 @@
 package org.jsignal.ui;
 
-import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
+import org.joml.Vector2f;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.Layouter;
+import org.jsignal.ui.layout.Rect;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,11 +34,11 @@ public interface NodeImpl {
   }
 
   // coordinates are in "paint space" for ease of calculation
-  default HitTestResult hitTest(Point point, Layout layout) {
+  default HitTestResult hitTest(Vector2f point, Layout layout) {
     return defaultHitTest(point, layout);
   }
 
-  static HitTestResult defaultHitTest(Point point, Layout layout) {
+  static HitTestResult defaultHitTest(Vector2f point, Layout layout) {
     return MathUtil.contains(Rect.makeWH(layout.getSize()), point)
       ? HitTestResult.HIT : HitTestResult.MISS;
   }

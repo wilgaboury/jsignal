@@ -67,7 +67,7 @@ public non-sealed class TextInput extends TextInputPropComponent {
 
   @Override
   public Element render() {
-    var window = UiWindow.context.use().getWindow().get();
+    var window = UiWindow.context.use().getFrame().get();
 
     Effect.create(() -> {
       if (mouseDown.get()) {

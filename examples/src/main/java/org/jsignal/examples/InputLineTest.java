@@ -15,7 +15,7 @@ import org.jsignal.ui.UiWindow;
 public class InputLineTest extends Component {
   public static void main(String[] args) {
     UiThread.start(() -> UiUtil.provideHotswapInstrumentation(() -> {
-      var window = UiUtil.createWindow();
+      var window = UiUtil.createFrame();
       window.setTitle("Counter");
       window.setContentSize(1000, 250);
       new UiWindow(window, InputLineTest::new);

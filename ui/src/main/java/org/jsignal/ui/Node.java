@@ -12,7 +12,7 @@ import org.jsignal.ui.event.EventListener;
 import org.jsignal.ui.event.EventType;
 import org.jsignal.ui.layout.*;
 import org.jsignal.ui.paint.PaintCacheStrategy;
-import org.jsignal.ui.paint.PicturePaintCacheStrategy;
+import org.jsignal.ui.paint.BufferedImageCacheStrategy;
 import org.jsignal.ui.paint.UpgradingPaintCacheStrategy;
 import org.lwjgl.util.yoga.Yoga;
 
@@ -30,7 +30,7 @@ import static org.jsignal.ui.layout.LayoutValue.percent;
 @GeneratePropHelper
 public non-sealed class Node extends NodePropHelper implements Nodes {
   public static final Context<Supplier<PaintCacheStrategy>> defaultPaintCacheStrategy = Context.create(
-    () -> new UpgradingPaintCacheStrategy(PicturePaintCacheStrategy::new));
+    () -> new UpgradingPaintCacheStrategy(BufferedImageCacheStrategy::new));
 
   @BuildProps
   public static class Transitive {
