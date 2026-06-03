@@ -32,11 +32,11 @@ public class BatchGraph implements Batch {
         return Optional.empty();
       } else if (graph.containsKey(effect)) {
         var node = graph.get(effect);
-        node.inbound++;
-        node.updateSort(batch);
+        updateInbound(node, () -> node.inbound++);
         return Optional.of(node);
       } else {
         var node = new GraphNode(effect);
+        batch.add(node);
         graph.put(effect, node);
         stack.add(effect);
         for (Signal<?> signal : effect.getOutbound()) {
@@ -56,8 +56,7 @@ public class BatchGraph implements Batch {
       var node = batch.removeFirst(); // remove the node with the smallest number of inbound dependencies
       graph.remove(node.effect);
       for (var neighbor : node.neighbors) {
-        neighbor.inbound--;
-        neighbor.updateSort(batch);
+        updateInbound(neighbor, () -> neighbor.inbound--);
       }
 
       try {
@@ -65,6 +64,13 @@ public class BatchGraph implements Batch {
       } catch (Exception e) {
         logger.error("uncaught exception in effect", e);
       }
+    }
+  }
+
+  private void updateInbound(GraphNode node, Runnable runnable) {
+    if (batch.remove(node)) {
+      runnable.run();
+      batch.add(node);
     }
   }
 
@@ -77,13 +83,6 @@ public class BatchGraph implements Batch {
       this.effect = effect;
       this.inbound = 0;
       this.neighbors = new HashSet<>();
-    }
-
-    public void updateSort(SortedSet<GraphNode> batch) {
-      if (batch.contains(this)) {
-        batch.remove(this);
-        batch.add(this);
-      }
     }
   }
 }
