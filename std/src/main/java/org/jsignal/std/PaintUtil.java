@@ -1,5 +1,7 @@
 package org.jsignal.std;
 
+import org.jsignal.ui.UiUtil;
+
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -45,7 +47,7 @@ public class PaintUtil {
         int w = bounds.width + 2 * ceilBlurRadius;
         int h = bounds.height + 2 * ceilBlurRadius;
 
-        BufferedImage shadowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage shadowImage = UiUtil.createBufferedImage(w, h);
         Graphics2D shadowG = shadowImage.createGraphics();
 
         shadowG.translate(ceilBlurRadius, ceilBlurRadius);
@@ -75,7 +77,7 @@ public class PaintUtil {
         int height = src.getHeight();
 
         // Temporary image for the horizontal pass
-        BufferedImage tmp = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage tmp = UiUtil.createBufferedImage(width, height);
 
         // Horizontal blur
         for (int y = 0; y < height; y++) {
@@ -95,7 +97,7 @@ public class PaintUtil {
         }
 
         // Vertical blur (reuse kernel)
-        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage result = UiUtil.createBufferedImage(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 float[] rgba = new float[4];

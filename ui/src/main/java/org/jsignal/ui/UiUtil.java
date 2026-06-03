@@ -1,14 +1,7 @@
 package org.jsignal.ui;
 
 import com.oracle.truffle.espresso.hotswap.EspressoHotSwap;
-import io.github.humbleui.jwm.App;
-import io.github.humbleui.jwm.Layer;
-import io.github.humbleui.jwm.Platform;
-import io.github.humbleui.jwm.Window;
-import io.github.humbleui.jwm.skija.LayerD3D12Skija;
-import io.github.humbleui.jwm.skija.LayerGLSkija;
-import io.github.humbleui.jwm.skija.LayerMetalSkija;
-import io.github.humbleui.jwm.skija.LayerRasterSkija;
+import org.joml.Vector2f;
 import org.jsignal.rx.*;
 import org.jsignal.ui.hotswap.HotswapInstrumentation;
 import org.jsignal.ui.hotswap.HotswapRerenderService;
@@ -18,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
 public class UiUtil {
@@ -84,5 +78,9 @@ public class UiUtil {
 
   public static void clearNodeStyle(long node) {
     Yoga.YGNodeCopyStyle(node, clearNodeStyle);
+  }
+
+  public static BufferedImage createBufferedImage(int width, int height) {
+    return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
   }
 }

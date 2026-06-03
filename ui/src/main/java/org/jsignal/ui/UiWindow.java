@@ -197,7 +197,7 @@ public class UiWindow {
         if (hovered != null) {
           mouseDown = hovered;
 
-          mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_DOWN, mouseDown, e));
+          mouseDown.bubble(new MouseEvent(EventType.MOUSE_DOWN, mouseDown, e));
 
           var focusTemp = mouseDown;
           while (!focusTemp.hasListener(EventType.FOCUS)
@@ -220,13 +220,13 @@ public class UiWindow {
       @Override
       public void mouseReleased(java.awt.event.MouseEvent e) {
         if (hovered != null) {
-          hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
+          hovered.bubble(new MouseEvent(EventType.MOUSE_UP, hovered, e));
         }
 
         if (hovered != null && (mouseDown == hovered || hovered.getParents().contains(mouseDown))) {
-          hovered.bubble(MouseEvent.fromJwm(EventType.MOUSE_CLICK, hovered, e));
+          hovered.bubble(new MouseEvent(EventType.MOUSE_CLICK, hovered, e));
         } else if (mouseDown != null) {
-          mouseDown.bubble(MouseEvent.fromJwm(EventType.MOUSE_UP, hovered, e));
+          mouseDown.bubble(new MouseEvent(EventType.MOUSE_UP, hovered, e));
         }
       }
 
