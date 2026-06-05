@@ -70,6 +70,10 @@ public class ColorUtil {
     return (argb >> 24) & 0xFF;
   }
 
+  public static int setAlpha(int argb, int alpha) {
+    return (~(0xFF << 24) & argb) | (alpha & 0xFF) << 24;
+  }
+
   public static int getRed(int argb) {
     return (argb >> 16) & 0xFF;
   }
@@ -347,9 +351,5 @@ public class ColorUtil {
     } else {
       return p;
     }
-  }
-
-  public static int withAlpha(int color, float alpha) {
-    return withAlpha(color, Math.round(alpha * 255));
   }
 }

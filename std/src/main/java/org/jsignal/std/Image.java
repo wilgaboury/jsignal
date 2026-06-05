@@ -1,13 +1,9 @@
 package org.jsignal.std;
 
 import com.google.common.net.MediaType;
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Data;
-import io.github.humbleui.skija.SamplingMode;
-import io.github.humbleui.skija.svg.SVGDOM;
-import io.github.humbleui.types.Point;
-import io.github.humbleui.types.Rect;
 import jakarta.annotation.Nullable;
+import org.apache.batik.gvt.GraphicsNode;
+import org.joml.Vector2f;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Constant;
@@ -17,9 +13,15 @@ import org.jsignal.ui.Painter;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
 import org.jsignal.ui.layout.LayoutValue;
+import org.jsignal.ui.layout.Rect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 
@@ -30,16 +32,21 @@ import static org.jsignal.ui.layout.LayoutValue.percent;
 public non-sealed class Image extends ImagePropComponent {
   private final static Logger logger = LoggerFactory.getLogger(Image.class);
 
-  private static final WeakHashMap<Blob, SVGDOM> svgDoms = new WeakHashMap<>();
-  private static final WeakHashMap<Blob, io.github.humbleui.skija.Image> imageObjects = new WeakHashMap<>();
+  private static final WeakHashMap<Blob, Svg> svgDoms = new WeakHashMap<>();
+  private static final WeakHashMap<Blob, BufferedImage> imageObjects = new WeakHashMap<>();
 
-  private static SVGDOM getSvgDom(Blob blob) {
-    return svgDoms.computeIfAbsent(blob, b -> new SVGDOM(Data.makeFromBytes(b.data())));
+  private static Svg getSvgDom(Blob blob) {
+    return svgDoms.computeIfAbsent(blob, Svg::fromBlob);
   }
 
-  private static io.github.humbleui.skija.Image getImageObject(Blob blob) {
-    return imageObjects.computeIfAbsent(blob, b ->
-      io.github.humbleui.skija.Image.makeDeferredFromEncodedBytes(blob.data()));
+  private static BufferedImage getImageObject(Blob blob) {
+    return imageObjects.computeIfAbsent(blob, b -> {
+      try {
+        return ImageIO.read(new ByteArrayInputStream(blob.data()));
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to read image", e);
+      }
+    });
   }
 
   @Prop(required = true)
@@ -74,8 +81,8 @@ public non-sealed class Image extends ImagePropComponent {
   private void layoutVector(LayoutConfig config) {
     var svg = getSvgDom(blob.get());
     var dim = viewBox(svg);
-    var imgWidth = dim.getX();
-    var imgHeight = dim.getY();
+    var imgWidth = dim.x();
+    var imgHeight = dim.y();
     layoutImage(config, imgWidth, imgHeight,
       width.get(), height.get()
     );
@@ -130,23 +137,19 @@ public non-sealed class Image extends ImagePropComponent {
   }
 
   public static void paintSvg(
-    Canvas canvas,
+    Graphics2D g2d,
     Layout layout,
-    SVGDOM svg,
+    Svg svg,
     Fit fit
   ) {
     var viewBox = viewBox(svg);
-    if (viewBox != null) {
-      paintSvg(canvas, layout, svg, fit, viewBox.getX(), viewBox.getY());
-    } else {
-      logger.warn("could not paint svg because of missing viewbox");
-    }
+    paintSvg(g2d, layout, svg, fit, viewBox.x(), viewBox.y());
   }
 
   public static void paintSvg(
-    Canvas canvas,
+    Graphics2D g2d,
     Layout layout,
-    SVGDOM svg,
+    Svg svg,
     Fit fit,
     float imgHeight,
     float imgWidth
@@ -155,46 +158,48 @@ public non-sealed class Image extends ImagePropComponent {
 
     if (fit == Fit.FILL) {
       var svgRatio = imgWidth / imgHeight;
-      var viewRatio = size.getX() / size.getY();
+      var viewRatio = size.x() / size.y();
 
       if (viewRatio > svgRatio) {
         var scale = viewRatio / svgRatio;
-        canvas.translate(size.getX() / 2f, 0);
-        canvas.scale(scale, 1f);
-        canvas.translate(-size.getX() / 2f, 0);
+        g2d.translate(size.x() / 2f, 0);
+        g2d.scale(scale, 1f);
+        g2d.translate(-size.x() / 2f, 0);
       } else if (viewRatio < svgRatio) {
         var scale = 1f / (viewRatio / svgRatio);
-        canvas.translate(0, size.getY() / 2f);
-        canvas.scale(1f, scale);
-        canvas.translate(0, -size.getY() / 2f);
+        g2d.translate(0, size.y() / 2f);
+        g2d.scale(1f, scale);
+        g2d.translate(0, -size.y() / 2f);
       }
     } else if (fit == Fit.COVER) {
       var svgRatio = imgWidth / imgHeight;
-      var viewRatio = size.getX() / size.getY();
+      var viewRatio = size.x() / size.y();
 
-      canvas.clipRect(Rect.makeWH(size));
+      g2d.clipRect(0, 0, (int)Math.ceil(size.x()), (int)Math.ceil(size.y()));
 
       if (viewRatio > svgRatio) {
         var scale = viewRatio / svgRatio;
-        canvas.translate(size.getX() / 2, size.getY() / 2);
-        canvas.scale(scale, scale);
-        canvas.translate(-size.getX() / 2, -size.getY() / 2);
+        g2d.translate(size.x() / 2, size.y() / 2);
+        g2d.scale(scale, scale);
+        g2d.translate(-size.x() / 2, -size.y() / 2);
       } else if (viewRatio < svgRatio) {
         var scale = svgRatio / viewRatio;
-        canvas.translate(size.getX() / 2f, size.getY() / 2f);
-        canvas.scale(scale, scale);
-        canvas.translate(-size.getX() / 2f, -size.getY() / 2f);
+        g2d.translate(size.x() / 2f, size.y() / 2f);
+        g2d.scale(scale, scale);
+        g2d.translate(-size.x() / 2f, -size.y() / 2f);
       }
     }
 
-    svg.setContainerSize(size.getX(), size.getY());
-    svg.render(canvas);
+    float sx = imgWidth / (float)svg.graphics().getBounds().getWidth();
+    float sy = imgHeight / (float)svg.graphics().getBounds().getHeight();
+    g2d.scale(sx, sy);
+    svg.graphics().paint(g2d);
   }
 
   public static void paintRaster(
-    Canvas canvas,
+    Graphics2D g2d,
     Layout layout,
-    io.github.humbleui.skija.Image img,
+    BufferedImage img,
     Fit fit
   ) {
     var size = layout.getSize();
@@ -202,61 +207,50 @@ public non-sealed class Image extends ImagePropComponent {
     switch (fit) {
       case CONTAIN -> {
         var imgRatio = (float) img.getWidth() / (float) img.getHeight();
-        var layoutRatio = size.getX() / size.getY();
+        var layoutRatio = size.x() / size.y();
 
         if (imgRatio > layoutRatio) {
-          var scale = size.getX() / (float) img.getWidth();
-          canvas.translate(0, size.getY() / 2 - (scale * img.getHeight()) / 2);
-          drawImage(canvas, img, Rect.makeWH(size.getX(), scale * img.getHeight()));
+          var scale = size.x() / (float) img.getWidth();
+          g2d.translate(0, size.y() / 2 - (scale * img.getHeight()) / 2);
+          drawImage(g2d, img, Rect.makeWH(size.x(), scale * img.getHeight()));
         } else if (imgRatio < layoutRatio) {
-          var scale = size.getY() / (float) img.getHeight();
-          canvas.translate(size.getX() / 2 - (scale * img.getWidth()) / 2, 0);
-          drawImage(canvas, img, Rect.makeWH(scale * img.getWidth(), size.getY()));
+          var scale = size.y() / (float) img.getHeight();
+          g2d.translate(size.x() / 2 - (scale * img.getWidth()) / 2, 0);
+          drawImage(g2d, img, Rect.makeWH(scale * img.getWidth(), size.y()));
         } else {
-          drawImage(canvas, img, Rect.makeWH(size));
+          drawImage(g2d, img, Rect.makeWH(size));
         }
       }
       case FILL -> {
         var imgRatio = (float) img.getWidth() / (float) img.getHeight();
-        var layoutRatio = size.getX() / size.getY();
+        var layoutRatio = size.x() / size.y();
 
-        canvas.clipRect(Rect.makeWH(size));
+        g2d.clipRect(0, 0, (int)Math.ceil(size.x()), (int)Math.ceil(size.y()));
 
         if (imgRatio > layoutRatio) {
-          var scale = size.getY() / (float) img.getHeight();
-          canvas.translate(size.getX() / 2 - (scale * img.getWidth()) / 2, 0);
-          drawImage(canvas, img, Rect.makeWH(scale * img.getWidth(), size.getY()));
+          var scale = size.y() / (float) img.getHeight();
+          g2d.translate(size.x() / 2 - (scale * img.getWidth()) / 2, 0);
+          drawImage(g2d, img, Rect.makeWH(scale * img.getWidth(), size.y()));
         } else if (imgRatio < layoutRatio) {
-          var scale = size.getX() / (float) img.getWidth();
-          canvas.translate(0, size.getY() / 2 - (scale * img.getHeight()) / 2);
-          drawImage(canvas, img, Rect.makeWH(size.getX(), scale * img.getHeight()));
+          var scale = size.x() / (float) img.getWidth();
+          g2d.translate(0, size.y() / 2 - (scale * img.getHeight()) / 2);
+          drawImage(g2d, img, Rect.makeWH(size.x(), scale * img.getHeight()));
         } else {
-          drawImage(canvas, img, Rect.makeWH(size));
+          drawImage(g2d, img, Rect.makeWH(size));
         }
       }
-      case COVER -> drawImage(canvas, img, Rect.makeWH(size));
+      case COVER -> drawImage(g2d, img, Rect.makeWH(size));
     }
   }
 
-  private static void drawImage(Canvas canvas, io.github.humbleui.skija.Image img, Rect rect) {
-    canvas.drawImageRect(
-      img,
-      Rect.makeWH(img.getWidth(), img.getHeight()),
-      Rect.makeWH(rect.getWidth(), rect.getHeight()),
-      SamplingMode.LINEAR,
-      null,
-      true
-    );
+  private static void drawImage(Graphics2D g2d, BufferedImage img, Rect rect) {
+    g2d.scale(rect.getWidth()/(float)img.getWidth(), rect.getHeight()/(float)img.getHeight());
+    g2d.drawImage(img, 0, 0, null);
   }
 
 
-  private static @Nullable Point viewBox(SVGDOM svg) {
-    if (svg.getRoot() == null || svg.getRoot().getViewBox() == null) {
-      return null;
-    } else {
-      var box = svg.getRoot().getViewBox();
-      return new Point(box.getWidth(), box.getHeight());
-    }
+  private static Vector2f viewBox(Svg svg) {
+    return new Vector2f((float)svg.graphics().getBounds().getWidth(), (float)svg.graphics().getBounds().getHeight());
   }
 
   public enum Fit {

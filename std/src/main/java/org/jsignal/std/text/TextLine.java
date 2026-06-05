@@ -1,94 +1,50 @@
 package org.jsignal.std.text;
 
-import io.github.humbleui.skija.Paint;
-import org.jsignal.rx.RxUtil;
-import org.jsignal.ui.Component;
+import org.jsignal.prop.GeneratePropComponent;
+import org.jsignal.prop.Prop;
+import org.jsignal.rx.Constant;
+import org.jsignal.std.TextUtil;
+import org.jsignal.std.ez.EzColors;
 import org.jsignal.ui.Element;
 import org.jsignal.ui.Node;
 
+import java.awt.*;
 import java.util.function.Supplier;
 
 import static org.jsignal.ui.layout.LayoutValue.pixel;
 
-public class TextLine extends Component {
-  private final Supplier<io.github.humbleui.skija.TextLine> line;
-  private final Supplier<Integer> color;
+@GeneratePropComponent
+public non-sealed class TextLine extends TextLinePropComponent {
+  @Prop(required = true)
+  Supplier<String> line;
+  @Prop(required = true)
+  Supplier<Font> font;
+  @Prop(required = true)
+  Supplier<Integer> height;
+  @Prop
+  Supplier<Integer> color;
 
-  public TextLine(Builder builder) {
-    this.line = RxUtil.createMemo(builder.line);
-    this.color = builder.color;
+  @Override
+  protected void onBuild() {
+    if (color == null) {
+      color = Constant.of(EzColors.BLACK);
+    }
   }
 
   @Override
   public Element render() {
     return Node.builder()
       .layout(config -> {
-        var tmp = line.get();
-        config.setWidth(pixel(tmp.getWidth()));
-        config.setHeight(pixel(tmp.getHeight()));
+        var bounds = font.get().getStringBounds(line.get(), TextUtil.plainFrc);
+        config.setWidth(pixel((float)bounds.getWidth()));
+        config.setHeight(pixel((float)bounds.getHeight()));
       })
-      .paint((canvas, node) -> {
-        try (var paint = new Paint()) {
-          var tmp = line.get();
-          paint.setColor(color.get());
-          canvas.drawTextLine(tmp, 0f, -tmp.getAscent(), paint);
-        }
+      .paint((g2d, node) -> {
+        g2d.setColor(new Color(color.get()));
+        g2d.setFont(font.get());
+        var metrics = g2d.getFontMetrics();
+        g2d.drawString(line.get(), 0f, metrics.getAscent());
       })
       .build();
-  }
-
-  public static BuilderSetLine builder() {
-    return new Builder();
-  }
-
-  public static class Builder implements BuilderSetLine, BuilderSetColor {
-    private Supplier<io.github.humbleui.skija.TextLine> line;
-    private Supplier<Integer> color;
-
-    public Supplier<io.github.humbleui.skija.TextLine> getLine() {
-      return line;
-    }
-
-    @Override
-    public BuilderSetColor setLine(io.github.humbleui.skija.TextLine line) {
-      return setLine(() -> line);
-    }
-
-    @Override
-    public BuilderSetColor setLine(Supplier<io.github.humbleui.skija.TextLine> line) {
-      this.line = line;
-      return this;
-    }
-
-    public Supplier<Integer> getColor() {
-      return color;
-    }
-
-    @Override
-    public Builder setColor(Integer color) {
-      return setColor(() -> color);
-    }
-
-    @Override
-    public Builder setColor(Supplier<Integer> color) {
-      this.color = color;
-      return this;
-    }
-
-    public TextLine build() {
-      return new TextLine(this);
-    }
-  }
-
-  public interface BuilderSetLine {
-    BuilderSetColor setLine(io.github.humbleui.skija.TextLine line);
-
-    BuilderSetColor setLine(Supplier<io.github.humbleui.skija.TextLine> line);
-  }
-
-  public interface BuilderSetColor {
-    Builder setColor(Integer color);
-
-    Builder setColor(Supplier<Integer> color);
   }
 }

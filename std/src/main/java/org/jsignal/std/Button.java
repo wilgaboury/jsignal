@@ -1,8 +1,5 @@
 package org.jsignal.std;
 
-import io.github.humbleui.skija.Canvas;
-import io.github.humbleui.skija.Paint;
-import io.github.humbleui.types.Rect;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.Signal;
@@ -13,6 +10,7 @@ import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.Layout;
 import org.jsignal.ui.layout.LayoutConfig;
+import org.jsignal.ui.layout.Rect;
 
 import java.awt.*;
 import java.util.List;
@@ -92,15 +90,13 @@ public non-sealed class Button extends ButtonPropComponent {
     };
   }
 
-  private void paint(Graphics2D canvas, Layout layout) {
+  private void paint(Graphics2D g2d, Layout layout) {
     var size = layout.getSize();
     if (mouseDown.get()) {
-      canvas.transform(MathUtil.toAwt(MathUtil.scaleCenter(0.95f, size.x(), size.y())));
+      g2d.transform(MathUtil.toAwt(MathUtil.scaleCenter(0.95f, size.x(), size.y())));
     }
-    try (Paint paint = new Paint()) {
-      paint.setColor(mouseOver.get() ? hoverColor(color.get()) : color.get());
-      canvas.drawRRect(Rect.makeWH(size).withRadii(8f), paint);
-    }
+    g2d.setColor(new Color(mouseOver.get() ? hoverColor(color.get()) : color.get()));
+    g2d.fill(Rect.makeWH(size).toAwtRound(8f));
   }
 
   private int hoverColor(int color) {

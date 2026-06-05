@@ -28,8 +28,8 @@ import static org.jsignal.ui.layout.LayoutValue.pixel;
 public non-sealed class Scroll extends ScrollPropComponent {
   private static final float DEFAULT_WIDTH = 15f;
 
-  private static final SVGDOM upIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-up-s-line.svg"));
-  private static final SVGDOM downIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream(
+  private static final Svg upIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream("/icons/arrow-up-s-line.svg"));
+  private static final Svg downIcon = IconUtil.fromStream(Scroll.class.getResourceAsStream(
     "/icons/arrow-down-s-line.svg"));
 
   @Prop
@@ -293,13 +293,13 @@ public non-sealed class Scroll extends ScrollPropComponent {
   }
 
   private static class ScrollButton extends Component {
-    private final SVGDOM icon;
+    private final Svg icon;
     private final Supplier<Float> size;
     private final Supplier<Boolean> show;
     private final Runnable action;
 
     public ScrollButton(
-      SVGDOM icon,
+      Svg icon,
       Supplier<Float> size,
       Supplier<Boolean> show,
       Runnable action

@@ -1,7 +1,6 @@
 package org.jsignal.std;
 
-import io.github.humbleui.skija.Matrix33;
-import io.github.humbleui.skija.Paint;
+import org.joml.Matrix3x2f;
 import org.jsignal.prop.GeneratePropComponent;
 import org.jsignal.prop.Prop;
 import org.jsignal.rx.*;
@@ -13,6 +12,7 @@ import org.jsignal.ui.Node;
 import org.jsignal.ui.Nodes;
 import org.jsignal.ui.layout.LayoutConfig;
 
+import java.awt.*;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -58,12 +58,10 @@ public non-sealed class Drawer extends DrawerPropComponent {
               return HitTester.Result.PASSTHROUGH;
             }
           })
-          .paint((canvas, layout) -> {
+          .paint((g2d, layout) -> {
             if (open.get()) {
-              try (var paint = new Paint()) {
-                paint.setColor(ColorUtil.withAlpha(EzColors.BLACK, 0.1f));
-                canvas.drawRect(layout.getBoundingRect(), paint);
-              }
+              g2d.setColor(new Color(ColorUtil.setAlpha(EzColors.BLACK, (int)(0.1f*255f))));
+              g2d.fill(layout.getBoundingRect().toAwt());
             }
           })
           .build(),
@@ -73,7 +71,7 @@ public non-sealed class Drawer extends DrawerPropComponent {
             config.setPosition(LayoutConfig.Edge.LEFT, pixel(0f));
             config.setHeight(percent(100f));
           })
-          .transform((layout) -> Matrix33.makeTranslate(translation.get().get(), 0))
+          .transform((layout) -> new Matrix3x2f().translate(translation.get().get(), 0))
           .ref(node -> Effect.create(() -> width.accept(node.getLayout().getWidth())))
           .children(content.get())
           .build()
